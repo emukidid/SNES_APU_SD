@@ -1,0 +1,25 @@
+QTY	Part				Digikey Part Number
+1	RCA Red				CP-1401-ND
+1	RCA White			CP-1402-ND
+2	3.5mm female TRS		CP1-3533N-ND
+2	50ohm resistor			51QBK-ND
+4	1uF capacitor			399-9714-ND
+1	32.768 khz crystal		X1123-ND
+1	DS1307 RTC			DS1307+-ND
+1	CR1220 holder			BK-890-ND
+2	2.2K resistor			2.2KQBK-ND
+3	0.1uF Capacitor	(0805)		1276-1007-1-ND
+1	1K resistor (0805)		311-1.0KARCT-ND
+1	Red LED	(0805)			475-1415-1-ND
+8	buttons				SW400-ND
+1	Micro SD holder			3M5607CT-ND
+1	4050D buffer chip		568-8150-1-ND
+1	74HCT573 Octal Latch		296-4612-1-ND
+1	IS62C1024AL-35QLI Sram chip	706-1041-ND
+1	50 pin breakaway headers	SAM1067-50-ND
+1	36 pin breakaway headers	SAM1067-36-ND
+1	16 pin header			SAM1067-16-ND
+1	16 pin socket			(Need some long leg sockets. These cannot be sourced from digikey. :( )
+1	10K trim pot			3306W-103-ND
+1	10K 9 resistor network.		4610X-1-103LF-ND
+1	16x2 LCD character display.	NHD-0216BZ-FL-YBW-ND
