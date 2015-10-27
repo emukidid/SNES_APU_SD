@@ -168,20 +168,9 @@ void APU_StartWrite(unsigned short address, unsigned char *data, int len)
 void APU_Reset()
 {
   printf("APU Reset\n");
-  //Try the Analog line first.
   digitalWrite(54,LOW);
   delay(1);
   digitalWrite(54,HIGH);
-  if(ReadByteFromAPU(0)!=0xAA)  //Check for reset.
-  {
-    printf("Trying OR gate\n");
-    //And now try the OR gate, just in case the user has that hooked up instead.
-    digitalWrite(10,LOW);
-    digitalWrite(11,LOW);
-    delay(1);
-    digitalWrite(11,HIGH);
-    digitalWrite(10,HIGH);
-  }
 }
 
 void APU_Wait(unsigned char address, unsigned char data)
