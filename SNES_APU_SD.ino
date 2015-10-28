@@ -1,11 +1,11 @@
-
-
 /****
  * SHVC-SOUND Arduino Player by emu_kidid in 2015
  * based on code by CaitSith2
  * 
  * Loads SPC tracks from SD to the SHVC-SOUND (aka SNES APU)
  */
+
+#define RESET_PIN 54
 
 #include <SPI.h>
 //#include <SD.h>
@@ -45,15 +45,18 @@ void setup()
   DDRH = 0x03;  //Digital pins 8-9.
   PORTB = 0x30;
   DDRB |= 0x30;  //Digital pins 10-11
-  PORTF = 0x01;
-  DDRF = 0x01; //Analog Pin 0
+  PORTF = 0xFF;
+  DDRF = 0xFF; //Analog Pin 0
   Serial.begin(115200);
 
    // Set up stdout
   fdev_setup_stream(&serial_stdout, serial_putchar, NULL, _FDEV_SETUP_WRITE);
   stdout = &serial_stdout;
   
-  printf("SHVC-SOUND Arduino Player v0.1\n");
+  Serial.println("SHVC-SOUND Arduino Player v0.1");
+  delay(3500);  //
+  if (Serial.available()) return;
+  
   printf("Initializing SD card...\n");
 
   if (!SD.begin(53)) {
@@ -143,9 +146,9 @@ void APU_StartWrite(unsigned short address, unsigned char *data, int len)
 {
   int i;
   uint8_t rdata;
-  digitalWrite(54,LOW);
+  digitalWrite(RESET_PIN,LOW);
   delay(1);
-  digitalWrite(54,HIGH);
+  digitalWrite(RESET_PIN,HIGH);
 
   while(ReadByteFromAPU(0)!=0xAA);
   while(ReadByteFromAPU(1)!=0xBB);
@@ -168,9 +171,9 @@ void APU_StartWrite(unsigned short address, unsigned char *data, int len)
 void APU_Reset()
 {
   printf("APU Reset\n");
-  digitalWrite(54,LOW);
+  digitalWrite(RESET_PIN,LOW);
   delay(1);
-  digitalWrite(54,HIGH);
+  digitalWrite(RESET_PIN,HIGH);
 }
 
 void APU_Wait(unsigned char address, unsigned char data)
@@ -178,12 +181,12 @@ void APU_Wait(unsigned char address, unsigned char data)
   while(ReadByteFromAPU(address)!=data);
 }
 
-void APU_StartSPC700(unsigned char *dspdata, unsigned char *spcdata)
+void APU_StartSPC700(unsigned char *dspdata, unsigned char *spcdata, int SD_mode=1)
 {
   //'G'
   int port0state = 0, i = 0;
 
-  printf("Uploading DSP Register\n");
+  if (SD_mode) printf("Uploading DSP Register\n");
   //Upload the DSP register, and the first page of SPC data at serial port speed.
   APU_StartWrite(0x0002,DSPdata,16);
   WriteByteToAPU(2,0x02);
@@ -191,8 +194,11 @@ void APU_StartSPC700(unsigned char *dspdata, unsigned char *spcdata)
   WriteByteToAPU(1,0x00);
   WriteByteToAPU(0,0x11);
   while(ReadByteFromAPU(0)!=0x11); 
-  printf("Done\n"); 
-  printf("Uploading dspdata\n"); 
+  if (SD_mode) 
+  {
+    printf("Done\n"); 
+    printf("Uploading dspdata\n");
+  } 
   // Send dspdata[0] to dspdata[127]
   for(i=0;i<128;i++)
   {
@@ -208,8 +214,11 @@ void APU_StartSPC700(unsigned char *dspdata, unsigned char *spcdata)
     port0state++;
   }
   while(ReadByteFromAPU(0)!=0xAA);
-  printf("Done\n"); 
-  printf("Uploading spcdata\n"); 
+  if (SD_mode) 
+  {
+    printf("Done\n"); 
+    printf("Uploading spcdata\n"); 
+  }
   port0state=0;
   WriteByteToAPU(2,0x02);
   WriteByteToAPU(3,0x00);
@@ -228,7 +237,7 @@ void APU_StartSPC700(unsigned char *dspdata, unsigned char *spcdata)
     while(ReadByteFromAPU(0)!=port0state);
     port0state++;
   }
-  printf("Done\n"); 
+  if (SD_mode) printf("Done\n"); 
 }
 
 //Write a single IO port.
@@ -584,8 +593,203 @@ void LoadAndPlaySPC()
   printf("Playing!\n");
 }
 
-void loop()
+/*--------------------------------------------------------*
+ * 
+ * ProcessCommand() - Processes a serial port command
+ * 
+ * --------------------------------------------------------
+ */
+
+unsigned char ReadByteFromSerial()
 {
+  while ((Serial.available() == 0));
+  return Serial.read();
+}
+
+
+void ProcessCommandFromSerial()
+{
+  if(Serial.available() == 0)
+    return;
+  static unsigned char port0state=0;
+  uint16_t i;
+  //static uint16_t j;
+  static long time;
+  int checksum;
+  unsigned char address, data;
+  unsigned char command = ReadByteFromSerial();
+  switch(command)
+  {
+  case 'D':    //Set datamode between ascii and binary.  In ascii mode,  each data byte is transmitted
+    //as ascii hexadecimal notation.  In binary mode, the byte transmitted on the serial
+    //line is taken literally for what it is.
+    ReadByteFromSerial();
+    // Set datamode has been totally deprecated as of Oct 28, 2015.  It will always remain as binary
+    // mode from here on out.  This is the no operation command to use, in order to initiate PC mode.
+    break;
+
+
+  case 'Q':  //Read all 4 IO ports in rapid fire succession.
+    data=ReadByteFromAPU(0);
+    Serial.write(data);
+    data=ReadByteFromAPU(1);
+    Serial.write(data);
+    data=ReadByteFromAPU(2);
+    Serial.write(data);
+    data=ReadByteFromAPU(3);
+    Serial.write(data);
+    break;
+  case 'R':  //Read a single IO port.  Takes an address as a parameter, returns one byte.
+    address=ReadByteFromSerial()-'0';
+    data=ReadByteFromAPU(address);
+    Serial.write(data);
+    break;
+  case 'r':  //Read and returns 2 consecutive IO ports.
+    address=ReadByteFromSerial()-'0';
+    data=ReadByteFromAPU(address+1);
+    Serial.write(data);
+    data=ReadByteFromAPU(address);
+    Serial.write(data);
+    break; 
+  case 'S':
+    Serial.println("SPC700 DATA LOADER V1.0");
+    break;
+  case 's':  //Reset the Audio Processing Unit
+    digitalWrite(RESET_PIN,LOW);
+    delay(10);
+    digitalWrite(RESET_PIN,HIGH);
+    break;
+  case 'f':  //Set the expected state of PORT 0 for the next write.
+    port0state=ReadByteFromSerial();
+    break;
+  case 'F':  //Upload SPC data at serial port speed.
+    uint16_t ram_addr;
+    uint16_t data_size;
+    
+    ram_addr=ReadByteFromSerial()<<8;
+    ram_addr|=ReadByteFromSerial();
+    
+    //SECSERIAL.print("Ram Address = ");
+    //SECSERIAL.print(ram_addr,HEX);
+    data_size=ReadByteFromSerial()<<8;
+    data_size|=ReadByteFromSerial();
+    //SECSERIAL.print(", Data Size = ");
+    //SECSERIAL.println(data_size,HEX);
+    WriteByteToAPU(1,1);
+    WriteByteToAPU(2,ram_addr&0xFF);
+    WriteByteToAPU(3,ram_addr>>8);
+    i=ReadByteFromAPU(0);
+    i+=2;
+    WriteByteToAPU(0,i&0xFF);
+    while(ReadByteFromAPU(0)!=(i&0xFF));
+    port0state=0;
+    //SECSERIAL.println("SPC Data Transfer Started");
+    for(i=0;i<data_size;i++)
+    //for(i=0;i<65280;i++)
+    {
+      /*if(!(i%16))
+      {
+        SECSERIAL.print(".");
+      }*/
+      //data=i&0xFF;
+      data=ReadByteFromSerial();
+      WriteByteToAPU(1,data);
+      WriteByteToAPU(0,port0state);
+      //while(ReadByteFromAPU(0)!=port0state);
+      port0state++;
+      //SECSERIAL.print("Received byte:");
+      //SECSERIAL.println(data,HEX);
+    }
+    //SECSERIAL.print(millis()-time,DEC);
+    //SECSERIAL.println(" milliseconds to upload SPC");
+    ////SECSERIAL.println("Transfer Finished");
+    Serial.write(1);
+
+    break;
+
+  case 'G':  //Upload the DSP register, and the first page of SPC data at serial port speed.
+    for(i=0;i<128;i++)
+      dspdata[i]=ReadByteFromSerial();
+    for(i=0;i<256;i++)
+      spcdata[i]=ReadByteFromSerial();
+    APU_StartSPC700(dspdata,spcdata,0);
+    Serial.write('F');
+    break;
+  case 'W':  //Write a single IO port.
+    address=ReadByteFromSerial()-'0';
+    data=ReadByteFromSerial();
+    i=0;  //Must timeout any wait loops, if the respective drivers are not running.
+    switch(address-4)
+    {
+      case 0:
+        while((ReadByteFromAPU(1)!=((ReadByteFromAPU(0)+1)&0xFF))&&(i<128)) i++;  //Handle a blazeon track change.
+        if(i<128)
+        {
+          WriteByteToAPU(0,data);
+        }
+        /*
+        ** Blazeon uses the following port communication system.
+        ** When Port 1 is Equal to Port 0 + 1, then it is safe to write a new value to any of the 4 ports.
+        ** When Port 0 is Equal to Port 1 + 1, then the SPC side driver is reading the ports, then clearing
+        ** the ports.  As a result, if we write during the latter time, it ends up being a race condition to
+        ** get the write in the specific port, before that port is read out.
+        ** Immediately following the readout of the ports, the in ports are automatically cleared and will read
+        ** as 0 on SPC side.
+        **
+        ** There is absolutely no SPC reloading code stored in a Blazeon SPC.  Once it is running, it runs forever,
+        ** with its preprogrammed songs/sfxs. Writing to any port changes songs/sfxs played instantly during the
+        ** former condition.
+        */
+        break;
+      case 1:  //Multiple games use this song select driver.
+        WriteByteToAPU(1,data);
+        WriteByteToAPU(0,3);
+        data=ReadByteFromAPU(3);
+        data++;
+        WriteByteToAPU(3,data);
+        if(APU_WaitIoPort(3,data,2048))
+          break;
+        i = 0;
+        WriteByteToAPU(0,4);
+        data=ReadByteFromAPU(3);
+        data++;
+        WriteByteToAPU(3,data);
+        if(APU_WaitIoPort(3,data,2048))
+          break;
+        WriteByteToAPU(0,0);
+        break;
+      case 2:
+        WriteByteToAPU(3,data);
+        WriteByteToAPU(0,0x80);
+        if(APU_WaitIoPort(0,0,2048))
+          break;
+        WriteByteToAPU(0,0);
+        break;
+      case 0xFC:  //0 - 4 = 0xFC.
+      case 0xFD:  //1 - 4 = 0xFD.
+      case 0xFE:  //2 - 4
+      case 0xFF:  //3 - 4
+      default:    //Any other driver selection not put here.
+        /*
+        ** Default, is just write the ports as is.
+        */
+        WriteByteToAPU(address,data);
+    }
+    break;
+  case 'w':  //Write 2 IO consecutive IO ports.
+    address=ReadByteFromSerial()-'0';
+    data=ReadByteFromSerial();
+    WriteByteToAPU(address+1,data);
+    data=ReadByteFromSerial();
+    WriteByteToAPU(address,data);
+    break;
+  }
+}
+
+void loop() //The main loop.  Define various subroutines, and call them here. :)
+{
+  ProcessCommandFromSerial();
+  
   
 }
 

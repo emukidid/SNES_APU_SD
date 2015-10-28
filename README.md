@@ -5,6 +5,7 @@ Based on code written by [CaitSith2]
 
 ### Current Features
 - Loads a .spc file (hardcoded filename) from SD card and plays it on the SNES APU
+- Loads a .spc file through the PC interface.
 
 ### Planned Features
 - 16x2 LCD for track display and menu
@@ -12,7 +13,6 @@ Based on code written by [CaitSith2]
 - SRAM to cache tracks (CaitSith2)
 - Interface APU as direct memory (CaitSith2)
 - RTC for nice things
-- Restore PC loading code and have the mode switch at runtime
 
 ### Hardware required
 - Early NTSC SNES or Super Famicom with modular APU
