@@ -1,0 +1,14 @@
+/Apuplay/Debug
+/Apuplay/Release
+/Apuplay/apu_dll_src/Debug
+/Apuplay/apu_dll_src/Release
+/Apuplay/bin
+/Apuplay/obj
+/Apuplay/*.sdf
+/Apuplay/*.ncb
+/Apuplay/*.user
+/Apuplay/*.suo
+/PCB/*.b#*
+/PCB/*.s#*
+/PCB/*.scr
+/PCB/*.dsn
