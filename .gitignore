@@ -2,6 +2,10 @@
 /Apuplay/Release
 /Apuplay/apu_dll_src/Debug
 /Apuplay/apu_dll_src/Release
+/Apuplay/apu_dll_src/*.sdf
+/Apuplay/apu_dll_src/*.ncb
+/Apuplay/apu_dll_src/*.user
+/Apuplay/apu_dll_src/*.suo
 /Apuplay/bin
 /Apuplay/obj
 /Apuplay/*.sdf
