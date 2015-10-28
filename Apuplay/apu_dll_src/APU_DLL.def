@@ -1,0 +1,24 @@
+LIBRARY APU_DLL
+DESCRIPTION DLL FOR APU_DLL
+
+EXPORTS
+    	WriteSPC700			@1
+        ReadSPC700			@2
+		WriteSPC700_WP0I	@3
+		SetPort0			@4
+		Write16bytes		@5
+		ResetAPU			@6
+		GetID6xTag			@7
+		init_port			@8
+		OpenPort			@9
+		OpenPort_VB			@10
+		ClosePort			@11
+		StartSPC700			@12
+		FlushRead			@13
+		UploadSPC			@14
+		CreateID666			@15
+		DestroyID666		@16
+		ID666_LoadTag		@17
+		ID666_ToStr			@18
+		StartWrite16bytes	@19
+		FinishWrite16bytes	@20

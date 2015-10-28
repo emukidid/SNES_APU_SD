@@ -1,0 +1,21 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APU_DLL", "APU_DLL.vcproj", "{66774AAA-E0BA-4725-9C40-2E685CB6D737}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{66774AAA-E0BA-4725-9C40-2E685CB6D737}.Debug.ActiveCfg = Debug|Win32
+		{66774AAA-E0BA-4725-9C40-2E685CB6D737}.Debug.Build.0 = Debug|Win32
+		{66774AAA-E0BA-4725-9C40-2E685CB6D737}.Release.ActiveCfg = Release|Win32
+		{66774AAA-E0BA-4725-9C40-2E685CB6D737}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

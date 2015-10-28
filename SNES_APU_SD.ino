@@ -12,6 +12,7 @@
 #include <SdFat.h>
 SdFat SD;
 #include <Firmata.h>
+#include <LiquidCrystal.h>  //Using it for the defines only.
 
 FILE serial_stdout;
 File spcFile;
@@ -141,6 +142,66 @@ void WriteByteToAPU(unsigned char address, unsigned char data)
  ** Vcc - SNES APU address 6, SNES APU Vcc, SNES APU audio Vcc
  ** Gnd - SNES APU Gnd, SNES APU audio Gnd.
  */
+
+/*
+ * Liquid Crystal Display functions being defined here for speed. :)
+ */
+ #define LCD_E 0x10
+ #define LCD_RW 0x20
+ #define LCD_RS 0x40
+
+ #define LCD_COMMAND 0
+ #define LCD_DATA 1
+
+void InitLCD()
+{
+  delayMicroseconds(50000);
+  PORTF &= ~(LCD_RS);
+  PORTF &= ~(LCD_E);
+  PORTF &= ~(LCD_RW);
+
+  //The LCD starts out in 8-bit mode on powerup.  Set it into 4-bit mode.
+  WriteNybbleToLCD(0x03);
+  delayMicroseconds(4500);
+  WriteNybbleToLCD(0x03);
+  delayMicroseconds(4500);
+  WriteNybbleToLCD(0x03);
+  delayMicroseconds(150);
+  WriteNybbleToLCD(0x02);
+  
+}
+
+void WriteNybbleToLCD(unsigned char data)
+{
+  unsigned char rdata=0;
+  for(int i=0;i<4;i++)
+    if(data & (1<<(3-i))) rdata |= (1 << i);
+
+  PORTF &= ~(LCD_RW);
+  PORTF |= (rdata & 0x0F);
+  PORTF &= ~(LCD_E);
+  delayMicroseconds(1);
+  PORTF |= ~(LCD_E);
+  delayMicroseconds(1);
+  PORTF &= ~(LCD_E);
+  delayMicroseconds(100);
+}
+
+void LCDcommand(unsigned char data)
+{
+  PORTF &= ~(LCD_RS);
+  
+  WriteNybbleToLCD(data>>4);
+  WriteNybbleToLCD(data);
+}
+
+void WriteByteToLCD(unsigned char data)
+{
+  PORTF |= LCD_RS;
+
+  WriteNybbleToLCD(data>>4);
+  WriteNybbleToLCD(data);
+}
 
 void APU_StartWrite(unsigned short address, unsigned char *data, int len)
 {
