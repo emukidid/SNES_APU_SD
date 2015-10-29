@@ -560,8 +560,6 @@ void LoadAndPlaySPC()
   }
   printf("Upload complete!\n");
 
-  delay(250);
-
   APU_WriteSPC700(3, (unsigned char)(boot_code_dest >> 8));
   APU_WriteSPC700(2, boot_code_dest & 0xFF);
   APU_WriteSPC700(1, 0);
