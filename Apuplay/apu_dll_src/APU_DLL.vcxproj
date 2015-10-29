@@ -150,13 +150,11 @@
     </ClCompile>
     <ClCompile Include="apuplay.cpp" />
     <ClCompile Include="ID666.cpp" />
-    <ClCompile Include="parport.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="APU_DLL.def" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="parport.h" />
     <ClInclude Include="A2Date.h" />
     <ClInclude Include="A2Str.h" />
     <ClInclude Include="apuplay.h" />

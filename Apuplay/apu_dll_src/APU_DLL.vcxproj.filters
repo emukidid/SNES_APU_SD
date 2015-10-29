@@ -30,9 +30,6 @@
     <ClCompile Include="ID666.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="parport.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="APU_DLL.def">
@@ -40,9 +37,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="parport.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="A2Date.h">
       <Filter>Header Files</Filter>
     </ClInclude>

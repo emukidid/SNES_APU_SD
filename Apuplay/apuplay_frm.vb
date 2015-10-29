@@ -102,6 +102,7 @@ Friend Class Form1
     Dim _uploadstate As Boolean
     Dim _usedBootcode As Boolean
     Dim _uploadcomplete As Boolean
+    Dim _justUploaded As Boolean
 
     Dim _playtime As Integer
 
@@ -255,6 +256,7 @@ errorhandler:
                 WriteSPC700(2, _hackbytes(2))
                 WriteSPC700(3, _hackbytes(3))
             End If
+            _justUploaded = True
             _uploadcomplete = False
             Text1_TextChanged(Text1, New EventArgs())
             hackgame()
@@ -2067,6 +2069,12 @@ AddSP2:
         Static timeout As Boolean = False
         Static timeoutticks As Integer = 5000
 
+        If _justUploaded Then
+            timeoutticks = 5000
+            _justUploaded = False
+            timeout = False
+        End If
+
         If _playtime > 0 Then
             timeoutticks = timeoutticks - tmrAutoPlay.Interval
             _playtime = _playtime - tmrAutoPlay.Interval
@@ -2130,6 +2138,10 @@ AddSP2:
     End Sub
 
     Private Shared Sub Label11_Click(ByVal sender As Object, ByVal e As EventArgs) Handles Label11.Click
+
+    End Sub
+
+    Private Sub txtUploadSpeed_TextChanged(sender As System.Object, e As System.EventArgs) Handles txtUploadSpeed.TextChanged
 
     End Sub
 End Class
