@@ -127,6 +127,8 @@ unsigned char sd_arduino_init[]=	"SHVC-SOUND Arduino Player v0.1\r\n";		//Startu
 int _stdcall init_port(char *port)
 {
 	int i=0;
+	clock_t time;
+	time = clock();
 	BYTE command[2];
 	DWORD result;
 	if(!comm_handle)
@@ -134,20 +136,37 @@ int _stdcall init_port(char *port)
 		
 		if(OpenPort(port))
 			return 1;
+
+		DCB dcb;
+		dcb.DCBlength=sizeof(dcb);
+		GetCommState(comm_handle,&dcb);
+
+	retry_init_port:
 		EscapeCommFunction(comm_handle,SETDTR);
 		EscapeCommFunction(comm_handle,SETRTS);
-		sleep(2500);
+		//sleep(2500);
+		do {ReadFile(comm_handle,command,1,&result,NULL); } while ((result != 1) && (clock()-time < 6*CLOCKS_PER_SEC));
 		for(i=0;i<25;i++)
 		{
-			ReadFile(comm_handle,command,1,&result,NULL);
 			if(((command[0]!=init_data[i])&&
 				(command[0]!=init_data_mega[i])&&
 				(command[0]!=sd_arduino_init[i]))
 				||(result!=1))
 			{
+				if(dcb.BaudRate == 250000)	//Fallback to 115200 and try again, in case one of the legacy sketches are loaded.
+				{
+					do {ReadFile(comm_handle,command,1,&result,NULL); } while (result == 1);
+					dcb.BaudRate=115200;
+					SetCommState(comm_handle,&dcb);
+					EscapeCommFunction(comm_handle,CLRDTR);
+					EscapeCommFunction(comm_handle,CLRRTS);
+					sleep(50);
+					goto retry_init_port;
+				}
 				ClosePort();
 				return 2;
 			}
+			ReadFile(comm_handle,command,1,&result,NULL);
 		}
 		command[0]='D';
 		command[1]='0';
@@ -160,6 +179,7 @@ int _stdcall init_port(char *port)
 
 		sleep(1);
 	}
+	do {ReadFile(comm_handle,command,1,&result,NULL); } while (result == 1);
 	
 	return 0;
 }
