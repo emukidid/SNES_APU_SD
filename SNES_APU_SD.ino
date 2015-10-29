@@ -8,11 +8,10 @@
 #define RESET_PIN 54
 
 #include <SPI.h>
-//#include <SD.h>
 #include <SdFat.h>
 SdFat SD;
 #include <Firmata.h>
-#include "LCD.h"  //Using it for the defines only.
+#include "LCD.h"
 
 FILE serial_stdout;
 File spcFile;
@@ -55,7 +54,7 @@ void setup()
   stdout = &serial_stdout;
   
   Serial.println("SHVC-SOUND Arduino Player v0.1");
-  delay(3500);  //
+  delay(250);
   if (Serial.available()) return;
   
   printf("Initializing SD card...\n");
@@ -79,7 +78,6 @@ void setup()
   LoadAndPlaySPC();
 }
 
-
 unsigned char ReadByteFromAPU(unsigned char address)
 {  
   unsigned char data = 0;
@@ -102,25 +100,22 @@ unsigned char ReadByteFromAPU(unsigned char address)
 
 void WriteByteToAPU(unsigned char address, unsigned char data)
 {
-  DDRB |= 0xF0;
-  DDRE |= 0x38;
-  DDRG |= 0x20;
-  DDRH |= 0x18;
+  DDRB |= 0xF0;   //APU RD/WR,  D0-D1
+  DDRE |= 0x38;   //APU D2-D3, D5
+  DDRG |= 0x20;   //APU D4
+  DDRH |= 0x18;   //APU D6-D7
 
   PORTB &= ~0xC0;
   PORTB |= ((data & 0x03)<<6);
   
   PORTE &= ~0x38;
-  PORTE |= ((data & 0x0C)<<2);
+  PORTE |= ((data & 0x0C)<<2) | ((data & 0x20)>>2);
   
   PORTG &= ~0x20;
   PORTG |= ((data&0x10)<<1);
   
-  PORTE |= ((data & 0x20)>>2);
-  
   PORTH &= ~0x78;
-  PORTH |= ((address & 0x03)<<5);
-  PORTH |= ((data&0xC0)>>3);
+  PORTH |= ((address & 0x03)<<5) | ((data&0xC0)>>3);
   
   PORTB &= ~0x20;
   __asm__ __volatile__ ("nop");
@@ -670,12 +665,9 @@ void ProcessCommandFromSerial()
     ram_addr=ReadByteFromSerial()<<8;
     ram_addr|=ReadByteFromSerial();
     
-    //SECSERIAL.print("Ram Address = ");
-    //SECSERIAL.print(ram_addr,HEX);
     data_size=ReadByteFromSerial()<<8;
     data_size|=ReadByteFromSerial();
-    //SECSERIAL.print(", Data Size = ");
-    //SECSERIAL.println(data_size,HEX);
+
     WriteByteToAPU(1,1);
     WriteByteToAPU(2,ram_addr&0xFF);
     WriteByteToAPU(3,ram_addr>>8);
@@ -684,28 +676,16 @@ void ProcessCommandFromSerial()
     WriteByteToAPU(0,i&0xFF);
     while(ReadByteFromAPU(0)!=(i&0xFF));
     port0state=0;
-    //SECSERIAL.println("SPC Data Transfer Started");
+
     for(i=0;i<data_size;i++)
-    //for(i=0;i<65280;i++)
     {
-      /*if(!(i%16))
-      {
-        SECSERIAL.print(".");
-      }*/
-      //data=i&0xFF;
       data=ReadByteFromSerial();
       WriteByteToAPU(1,data);
-      WriteByteToAPU(0,port0state);
-      //while(ReadByteFromAPU(0)!=port0state);
-      port0state++;
-      //SECSERIAL.print("Received byte:");
-      //SECSERIAL.println(data,HEX);
+      WriteByteToAPU(0,port0state++);
+      //Serial port is slow enough that the APU will be ready for the data,
+      //when it finally comes in. :)
     }
-    //SECSERIAL.print(millis()-time,DEC);
-    //SECSERIAL.println(" milliseconds to upload SPC");
-    ////SECSERIAL.println("Transfer Finished");
     Serial.write(1);
-
     break;
 
   case 'G':  //Upload the DSP register, and the first page of SPC data at serial port speed.
