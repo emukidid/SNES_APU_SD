@@ -12,8 +12,10 @@ QTY	Part				Digikey Part Number
 1	1K resistor (0805)		311-1.0KARCT-ND
 1	Red LED	(0805)			475-1415-1-ND
 8	buttons				SW400-ND
-1	Micro SD holder			3M5607CT-ND
+1	Micro SD holder			WM10795CT-ND
 1	4050D buffer chip		568-8150-1-ND
+1	LP298X 3.3v Regulator		296-18476-1-ND
+1	10uF 10V Capacitor (1206)	399-3684-1-ND
 1	74HCT573 Octal Latch		296-4612-1-ND
 1	IS62C1024AL-35QLI Sram chip	706-1041-ND
 1	50 pin breakaway headers	SAM1067-50-ND
