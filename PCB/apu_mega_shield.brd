@@ -124,18 +124,18 @@
 </layers>
 <board>
 <plain>
-<text x="0.4372" y="8.2265" size="1.778" layer="21" font="vector">LINEOUT</text>
-<text x="0.6904" y="43.5706" size="1.778" layer="21" font="vector">HEADPHONE</text>
-<text x="10.0252" y="27.4878" size="1.778" layer="21" font="vector">RIGHT</text>
-<text x="9.9528" y="24.4873" size="1.778" layer="21" font="vector">LEFT</text>
-<text x="93.9384" y="16.5983" size="1.27" layer="21" font="vector" ratio="12" rot="R180">APU Mega Shield
+<text x="0.4372" y="8.2265" size="1.778" layer="21" font="vector" ratio="16">LINEOUT</text>
+<text x="0.6904" y="43.5706" size="1.778" layer="21" font="vector" ratio="16">HEADPHONE</text>
+<text x="10.0252" y="27.4878" size="1.778" layer="21" font="vector" ratio="16">RIGHT</text>
+<text x="9.9528" y="24.4873" size="1.778" layer="21" font="vector" ratio="16">LEFT</text>
+<text x="93.9384" y="16.5983" size="1.27" layer="21" font="vector" ratio="16" rot="R180">APU Mega Shield
 Rev 1.00
 Oct 29, 2015
 
 Designed by
 CaitSith2</text>
-<text x="6.6366" y="18.608" size="1.27" layer="21" font="vector" rot="R180">WHITE</text>
-<text x="4.7214" y="38.5486" size="1.27" layer="21" font="vector" rot="R180">RED</text>
+<text x="6.6366" y="18.608" size="1.27" layer="21" font="vector" ratio="16" rot="R180">WHITE</text>
+<text x="4.7214" y="38.5486" size="1.27" layer="21" font="vector" ratio="16" rot="R180">RED</text>
 <wire x1="15.748" y1="27.432" x2="15.748" y2="54.356" width="0.3048" layer="51"/>
 <wire x1="27.94" y1="22.86" x2="64.008" y2="22.86" width="0.3048" layer="51"/>
 <wire x1="27.94" y1="22.86" x2="15.748" y2="22.86" width="0.3048" layer="51"/>
@@ -159,23 +159,23 @@ CaitSith2</text>
 <wire x1="101.6" y1="54.356" x2="0" y2="54.356" width="0" layer="20"/>
 <wire x1="0" y1="54.356" x2="0" y2="0" width="0" layer="20"/>
 <wire x1="102.87" y1="54.356" x2="105.41" y2="51.816" width="0" layer="20"/>
-<text x="18.796" y="22.86" size="1.778" layer="21" font="vector" ratio="12" rot="R90">D7</text>
-<text x="21.336" y="22.86" size="1.778" layer="21" font="vector" ratio="12" rot="R90">D6</text>
-<text x="23.876" y="22.86" size="1.778" layer="21" font="vector" ratio="12" rot="R90">D5</text>
-<text x="26.416" y="22.86" size="1.778" layer="21" font="vector" ratio="12" rot="R90">D4</text>
-<text x="28.956" y="22.86" size="1.778" layer="21" font="vector" ratio="12" rot="R90">D3</text>
-<text x="31.496" y="22.86" size="1.778" layer="21" font="vector" ratio="12" rot="R90">D2</text>
-<text x="34.036" y="22.86" size="1.778" layer="21" font="vector" ratio="12" rot="R90">D1</text>
-<text x="36.576" y="22.86" size="1.778" layer="21" font="vector" ratio="12" rot="R90">D0</text>
-<text x="39.116" y="22.86" size="1.778" layer="21" font="vector" ratio="12" rot="R90">E</text>
-<text x="41.656" y="22.86" size="1.778" layer="21" font="vector" ratio="12" rot="R90">R!W</text>
-<text x="44.196" y="22.86" size="1.778" layer="21" font="vector" ratio="12" rot="R90">RS</text>
+<text x="18.796" y="22.86" size="1.778" layer="21" font="vector" ratio="16" rot="R90">D7</text>
+<text x="21.336" y="22.86" size="1.778" layer="21" font="vector" ratio="16" rot="R90">D6</text>
+<text x="23.876" y="22.86" size="1.778" layer="21" font="vector" ratio="16" rot="R90">D5</text>
+<text x="26.416" y="22.86" size="1.778" layer="21" font="vector" ratio="16" rot="R90">D4</text>
+<text x="28.956" y="22.86" size="1.778" layer="21" font="vector" ratio="16" rot="R90">D3</text>
+<text x="31.496" y="22.86" size="1.778" layer="21" font="vector" ratio="16" rot="R90">D2</text>
+<text x="34.036" y="22.86" size="1.778" layer="21" font="vector" ratio="16" rot="R90">D1</text>
+<text x="36.576" y="22.86" size="1.778" layer="21" font="vector" ratio="16" rot="R90">D0</text>
+<text x="39.116" y="22.86" size="1.778" layer="21" font="vector" ratio="16" rot="R90">E</text>
+<text x="41.656" y="22.86" size="1.778" layer="21" font="vector" ratio="16" rot="R90">R!W</text>
+<text x="44.196" y="22.86" size="1.778" layer="21" font="vector" ratio="16" rot="R90">RS</text>
 <text x="54.356" y="22.86" size="1.778" layer="21" font="vector" ratio="12" rot="R90">L+</text>
 <text x="56.896" y="22.86" size="1.778" layer="21" font="vector" ratio="12" rot="R90">L-</text>
-<text x="46.736" y="22.86" size="1.778" layer="21" font="vector" ratio="12" rot="R90">v0</text>
-<text x="49.276" y="22.86" size="1.778" layer="21" font="vector" ratio="12" rot="R90">Vcc</text>
-<text x="51.816" y="22.86" size="1.778" layer="21" font="vector" ratio="12" rot="R90">Gnd</text>
-<text x="79.248" y="26.416" size="1.27" layer="21" font="vector" ratio="12">Micro SD</text>
+<text x="46.736" y="22.86" size="1.778" layer="21" font="vector" ratio="16" rot="R90">v0</text>
+<text x="49.276" y="22.86" size="1.778" layer="21" font="vector" ratio="16" rot="R90">Vcc</text>
+<text x="51.816" y="22.86" size="1.778" layer="21" font="vector" ratio="16" rot="R90">Gnd</text>
+<text x="79.248" y="26.416" size="1.27" layer="21" font="vector" ratio="16">Micro SD</text>
 </plain>
 <libraries>
 <library name="switch-omron">
@@ -1925,31 +1925,31 @@ Please make sure your boards conform to these design rules.</description>
 </autorouter>
 <elements>
 <element name="AVR" library="switch-omron" package="B3F-10XX" value="Reset" x="26.071" y="5.8485" smashed="yes" rot="R270">
-<attribute name="NAME" x="24.5998" y="10.4183" size="1.27" layer="21" font="vector" ratio="10"/>
+<attribute name="NAME" x="24.5998" y="10.4183" size="1.27" layer="21" font="vector" ratio="16"/>
 </element>
 <element name="R4" library="rcl" package="0207/10" value="50" x="17.0396" y="37.0252" smashed="yes" rot="R270">
-<attribute name="NAME" x="16.429" y="36.715" size="1.27" layer="25" font="vector" ratio="10" rot="R270"/>
-<attribute name="VALUE" x="16.4813" y="39.822" size="1.27" layer="21" font="vector" ratio="10" rot="R270"/>
+<attribute name="NAME" x="16.429" y="36.715" size="1.27" layer="25" font="vector" ratio="16" rot="R270"/>
+<attribute name="VALUE" x="16.4813" y="39.822" size="1.27" layer="21" font="vector" ratio="16" rot="R270"/>
 </element>
 <element name="R5" library="rcl" package="0207/10" value="50" x="14.3118" y="36.9326" smashed="yes" rot="R270">
-<attribute name="NAME" x="13.7068" y="36.3326" size="1.27" layer="25" font="vector" ratio="10" rot="R270"/>
-<attribute name="VALUE" x="13.6001" y="39.806" size="1.27" layer="21" font="vector" ratio="10" rot="R270"/>
+<attribute name="NAME" x="13.7068" y="36.3326" size="1.27" layer="25" font="vector" ratio="16" rot="R270"/>
+<attribute name="VALUE" x="13.6001" y="39.806" size="1.27" layer="21" font="vector" ratio="16" rot="R270"/>
 </element>
 <element name="C3" library="rcl-ez" package="C025-025X050" value="1uF" x="13.3084" y="21.6789" smashed="yes" rot="R270">
-<attribute name="NAME" x="12.1464" y="17.7413" size="1.27" layer="25" font="vector" ratio="10"/>
-<attribute name="VALUE" x="16.2188" y="19.757" size="1.27" layer="21" font="vector" ratio="10" rot="R90"/>
+<attribute name="NAME" x="12.1464" y="17.7413" size="1.27" layer="25" font="vector" ratio="16"/>
+<attribute name="VALUE" x="16.2188" y="19.757" size="1.27" layer="21" font="vector" ratio="16" rot="R90"/>
 </element>
 <element name="C4" library="rcl-ez" package="C025-025X050" value="1uF" x="11.4173" y="33.2867" smashed="yes" rot="R90">
-<attribute name="NAME" x="10.3542" y="36.1496" size="1.27" layer="25" font="vector" ratio="10"/>
-<attribute name="VALUE" x="13.3375" y="30.716" size="1.27" layer="21" font="vector" ratio="10" rot="R180"/>
+<attribute name="NAME" x="10.3542" y="36.1496" size="1.27" layer="25" font="vector" ratio="16"/>
+<attribute name="VALUE" x="13.3375" y="30.716" size="1.27" layer="21" font="vector" ratio="16" rot="R180"/>
 </element>
 <element name="C5" library="rcl-ez" package="C025-025X050" value="1uF" x="13.0756" y="10.8652" smashed="yes" rot="R180">
-<attribute name="NAME" x="15.8674" y="10.3319" size="1.27" layer="25" font="vector" ratio="10"/>
-<attribute name="VALUE" x="7.2731" y="10.4953" size="1.27" layer="21" font="vector" ratio="10"/>
+<attribute name="NAME" x="15.8674" y="10.3319" size="1.27" layer="25" font="vector" ratio="16"/>
+<attribute name="VALUE" x="7.2731" y="10.4953" size="1.27" layer="21" font="vector" ratio="16"/>
 </element>
 <element name="C6" library="rcl-ez" package="C025-025X050" value="1uF" x="13.0415" y="13.4412" smashed="yes" rot="R180">
-<attribute name="NAME" x="15.9898" y="12.8347" size="1.27" layer="25" font="vector" ratio="10"/>
-<attribute name="VALUE" x="10.6544" y="13.5509" size="1.27" layer="21" font="vector" ratio="10" rot="R180"/>
+<attribute name="NAME" x="15.9898" y="12.8347" size="1.27" layer="25" font="vector" ratio="16"/>
+<attribute name="VALUE" x="10.6544" y="13.5509" size="1.27" layer="21" font="vector" ratio="16" rot="R180"/>
 </element>
 <element name="U$1" library="caitsith2" package="APU" value="APU" x="24.7955" y="30.6248" rot="R180"/>
 <element name="U$2" library="caitsith2" package="SJ1-3533N" value="HEADPHONE" x="7.0256" y="49.3268"/>
@@ -1957,24 +1957,24 @@ Please make sure your boards conform to these design rules.</description>
 <element name="U$4" library="caitsith2" package="RCJ-01X" value="RCA" x="7.4981" y="20.6781" rot="R180"/>
 <element name="U$5" library="caitsith2" package="RCJ-01X" value="RCA" x="7.5616" y="35.0241" rot="R180"/>
 <element name="APU" library="switch-omron" package="B3F-10XX" value="Reset" x="19.4597" y="5.7906" smashed="yes" rot="R270">
-<attribute name="NAME" x="18.1489" y="10.6332" size="1.27" layer="21" font="vector" ratio="10"/>
-<attribute name="VALUE" x="20.8159" y="12.3477" size="1.27" layer="21" font="vector" ratio="10"/>
+<attribute name="NAME" x="18.1489" y="10.6332" size="1.27" layer="21" font="vector" ratio="16"/>
+<attribute name="VALUE" x="20.8159" y="12.3477" size="1.27" layer="21" font="vector" ratio="16"/>
 </element>
 <element name="U$6" library="E14_Arduino_revB" package="ARDUINO_MEGA2560_LITE_NO_LABELS" value="ARDUINO_MEGA_2560_LITENO_LABELS" x="5.588" y="0.508"/>
 <element name="C1" library="rcl" package="C0805" value="100nF" x="76.2" y="42.672" smashed="yes" rot="R270">
-<attribute name="NAME" x="73.914" y="44.069" size="1.27" layer="25" font="vector" rot="R270"/>
-<attribute name="VALUE" x="72.263" y="44.704" size="1.27" layer="21" font="vector"/>
+<attribute name="NAME" x="73.914" y="44.069" size="1.27" layer="25" font="vector" ratio="16" rot="R270"/>
+<attribute name="VALUE" x="72.263" y="44.704" size="1.27" layer="21" font="vector" ratio="16"/>
 </element>
 <element name="C2" library="rcl" package="C0805" value="100nF" x="86.36" y="42.164" smashed="yes" rot="MR180">
-<attribute name="NAME" x="84.963" y="44.45" size="1.27" layer="22" font="vector" rot="MR180"/>
-<attribute name="VALUE" x="78.867" y="42.672" size="1.27" layer="22" font="vector" rot="MR180"/>
+<attribute name="NAME" x="84.963" y="44.45" size="1.27" layer="22" font="vector" ratio="16" rot="MR180"/>
+<attribute name="VALUE" x="78.867" y="42.672" size="1.27" layer="22" font="vector" ratio="16" rot="MR180"/>
 </element>
 <element name="C7" library="rcl" package="C0805" value="100nF" x="68.072" y="45.212" smashed="yes" rot="MR0">
-<attribute name="NAME" x="68.961" y="45.974" size="1.27" layer="22" font="vector" rot="MR0"/>
-<attribute name="VALUE" x="60.579" y="45.72" size="1.27" layer="22" font="vector" rot="MR180"/>
+<attribute name="NAME" x="68.961" y="45.974" size="1.27" layer="22" font="vector" ratio="16" rot="MR0"/>
+<attribute name="VALUE" x="60.579" y="45.72" size="1.27" layer="22" font="vector" ratio="16" rot="MR180"/>
 </element>
 <element name="IC1" library="74xx-eu" package="SO20W" value="74AHC573" x="68.072" y="37.084" smashed="yes" rot="MR270">
-<attribute name="VALUE" x="68.326" y="41.402" size="1.27" layer="22" font="vector" ratio="10" rot="MR270"/>
+<attribute name="VALUE" x="68.326" y="41.402" size="1.27" layer="22" font="vector" ratio="16" rot="MR270"/>
 </element>
 <element name="U1" library="ISSI_By_element14_Batch_1" package="SOIC127P1412X305-32N" value="IS62C1024AL" x="86.36" y="29.972" smashed="yes" rot="MR180">
 <attribute name="PACKAGE" value="SOIC-32" x="68.072" y="36.068" size="1.778" layer="28" rot="MR180" display="off"/>
@@ -1982,41 +1982,41 @@ Please make sure your boards conform to these design rules.</description>
 <attribute name="MPN" value="IS62C1024AL-35QLI" x="68.072" y="36.068" size="1.778" layer="28" rot="MR180" display="off"/>
 <attribute name="SUPPLIER" value="INTEGRATED SILICON SOLUTION (ISSI)" x="68.072" y="36.068" size="1.778" layer="28" rot="MR180" display="off"/>
 <attribute name="OC_FARNELL" value="1869973" x="68.072" y="36.068" size="1.778" layer="28" rot="MR180" display="off"/>
-<attribute name="VALUE" x="85.471" y="21.9456" size="1.778" layer="22" font="vector" ratio="10" rot="SMR90"/>
+<attribute name="VALUE" x="85.471" y="21.9456" size="1.778" layer="22" font="vector" ratio="16" rot="SMR90"/>
 </element>
 <element name="IC2" library="40xx" package="SO16" value="4050D" x="83.312" y="42.164" smashed="yes">
 <attribute name="VALUE" x="82.296" y="41.529" size="1.27" layer="21" font="vector" ratio="10"/>
-<attribute name="NAME" x="75.184" y="39.497" size="1.27" layer="21" font="vector" ratio="10"/>
+<attribute name="NAME" x="75.184" y="39.497" size="1.27" layer="21" font="vector" ratio="16"/>
 </element>
 <element name="ACT" library="adafruit" package="CHIP-LED0805" value="RED" x="101.6" y="3.556" smashed="yes" rot="R90">
-<attribute name="NAME" x="102.87" y="2.286" size="1.27" layer="25" font="vector" rot="R180"/>
-<attribute name="VALUE" x="102.87" y="6.096" size="1.27" layer="21" font="vector" rot="R180"/>
+<attribute name="NAME" x="102.87" y="2.286" size="1.27" layer="25" font="vector" ratio="16" rot="R180"/>
+<attribute name="VALUE" x="102.87" y="6.096" size="1.27" layer="21" font="vector" ratio="16" rot="R180"/>
 </element>
 <element name="R6" library="adafruit" package="R0805" value="1K" x="92.456" y="41.656" smashed="yes">
-<attribute name="NAME" x="91.694" y="42.672" size="1.27" layer="25" font="vector"/>
-<attribute name="VALUE" x="93.218" y="40.386" size="1.27" layer="21" font="vector" rot="R180"/>
+<attribute name="NAME" x="91.694" y="42.672" size="1.27" layer="25" font="vector" ratio="16"/>
+<attribute name="VALUE" x="93.218" y="40.386" size="1.27" layer="21" font="vector" ratio="16" rot="R180"/>
 </element>
 <element name="JP1" library="pinhead" package="1X16" value="LCD" x="37.084" y="20.828" smashed="yes">
 <attribute name="VALUE" x="17.272" y="17.145" size="1.778" layer="27" font="vector" ratio="12"/>
 </element>
 <element name="UP" library="switch-omron" package="B3F-10XX" value="" x="46.736" y="14.732" smashed="yes">
-<attribute name="NAME" x="39.624" y="16.383" size="1.27" layer="25" font="vector" ratio="10"/>
+<attribute name="NAME" x="39.624" y="16.383" size="1.27" layer="25" font="vector" ratio="16"/>
 <attribute name="VALUE" x="43.688" y="9.652" size="1.27" layer="27" ratio="10"/>
 </element>
 <element name="DOWN" library="switch-omron" package="B3F-10XX" value="" x="46.736" y="8.128" smashed="yes">
-<attribute name="NAME" x="37.084" y="5.207" size="1.27" layer="25" font="vector" ratio="10"/>
+<attribute name="NAME" x="37.084" y="5.207" size="1.27" layer="25" font="vector" ratio="16"/>
 <attribute name="VALUE" x="43.688" y="3.048" size="1.27" layer="27" ratio="10"/>
 </element>
 <element name="LEFT" library="switch-omron" package="B3F-10XX" value="" x="36.576" y="11.684" smashed="yes">
-<attribute name="NAME" x="33.528" y="15.367" size="1.27" layer="25" font="vector" ratio="10"/>
+<attribute name="NAME" x="33.528" y="15.367" size="1.27" layer="25" font="vector" ratio="16"/>
 <attribute name="VALUE" x="33.528" y="6.604" size="1.27" layer="27" ratio="10"/>
 </element>
 <element name="RIGHT" library="switch-omron" package="B3F-10XX" value="" x="56.896" y="11.684" smashed="yes">
-<attribute name="NAME" x="54.356" y="6.731" size="1.27" layer="25" font="vector" ratio="10"/>
+<attribute name="NAME" x="54.356" y="6.731" size="1.27" layer="25" font="vector" ratio="16"/>
 <attribute name="VALUE" x="53.848" y="6.604" size="1.27" layer="27" ratio="10"/>
 </element>
 <element name="SELECT" library="switch-omron" package="B3F-10XX" value="" x="70.612" y="11.684" smashed="yes">
-<attribute name="NAME" x="67.564" y="6.731" size="1.27" layer="25" font="vector" ratio="10"/>
+<attribute name="NAME" x="67.564" y="6.731" size="1.27" layer="25" font="vector" ratio="16"/>
 <attribute name="VALUE" x="67.564" y="6.604" size="1.27" layer="27" ratio="10"/>
 </element>
 <element name="RN1" library="resistor-net" package="RN-10" value="10K" x="65.024" y="17.78" smashed="yes">
@@ -2024,43 +2024,43 @@ Please make sure your boards conform to these design rules.</description>
 <attribute name="MPN" value="" x="65.024" y="17.78" size="1.778" layer="27" font="vector" display="off"/>
 <attribute name="MF" value="" x="65.024" y="17.78" size="1.778" layer="27" font="vector" display="off"/>
 <attribute name="OC_FARNELL" value="unknown" x="65.024" y="17.78" size="1.778" layer="27" font="vector" display="off"/>
-<attribute name="VALUE" x="73.914" y="19.685" size="1.27" layer="21" ratio="10"/>
-<attribute name="NAME" x="58.166" y="19.685" size="1.27" layer="25" font="vector" ratio="10"/>
+<attribute name="VALUE" x="73.914" y="19.685" size="1.27" layer="21" font="vector" ratio="16"/>
+<attribute name="NAME" x="58.166" y="19.685" size="1.27" layer="25" font="vector" ratio="16"/>
 </element>
 <element name="Q1" library="crystal" package="TC38H" value="32.768" x="28.956" y="45.212" smashed="yes" rot="R90">
-<attribute name="NAME" x="26.924" y="43.307" size="1.27" layer="25" font="vector" ratio="10" rot="R180"/>
-<attribute name="VALUE" x="26.924" y="48.387" size="1.27" layer="21" font="vector" ratio="10" rot="R180"/>
+<attribute name="NAME" x="26.924" y="43.307" size="1.27" layer="25" font="vector" ratio="16" rot="R180"/>
+<attribute name="VALUE" x="26.924" y="48.387" size="1.27" layer="21" font="vector" ratio="16" rot="R180"/>
 </element>
 <element name="IC3" library="adafruit" package="DIL08" value="DS1307" x="35.052" y="42.672" smashed="yes" rot="R270">
-<attribute name="NAME" x="32.512" y="48.0314" size="1.27" layer="25" font="vector" ratio="10"/>
-<attribute name="VALUE" x="34.0614" y="46.482" size="1.27" layer="21" font="vector" ratio="10" rot="R270"/>
+<attribute name="NAME" x="32.512" y="48.0314" size="1.27" layer="25" font="vector" ratio="16"/>
+<attribute name="VALUE" x="34.0614" y="46.482" size="1.27" layer="21" font="vector" ratio="16" rot="R270"/>
 </element>
 <element name="BAT" library="adafruit" package="CR1220-THM" value="CR1220" x="54.356" y="41.148" smashed="yes" rot="MR270">
-<attribute name="NAME" x="48.754" y="44.704" size="1.6764" layer="22" font="vector" rot="MR270"/>
-<attribute name="VALUE" x="58.906" y="45.466" size="1.6764" layer="22" font="vector" rot="MR270"/>
+<attribute name="NAME" x="48.754" y="44.704" size="1.6764" layer="22" font="vector" ratio="16" rot="MR270"/>
+<attribute name="VALUE" x="58.906" y="45.466" size="1.6764" layer="22" font="vector" ratio="16" rot="MR270"/>
 </element>
 <element name="R9" library="adafruit" package="0207/10" value="2.2k" x="86.868" y="48.26" smashed="yes">
-<attribute name="NAME" x="83.82" y="47.752" size="1.27" layer="25" font="vector" ratio="10"/>
-<attribute name="VALUE" x="86.6394" y="47.625" size="1.27" layer="21" font="vector" ratio="10"/>
+<attribute name="NAME" x="83.82" y="47.752" size="1.27" layer="25" font="vector" ratio="16"/>
+<attribute name="VALUE" x="86.6394" y="47.625" size="1.27" layer="21" font="vector" ratio="16"/>
 </element>
 <element name="R8" library="adafruit" package="0207/10" value="2.2k" x="73.66" y="48.26" smashed="yes" rot="R180">
-<attribute name="NAME" x="72.898" y="50.927" size="1.27" layer="25" font="vector" ratio="10" rot="R180"/>
-<attribute name="VALUE" x="75.4126" y="48.895" size="1.27" layer="21" font="vector" ratio="10" rot="R180"/>
+<attribute name="NAME" x="72.898" y="50.927" size="1.27" layer="25" font="vector" ratio="16" rot="R180"/>
+<attribute name="VALUE" x="75.4126" y="48.895" size="1.27" layer="21" font="vector" ratio="16" rot="R180"/>
 </element>
 <element name="TM1" library="pot" package="CA6H" value="10K" x="66.548" y="23.368" smashed="yes" rot="R180">
-<attribute name="NAME" x="65.532" y="25.908" size="1.27" layer="21" font="vector" ratio="10" rot="R180"/>
-<attribute name="VALUE" x="69.723" y="25.654" size="1.27" layer="21" font="vector" ratio="10" rot="R180"/>
+<attribute name="NAME" x="65.532" y="25.908" size="1.27" layer="21" font="vector" ratio="16" rot="R180"/>
+<attribute name="VALUE" x="69.723" y="25.654" size="1.27" layer="21" font="vector" ratio="16" rot="R180"/>
 </element>
 <element name="IC4" library="adafruit" package="SOT23-5L" value="LP298XS" x="94.996" y="48.26" smashed="yes" rot="R180">
-<attribute name="VALUE" x="95.631" y="46.101" size="1.27" layer="21" font="vector" rot="R270"/>
+<attribute name="VALUE" x="95.631" y="46.101" size="1.27" layer="21" font="vector" ratio="16" rot="R270"/>
 </element>
 <element name="C8" library="adafruit" package="A/3216-18R" value="10uF/10V" x="90.932" y="45.212" smashed="yes">
-<attribute name="NAME" x="89.998" y="46.212" size="1.27" layer="25" font="vector"/>
+<attribute name="NAME" x="89.998" y="46.212" size="1.27" layer="25" font="vector" ratio="16"/>
 </element>
 <element name="X1" library="adafruit" package="MICROSD-1" value="MICROSDMOLEX" x="78.232" y="28.448"/>
 <element name="R1" library="adafruit" package="0207/10" value="220" x="58.9554" y="27.1842" smashed="yes" rot="R180">
-<attribute name="NAME" x="59.4634" y="29.7242" size="1.27" layer="21" ratio="10" rot="R180"/>
-<attribute name="VALUE" x="60.2" y="27.8192" size="1.27" layer="21" ratio="10" rot="R180"/>
+<attribute name="NAME" x="59.4634" y="29.7242" size="1.27" layer="21" font="vector" ratio="16" rot="R180"/>
+<attribute name="VALUE" x="60.2" y="27.8192" size="1.27" layer="21" font="vector" ratio="16" rot="R180"/>
 </element>
 </elements>
 <signals>
