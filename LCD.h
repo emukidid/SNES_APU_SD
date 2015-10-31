@@ -1,5 +1,6 @@
 #ifndef LiquidCrystal_h
 #define LiquidCrystal_h
+#if (defined(__AVR_ATmega2560__) || defined(__AVR_ATmega1280__))
 
 #include <inttypes.h>
 #include "Print.h"
@@ -98,4 +99,5 @@ private:
   uint8_t _row_offsets[4];
 };
 
+#endif
 #endif

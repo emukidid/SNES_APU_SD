@@ -4,26 +4,18 @@
  * 
  * Loads SPC tracks from SD to the SHVC-SOUND (aka SNES APU)
  */
+#include <Firmata.h>
+#include "APU.h"
 
-#define RESET_PIN 54
-
+#ifdef ARDUINO_MEGA
 #include <SPI.h>
 #include <SdFat.h>
 SdFat SD;
-#include <Firmata.h>
 #include "LCD.h"
 
-FILE serial_stdout;
 File spcFile;
-static unsigned char spcdata[256];           // 0x100  (256 bytes (of 64kb)) (header)
+
 static unsigned char spcbuf[256];           // 0x100  (256 bytes (of 64kb)) (temp buffer)
-static unsigned char dspdata[128];           // 0x10100  (128 bytes)
-
-static unsigned char DSPdata[16] =
-{  //For loading the 128 byte DSP ram. DO NOT CHANGE.
-  0xC4, 0xF2, 0x64, 0xF4, 0xD0, 0xFC, 0xFA, 0xF5, 0xF3, 0xC4, 0xF4, 0xBC, 0x10, 0xF2, 0x2F, 0xB7, 
-};
-
 static unsigned char boot_code[] =
 {
     0x8F, 0x00, 0x00, 0x8F, 0x00, 0x01, 0x8F, 0xFF, 0xFC, 0x8F, 0xFF, 0xFB, 0x8F, 0x4F, 0xFA, 0x8F, 
@@ -32,6 +24,20 @@ static unsigned char boot_code[] =
     0xE4, 0xFE, 0xE4, 0xFF, 0x8F, 0x6C, 0xF2, 0x8F, 0x00, 0xF3, 0x8F, 0x4C, 0xF2, 0x8F, 0x00, 0xF3, 
     0x8F, 0x7F, 0xF2, 0xCD, 0xF5, 0xBD, 0xE8, 0xFF, 0x8D, 0x00, 0xCD, 0x00, 0x7F, 
 } ;
+#endif
+
+static unsigned char spcdata[256];           // 0x100  (256 bytes (of 64kb)) (header)
+static unsigned char dspdata[128];           // 0x10100  (128 bytes)
+
+FILE serial_stdout;
+APU apu;
+
+static unsigned char DSPdata[16] =
+{  //For loading the 128 byte DSP ram. DO NOT CHANGE.
+  0xC4, 0xF2, 0x64, 0xF4, 0xD0, 0xFC, 0xFA, 0xF5, 0xF3, 0xC4, 0xF4, 0xBC, 0x10, 0xF2, 0x2F, 0xB7, 
+};
+
+
 
 // Function that printf and related will use to print
 int serial_putchar(char c, FILE* f) {
@@ -41,12 +47,7 @@ int serial_putchar(char c, FILE* f) {
 
 void setup()
 {
-  PORTH = 0x60;
-  DDRH = 0x03;  //Digital pins 8-9.
-  PORTB = 0x30;
-  DDRB |= 0x30;  //Digital pins 10-11
-  PORTF = 0xFF;
-  DDRF = 0xFF; //Analog Pin 0
+  
   Serial.begin(250000);
 
    // Set up stdout
@@ -54,6 +55,7 @@ void setup()
   stdout = &serial_stdout;
   
   Serial.println("SHVC-SOUND Arduino Player v0.1");
+#ifdef ARDUINO_MEGA
   delay(250);
   if (Serial.available()) return;
   
@@ -76,52 +78,17 @@ void setup()
   printf("Opening file.spc...\n");
   spcFile = SD.open("file.spc", FILE_READ);
   LoadAndPlaySPC();
+#endif
 }
 
 unsigned char ReadByteFromAPU(unsigned char address)
 {  
-  unsigned char data = 0;
-  DDRB |= 0x30;    //APU RD/WR
-  DDRH |= 0x60;    //APU A0-A1
-  DDRB &= ~0xC0;  //APU D0-D1
-  DDRE &= ~0x38;  //APU D2-D3, D5
-  DDRG &= ~0x20;  //APU D4
-  DDRH &= ~0x18;  //APU D6-D7
-  PORTH &= ~0x60;
-  PORTH |= ((address & 0x03)<<5);
-
-  PORTB &= ~0x10;
-  __asm__ __volatile__ ("nop");
-  __asm__ __volatile__ ("nop");
-  data=((PINB&0xC0)>>6) | ((PINE&0x30)>>2) | ((PING&0x20)>>1) | ((PINE&0x08)<<2) | ((PINH&0x18)<<3);
-  PORTB |= 0x10;
-  return data;
+  return apu.read(address);
 }
 
 void WriteByteToAPU(unsigned char address, unsigned char data)
 {
-  DDRB |= 0xF0;   //APU RD/WR,  D0-D1
-  DDRE |= 0x38;   //APU D2-D3, D5
-  DDRG |= 0x20;   //APU D4
-  DDRH |= 0x18;   //APU D6-D7
-
-  PORTB &= ~0xC0;
-  PORTB |= ((data & 0x03)<<6);
-  
-  PORTE &= ~0x38;
-  PORTE |= ((data & 0x0C)<<2) | ((data & 0x20)>>2);
-  
-  PORTG &= ~0x20;
-  PORTG |= ((data&0x10)<<1);
-  
-  PORTH &= ~0x78;
-  PORTH |= ((address & 0x03)<<5) | ((data&0xC0)>>3);
-  
-  PORTB &= ~0x20;
-  __asm__ __volatile__ ("nop");
-  __asm__ __volatile__ ("nop");
-  PORTB |= 0x20;
-  
+  apu.write(address,data);
 }
 
 /* IO Pin Mapping.
@@ -142,9 +109,7 @@ void APU_StartWrite(unsigned short address, unsigned char *data, int len)
 {
   int i;
   uint8_t rdata;
-  digitalWrite(RESET_PIN,LOW);
-  delay(1);
-  digitalWrite(RESET_PIN,HIGH);
+  apu.reset();
 
   while(ReadByteFromAPU(0)!=0xAA);
   while(ReadByteFromAPU(1)!=0xBB);
@@ -166,10 +131,7 @@ void APU_StartWrite(unsigned short address, unsigned char *data, int len)
 
 void APU_Reset()
 {
-  printf("APU Reset\n");
-  digitalWrite(RESET_PIN,LOW);
-  delay(1);
-  digitalWrite(RESET_PIN,HIGH);
+  apu.reset();
 }
 
 void APU_Wait(unsigned char address, unsigned char data)
@@ -267,6 +229,7 @@ int APU_WaitIoPort(uint8_t address, uint8_t data, int timeout)
   return 1;
 }
 
+#ifdef ARDUINO_MEGA
 // Reads raw from a SPC file
 unsigned char readSPC(long addr)
 {
@@ -586,6 +549,7 @@ void LoadAndPlaySPC()
   APU_WriteSPC700(3, spcdata[0xF7]);
   printf("Playing!\n");
 }
+#endif
 
 /*--------------------------------------------------------*
  * 
@@ -649,9 +613,7 @@ void ProcessCommandFromSerial()
     Serial.println("SPC700 DATA LOADER V1.0");
     break;
   case 's':  //Reset the Audio Processing Unit
-    digitalWrite(RESET_PIN,LOW);
-    delay(10);
-    digitalWrite(RESET_PIN,HIGH);
+    apu.reset();
     break;
   case 'f':  //Set the expected state of PORT 0 for the next write.
     port0state=ReadByteFromSerial();

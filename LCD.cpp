@@ -1,3 +1,4 @@
+#if (defined(__AVR_ATmega2560__) || defined(__AVR_ATmega1280__))
 #include "LCD.h"
 
 #include <stdio.h>
@@ -250,3 +251,4 @@ void LiquidCrystal::write8bits(uint8_t value) {
   PORTF = reverse_bits;
   pulseEnable();
 }
+#endif
