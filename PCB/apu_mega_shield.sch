@@ -21757,6 +21757,7 @@ Source: smt-pots.pdf</description>
 <wire x1="160.02" y1="71.12" x2="281.94" y2="71.12" width="0.762" layer="92"/>
 <wire x1="281.94" y1="71.12" x2="281.94" y2="149.86" width="0.762" layer="92"/>
 <wire x1="281.94" y1="149.86" x2="154.94" y2="149.86" width="0.762" layer="92"/>
+<label x="155.956" y="150.876" size="1.778" layer="95"/>
 </segment>
 </bus>
 <bus name="D[0..7],A[0..18],VCC,GND,!RD,!WR,LE,CD,DO,DI,CLK,CS">
@@ -21808,28 +21809,6 @@ Source: smt-pots.pdf</description>
 <pinref part="U$1" gate="G$1" pin="AGND"/>
 <wire x1="96.52" y1="27.94" x2="104.14" y2="27.94" width="0.1524" layer="91"/>
 <label x="99.06" y="27.94" size="1.778" layer="95"/>
-</segment>
-<segment>
-<junction x="226.06" y="58.42"/>
-<pinref part="U$4" gate="G$1" pin="PGND1"/>
-<pinref part="U$4" gate="G$1" pin="PGND1"/>
-<pinref part="U$4" gate="G$1" pin="PGND1"/>
-<wire x1="226.06" y1="58.42" x2="223.52" y2="58.42" width="0.1524" layer="91"/>
-<wire x1="223.52" y1="58.42" x2="215.9" y2="58.42" width="0.1524" layer="91"/>
-<wire x1="215.9" y1="58.42" x2="200.66" y2="58.42" width="0.1524" layer="91"/>
-<label x="203.2" y="58.42" size="1.778" layer="95"/>
-<junction x="223.52" y="58.42"/>
-</segment>
-<segment>
-<junction x="226.06" y="45.72"/>
-<pinref part="U$5" gate="G$1" pin="PGND1"/>
-<pinref part="U$5" gate="G$1" pin="PGND1"/>
-<pinref part="U$5" gate="G$1" pin="PGND1"/>
-<wire x1="226.06" y1="45.72" x2="223.52" y2="45.72" width="0.1524" layer="91"/>
-<wire x1="223.52" y1="45.72" x2="215.9" y2="45.72" width="0.1524" layer="91"/>
-<wire x1="215.9" y1="45.72" x2="200.66" y2="45.72" width="0.1524" layer="91"/>
-<label x="203.2" y="45.72" size="1.778" layer="95"/>
-<junction x="223.52" y="45.72"/>
 </segment>
 <segment>
 <wire x1="215.9" y1="22.86" x2="200.66" y2="22.86" width="0.1524" layer="91"/>
@@ -22012,6 +21991,16 @@ Source: smt-pots.pdf</description>
 <segment>
 <pinref part="C1" gate="G$1" pin="2"/>
 <pinref part="SUPPLY2" gate="GND" pin="GND"/>
+</segment>
+<segment>
+<pinref part="U$4" gate="G$1" pin="PGND1"/>
+<wire x1="226.06" y1="58.42" x2="200.66" y2="58.42" width="0.1524" layer="91"/>
+<label x="203.2" y="58.42" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="U$5" gate="G$1" pin="PGND1"/>
+<wire x1="226.06" y1="45.72" x2="200.66" y2="45.72" width="0.1524" layer="91"/>
+<label x="203.2" y="45.72" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="D2" class="0">
@@ -23153,9 +23142,9 @@ Source: smt-pots.pdf</description>
 <errors>
 <approved hash="101,1,302.26,-7.62,IC2E,O,,,,"/>
 <approved hash="101,1,302.26,-17.78,IC2F,O,,,,"/>
-<approved hash="102,1,335.28,2.54,VSS,GND,,,,"/>
-<approved hash="102,1,335.28,5.08,VDD,+3V3,,,,"/>
 <approved hash="102,1,335.28,-2.54,GND1,GND,,,,"/>
+<approved hash="102,1,335.28,5.08,VDD,+3V3,,,,"/>
+<approved hash="102,1,335.28,2.54,VSS,GND,,,,"/>
 <approved hash="104,1,355.6,137.16,U1,VDD,VCC,,,"/>
 <approved hash="104,1,330.2,-10.16,IC2P,VSS,GND,,,"/>
 <approved hash="104,1,330.2,5.08,IC2P,VDD,+3V3,,,"/>
