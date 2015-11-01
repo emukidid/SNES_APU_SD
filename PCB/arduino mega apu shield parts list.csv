@@ -21,7 +21,7 @@ QTY,Part,Digikey Part Number
 1,50 pin breakaway headers,SAM1067-50-ND
 1,36 pin breakaway headers,SAM1067-36-ND
 1,16 pin header,SAM1067-16-ND
-1,16 pin socket,(Need some long leg sockets. These cannot be sourced from digikey. :( )
+1,16 pin socket,SAM1198-16-ND
 1,10K trim pot,3306W-103-ND
 1,10K 9 resistor network.,4610X-1-103LF-ND
 1,16x2 LCD character display.,NHD-0216BZ-FL-YBW-ND
