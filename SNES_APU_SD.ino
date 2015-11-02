@@ -81,29 +81,7 @@ void setup()
 #endif
 }
 
-unsigned char ReadByteFromAPU(unsigned char address)
-{  
-  return apu.read(address);
-}
 
-void WriteByteToAPU(unsigned char address, unsigned char data)
-{
-  apu.write(address,data);
-}
-
-/* IO Pin Mapping.
- ** Digital Pin 0 - RX
- ** Digital Pin 1 - TX
- ** Digital Pin 2-7 - SNES APU D2-7
- ** Digital Pin 8 - SNES APU address 0
- ** Digital Pin 9 - SNES APU address 1
- ** Digital Pin 10 - SNES APU /RD
- ** Digital Pin 11 - SNES APU /WR
- ** Digital Pin 12-13 - SNES APU D0-1
- ** Analog Pin 0 (AKA Digital Pin 54) - SNES APU /RESET
- ** Vcc - SNES APU address 6, SNES APU Vcc, SNES APU audio Vcc
- ** Gnd - SNES APU Gnd, SNES APU audio Gnd.
- */
 
 void APU_StartWrite(unsigned short address, unsigned char *data, int len)
 {
@@ -111,32 +89,27 @@ void APU_StartWrite(unsigned short address, unsigned char *data, int len)
   uint8_t rdata;
   apu.reset();
 
-  while(ReadByteFromAPU(0)!=0xAA);
-  while(ReadByteFromAPU(1)!=0xBB);
+  while(apu.read(0)!=0xAA);
+  while(apu.read(1)!=0xBB);
 
 
-  WriteByteToAPU(3,address>>8);
-  WriteByteToAPU(2,address&0xFF);
-  WriteByteToAPU(1,1);
-  WriteByteToAPU(0,0xCC);
-  while(ReadByteFromAPU(0)!=0xCC);
+  apu.write(3,address>>8);
+  apu.write(2,address&0xFF);
+  apu.write(1,1);
+  apu.write(0,0xCC);
+  while(apu.read(0)!=0xCC);
 
   for(i=0;i<len;i++)
   {
-    WriteByteToAPU(1,data[i]);
-    WriteByteToAPU(0,i&0xFF);
-    while(ReadByteFromAPU(0)!=(i&0xFF));
+    apu.write(1,data[i]);
+    apu.write(0,i&0xFF);
+    while(apu.read(0)!=(i&0xFF));
   }
-}
-
-void APU_Reset()
-{
-  apu.reset();
 }
 
 void APU_Wait(unsigned char address, unsigned char data)
 {
-  while(ReadByteFromAPU(address)!=data);
+  while(apu.read(address)!=data);
 }
 
 void APU_StartSPC700(unsigned char *dspdata, unsigned char *spcdata, int SD_mode=1)
@@ -147,11 +120,11 @@ void APU_StartSPC700(unsigned char *dspdata, unsigned char *spcdata, int SD_mode
   if (SD_mode) printf("Uploading DSP Register\n");
   //Upload the DSP register, and the first page of SPC data at serial port speed.
   APU_StartWrite(0x0002,DSPdata,16);
-  WriteByteToAPU(2,0x02);
-  WriteByteToAPU(3,0x00);
-  WriteByteToAPU(1,0x00);
-  WriteByteToAPU(0,0x11);
-  while(ReadByteFromAPU(0)!=0x11); 
+  apu.write(2,0x02);
+  apu.write(3,0x00);
+  apu.write(1,0x00);
+  apu.write(0,0x11);
+  while(apu.read(0)!=0x11); 
   if (SD_mode) 
   {
     printf("Done\n"); 
@@ -161,28 +134,28 @@ void APU_StartSPC700(unsigned char *dspdata, unsigned char *spcdata, int SD_mode
   for(i=0;i<128;i++)
   {
     if(i == 0x4C)
-      WriteByteToAPU(1,0x00);
+      apu.write(1,0x00);
     else if(i == 0x6C)
-      WriteByteToAPU(1,0x60);
+      apu.write(1,0x60);
     else
-      WriteByteToAPU(1,dspdata[i]);
-    WriteByteToAPU(0,port0state);
+      apu.write(1,dspdata[i]);
+    apu.write(0,port0state);
     if(i<127)
-        while(ReadByteFromAPU(0)!=port0state);
+        while(apu.read(0)!=port0state);
     port0state++;
   }
-  while(ReadByteFromAPU(0)!=0xAA);
+  while(apu.read(0)!=0xAA);
   if (SD_mode) 
   {
     printf("Done\n"); 
     printf("Uploading spcdata\n"); 
   }
   port0state=0;
-  WriteByteToAPU(2,0x02);
-  WriteByteToAPU(3,0x00);
-  WriteByteToAPU(1,0x01);
-  WriteByteToAPU(0,0xCC);
-  while(ReadByteFromAPU(0)!=0xCC);
+  apu.write(2,0x02);
+  apu.write(3,0x00);
+  apu.write(1,0x01);
+  apu.write(0,0xCC);
+  while(apu.read(0)!=0xCC);
   // Send spcdata[0] to spcdata[255]
   for(i=0;i<256;i++)
   {
@@ -190,40 +163,26 @@ void APU_StartSPC700(unsigned char *dspdata, unsigned char *spcdata, int SD_mode
       continue;
     if(i>=0xF0)
       continue;
-    WriteByteToAPU(1,spcdata[i]);
-    WriteByteToAPU(0,port0state);
-    while(ReadByteFromAPU(0)!=port0state);
+    apu.write(1,spcdata[i]);
+    apu.write(0,port0state);
+    while(apu.read(0)!=port0state);
     port0state++;
   }
   if (SD_mode) printf("Done\n"); 
 }
 
-//Write a single IO port.
-void APU_WriteSPC700(unsigned short address, unsigned char data) 
-{
-    switch(address>>2)
-    {
-      case 1:  //Multiple games use this song select driver.
-        while(ReadByteFromAPU(1)!=((ReadByteFromAPU(0)+1)&0xFF));
-        break;
-      default:    //Any other driver selection not put here.
-        WriteByteToAPU(address,data);
-        break;
-    }
-}
-
 void WriteByteToAPUAndWaitForState(unsigned char data, unsigned char state) {
  // printf("Byte %02X\n", data);
-  WriteByteToAPU(1, data);
-  WriteByteToAPU(0, state);
-  while(ReadByteFromAPU(0)!=state);
+  apu.write(1, data);
+  apu.write(0, state);
+  while(apu.read(0)!=state);
 }
 
 // APU_WaitIoPort
 int APU_WaitIoPort(uint8_t address, uint8_t data, int timeout)
 {
   int i=0;
-  while((ReadByteFromAPU(address)!=data)&&(i<timeout)) i++;
+  while((apu.read(address)!=data)&&(i<timeout)) i++;
   if(i<timeout)
     return 0;
   return 1;
@@ -417,12 +376,12 @@ void LoadAndPlaySPC()
 
   // Reset the APU
   int resetAttempts = 0;
-  APU_Reset();
+  apu.reset();
   delay(50);
-  while(ReadByteFromAPU(0) != 0xAA || ReadByteFromAPU(1) != 0xBB
-     || ReadByteFromAPU(2) != 0x00 || ReadByteFromAPU(3) != 0x00)
+  while(apu.read(0) != 0xAA || apu.read(1) != 0xBB
+     || apu.read(2) != 0x00 || apu.read(3) != 0x00)
   {
-    APU_Reset();
+    apu.reset();
     delay(50);
     if(resetAttempts > 20)
     {
@@ -440,14 +399,14 @@ void LoadAndPlaySPC()
 
   // Here we upload the SPC, tip-toe around regions where we can't just stream raw from file  
   // First we must set the write address to 0x100
-  WriteByteToAPU(1,1);
-  WriteByteToAPU(2,0x00);
-  WriteByteToAPU(3,0x01);
-  int rb=ReadByteFromAPU(0);
+  apu.write(1,1);
+  apu.write(2,0x00);
+  apu.write(3,0x01);
+  int rb=apu.read(0);
   rb+=2;
-  WriteByteToAPU(0,rb&0xFF);
+  apu.write(0,rb&0xFF);
   j=0;
-  while((ReadByteFromAPU(0)!=rb)&&(j<500))
+  while((apu.read(0)!=rb)&&(j<500))
     j++;
   if(j==500){
     printf("Error setting next 16 byte write up for %04X\n", i);
@@ -523,30 +482,30 @@ void LoadAndPlaySPC()
   }
   printf("Upload complete!\n");
 
-  APU_WriteSPC700(3, (unsigned char)(boot_code_dest >> 8));
-  APU_WriteSPC700(2, boot_code_dest & 0xFF);
-  APU_WriteSPC700(1, 0);
+  apu.write(3, (unsigned char)(boot_code_dest >> 8));
+  apu.write(2, boot_code_dest & 0xFF);
+  apu.write(1, 0);
   
-  i = ReadByteFromAPU(0);
+  i = apu.read(0);
   i = i + 2;
-  APU_WriteSPC700(0, i);
+  apu.write(0, i);
   i = 0;
   printf("Wait for Play\n");
   if(spcinportiszero) {
-    APU_WriteSPC700(3, 1);
-    APU_WriteSPC700(0, 1);
+    apu.write(3, 1);
+    apu.write(0, 1);
   }
-  while(ReadByteFromAPU(0) != 0x53) {
+  while(apu.read(0) != 0x53) {
     i++;
     if(i > 512) {
       printf("Error loading SPC\n");
       break;
     }
   }
-  APU_WriteSPC700(0, spcdata[0xF4]);
-  APU_WriteSPC700(1, spcdata[0xF5]);
-  APU_WriteSPC700(2, spcdata[0xF6]);
-  APU_WriteSPC700(3, spcdata[0xF7]);
+  apu.write(0, spcdata[0xF4]);
+  apu.write(1, spcdata[0xF5]);
+  apu.write(2, spcdata[0xF6]);
+  apu.write(3, spcdata[0xF7]);
   printf("Playing!\n");
 }
 #endif
@@ -588,25 +547,25 @@ void ProcessCommandFromSerial()
 
 
   case 'Q':  //Read all 4 IO ports in rapid fire succession.
-    data=ReadByteFromAPU(0);
+    data=apu.read(0);
     Serial.write(data);
-    data=ReadByteFromAPU(1);
+    data=apu.read(1);
     Serial.write(data);
-    data=ReadByteFromAPU(2);
+    data=apu.read(2);
     Serial.write(data);
-    data=ReadByteFromAPU(3);
+    data=apu.read(3);
     Serial.write(data);
     break;
   case 'R':  //Read a single IO port.  Takes an address as a parameter, returns one byte.
     address=ReadByteFromSerial()-'0';
-    data=ReadByteFromAPU(address);
+    data=apu.read(address);
     Serial.write(data);
     break;
   case 'r':  //Read and returns 2 consecutive IO ports.
     address=ReadByteFromSerial()-'0';
-    data=ReadByteFromAPU(address+1);
+    data=apu.read(address+1);
     Serial.write(data);
-    data=ReadByteFromAPU(address);
+    data=apu.read(address);
     Serial.write(data);
     break; 
   case 'S':
@@ -628,20 +587,20 @@ void ProcessCommandFromSerial()
     data_size=ReadByteFromSerial()<<8;
     data_size|=ReadByteFromSerial();
 
-    WriteByteToAPU(1,1);
-    WriteByteToAPU(2,ram_addr&0xFF);
-    WriteByteToAPU(3,ram_addr>>8);
-    i=ReadByteFromAPU(0);
+    apu.write(1,1);
+    apu.write(2,ram_addr&0xFF);
+    apu.write(3,ram_addr>>8);
+    i=apu.read(0);
     i+=2;
-    WriteByteToAPU(0,i&0xFF);
-    while(ReadByteFromAPU(0)!=(i&0xFF));
+    apu.write(0,i&0xFF);
+    while(apu.read(0)!=(i&0xFF));
     port0state=0;
 
     for(i=0;i<data_size;i++)
     {
       data=ReadByteFromSerial();
-      WriteByteToAPU(1,data);
-      WriteByteToAPU(0,port0state++);
+      apu.write(1,data);
+      apu.write(0,port0state++);
       //Serial port is slow enough that the APU will be ready for the data,
       //when it finally comes in. :)
     }
@@ -663,10 +622,10 @@ void ProcessCommandFromSerial()
     switch(address-4)
     {
       case 0:
-        while((ReadByteFromAPU(1)!=((ReadByteFromAPU(0)+1)&0xFF))&&(i<128)) i++;  //Handle a blazeon track change.
+        while((apu.read(1)!=((apu.read(0)+1)&0xFF))&&(i<128)) i++;  //Handle a blazeon track change.
         if(i<128)
         {
-          WriteByteToAPU(0,data);
+          apu.write(0,data);
         }
         /*
         ** Blazeon uses the following port communication system.
@@ -683,28 +642,28 @@ void ProcessCommandFromSerial()
         */
         break;
       case 1:  //Multiple games use this song select driver.
-        WriteByteToAPU(1,data);
-        WriteByteToAPU(0,3);
-        data=ReadByteFromAPU(3);
+        apu.write(1,data);
+        apu.write(0,3);
+        data=apu.read(3);
         data++;
-        WriteByteToAPU(3,data);
+        apu.write(3,data);
         if(APU_WaitIoPort(3,data,2048))
           break;
         i = 0;
-        WriteByteToAPU(0,4);
-        data=ReadByteFromAPU(3);
+        apu.write(0,4);
+        data=apu.read(3);
         data++;
-        WriteByteToAPU(3,data);
+        apu.write(3,data);
         if(APU_WaitIoPort(3,data,2048))
           break;
-        WriteByteToAPU(0,0);
+        apu.write(0,0);
         break;
       case 2:
-        WriteByteToAPU(3,data);
-        WriteByteToAPU(0,0x80);
+        apu.write(3,data);
+        apu.write(0,0x80);
         if(APU_WaitIoPort(0,0,2048))
           break;
-        WriteByteToAPU(0,0);
+        apu.write(0,0);
         break;
       case 0xFC:  //0 - 4 = 0xFC.
       case 0xFD:  //1 - 4 = 0xFD.
@@ -714,15 +673,15 @@ void ProcessCommandFromSerial()
         /*
         ** Default, is just write the ports as is.
         */
-        WriteByteToAPU(address,data);
+        apu.write(address,data);
     }
     break;
   case 'w':  //Write 2 IO consecutive IO ports.
     address=ReadByteFromSerial()-'0';
     data=ReadByteFromSerial();
-    WriteByteToAPU(address+1,data);
+    apu.write(address+1,data);
     data=ReadByteFromSerial();
-    WriteByteToAPU(address,data);
+    apu.write(address,data);
     break;
   }
 }

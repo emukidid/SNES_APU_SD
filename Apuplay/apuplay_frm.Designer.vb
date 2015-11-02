@@ -867,10 +867,10 @@
         '
         'lblComment
         '
-        Me.lblComment.Enabled = False
         Me.lblComment.Location = New System.Drawing.Point(64, 358)
         Me.lblComment.Multiline = True
         Me.lblComment.Name = "lblComment"
+        Me.lblComment.ReadOnly = True
         Me.lblComment.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
         Me.lblComment.Size = New System.Drawing.Size(315, 59)
         Me.lblComment.TabIndex = 63

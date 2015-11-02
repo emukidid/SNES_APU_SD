@@ -283,10 +283,6 @@ errorhandler:
     Private Sub form1_Load(ByVal eventSender As Object, ByVal eventArgs As EventArgs) Handles MyBase.Load
         On Error GoTo errorhandler
         Dim i As Short
-        'Slider1.Value = -1
-        'Slider2.Value = -1
-        'Slider3.Value = -1
-        'Slider4.Value = -1
         If Option1.Checked = True Then _echoclear = 1
         If Option2.Checked = True Then _echoclear = 2
         If Option3.Checked = True Then _echoclear = 0
@@ -297,7 +293,6 @@ errorhandler:
             ListBox2.Dock = DockStyle.Fill
         End If
 
-        'If (init_port("COM3") <> 0) Then Unload form1
         For i = 1 To 256
             If OpenPort_VB("COM" & i) = 0 Then
                 ClosePort()
@@ -312,23 +307,11 @@ errorhandler:
         MsgBox("Error: No COM ports available. Close any applications that may be using them.", , "APU Play win")
     End Sub
 
-    'UPGRADE_ISSUE: VBRUN.DataObject type was not upgraded. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6B85A2A7-FE9F-4FBE-AA0C-CF11AC86A305"'
-    'UPGRADE_ISSUE: Form event Form.OLEDragDrop was not upgraded. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="ABD9AF39-7E24-4AFF-AD8D-3675C1AA3054"'
     Private Sub Form_OLEDragDrop(ByRef data As Object, ByRef Effect As Integer, ByRef Button As Short, ByRef Shift As Short, ByRef X As Single, ByRef Y As Single)
-        'UPGRADE_ISSUE: DataObject property data.Files was not upgraded. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="076C26E5-B7A9-4E77-B69C-B4448DF39E58"'
-        'UPGRADE_ISSUE: DataObjectFiles property Files.count was not upgraded. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="076C26E5-B7A9-4E77-B69C-B4448DF39E58"'
-        debugprint(data.Files.count)
-        'UPGRADE_ISSUE: DataObject property data.Files was not upgraded. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="076C26E5-B7A9-4E77-B69C-B4448DF39E58"'
-        'UPGRADE_ISSUE: DataObjectFiles property Files.Item was not upgraded. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="076C26E5-B7A9-4E77-B69C-B4448DF39E58"'
-        debugprint(data.Files.Item(1))
-        'UPGRADE_ISSUE: DataObject property data.Files was not upgraded. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="076C26E5-B7A9-4E77-B69C-B4448DF39E58"'
-        'UPGRADE_ISSUE: DataObjectFiles property Files.count was not upgraded. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="076C26E5-B7A9-4E77-B69C-B4448DF39E58"'
+        Debugprint(data.Files.count)
+        Debugprint(data.Files.Item(1))
         If data.Files.count >= 1 Then
-            'UPGRADE_ISSUE: DataObject property data.Files was not upgraded. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="076C26E5-B7A9-4E77-B69C-B4448DF39E58"'
-            'UPGRADE_ISSUE: DataObjectFiles property Files.Item was not upgraded. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="076C26E5-B7A9-4E77-B69C-B4448DF39E58"'
             If LCase(VB.Right(data.Files.Item(1), 4)) = ".spc" Then
-                'UPGRADE_ISSUE: DataObject property data.Files was not upgraded. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="076C26E5-B7A9-4E77-B69C-B4448DF39E58"'
-                'UPGRADE_ISSUE: DataObjectFiles property Files.Item was not upgraded. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="076C26E5-B7A9-4E77-B69C-B4448DF39E58"'
                 LoadAPU(data.Files.Item(1))
             End If
             If LCase(VB.Right(data.Files.Item(1), 4)) = ".sp2" Then
@@ -338,8 +321,6 @@ errorhandler:
 
     End Sub
 
-    'UPGRADE_NOTE: Form_Terminate was upgraded to Form_Terminate_Renamed. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="A9E4979A-37FA-4718-9994-97DD76ED70A7"'
-    'UPGRADE_WARNING: form1 event Form.Terminate has a new behavior. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6BA9B8D2-2A32-4B6E-8D36-44949974A5B4"'
     Private Sub Form_Terminate_Renamed()
         ClosePort()
     End Sub
@@ -351,10 +332,7 @@ errorhandler:
 
 
 
-    'UPGRADE_NOTE: HScroll1.Change was changed from an event to a procedure. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="4E2DC008-5EDA-4547-8317-C9316952674F"'
-    'UPGRADE_WARNING: HScrollBar event HScroll1.Change has a new behavior. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6BA9B8D2-2A32-4B6E-8D36-44949974A5B4"'
     Private Sub HScroll1_Change(ByVal newScrollValue As Integer)
-        'UPGRADE_WARNING: Timer property tmrReadport.Interval cannot have a value of 0. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="169ECF4A-1968-402D-B243-16603CC08604"'
         If (newScrollValue > 0) Then
             tmrReadport.Enabled = True
             tmrReadport.Interval = newScrollValue
@@ -367,9 +345,6 @@ errorhandler:
 
 
     Private Sub Initialize_Click(ByVal eventSender As Object, ByVal eventArgs As EventArgs) Handles Initialize.Click
-        'Dim timerinit As Single
-
-        '    timerinit = Timer
         ClosePort()
         txtUploadSpeed.Text = "Port closed successfully"
         cmdOpenPort.Enabled = True
@@ -377,21 +352,6 @@ errorhandler:
         Combo1.Enabled = True
         Initialize.Enabled = False
         enablebuttons(True)
-        'Do Until (Timer - timerinit) > 120
-        '        If ReadSPC700_internal(0) <> &HAA Then
-
-        '            ResetAPU_internal
-        '            timerinit = Timer
-        '        Else
-        '            readcount = readcount + 1
-        '        End If
-
-        '    txtUploadSpeed.Text = 120 - (Timer - timerinit) & "  seconds to go."
-        '    DoEvents
-
-        'Loop
-        'cmdHide_Click
-        'txtUploadSpeed.Text = "Parallel port Initialized."
     End Sub
 
 
@@ -540,8 +500,6 @@ handleerror:
         _readcount = _readcount + 4
         Exit Sub
 errorhandler:
-        'UPGRADE_WARNING: Timer property tmrReadport.Interval cannot have a value of 0. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="169ECF4A-1968-402D-B243-16603CC08604"'
-        'tmrReadport.Interval = 0
         tmrReadport.Enabled = False
     End Sub
 
@@ -637,30 +595,6 @@ errorhandler:
         Next i
         tmrReadport_Tick(tmrReadport, New EventArgs())
     End Sub
-
-    Public Sub gameIPLsequence()
-        'Select Case lblGame
-        '    Case "  Bahamut Lagoon  "
-        '        WriteSPC700_internal 0, &HCC
-        '        Do Until ReadSPC700_internal(0) = &HAA
-        '        Loop
-        '    Case "  Seiken Densetsu 3  "
-        '        WriteSPC700_internal 0, &HCC
-        '        Do Until ReadSPC700_internal(0) = &HAA
-        '        Loop
-        '    Case "  Chrono Trigger  "
-        '        WriteSPC700_internal 0, &HFF
-        '        WriteSPC700_internal 1, &HF0
-        '        Do Until ReadSPC700_internal(0) = &HAA
-        '        Loop
-        '    Case "  Hu Tengai Makyo Zero  "
-        '        WriteSPC700_internal 1, &H10
-        '        Do Until ReadSPC700_internal(0) = &HAA
-        '        Loop
-        'End Select
-    End Sub
-
-
 
     Public Function LShiftLong(ByVal Value As Integer, ByVal Shift As Short) As Integer
         MakeOnBits()
@@ -794,13 +728,13 @@ handler:
 
     Public Sub LoadAPU(ByRef strSPCFile As String, Optional ByVal intSPCTrack As Integer = -1)
         On Error GoTo handleerror
+        If PauseUpload.Visible Then Exit Sub
         PauseUpload.Visible = True
         _uploadstate = True
         _uploadcomplete = False
         frmToP.allow_top_events(False)
         frmToP.Hide()
         Application.DoEvents()
-        gameIPLsequence()
         enablebuttons(False)
         Dim timerinit As Single
         Dim xfer_error As Integer
@@ -824,22 +758,13 @@ handler:
 
 
         Dim bootptr As Integer
-        Dim bootbyte As Byte
         Dim bootsize As Integer = 77
         Dim count As Short
         Dim i As Integer
         Dim j As Integer
         Dim k As Integer
-        Dim l As Integer
 
         Dim boot_code As Integer = 0
-
-        Dim compspcdata(80000) As Byte
-        Dim mask As Byte
-        Dim mask_left As Byte
-        Dim mask_pointer As Integer
-        Dim last_byte As Byte
-        Dim comp_left As Integer
 
 
         'frmToP.Timer1.Enabled = False
@@ -1340,6 +1265,7 @@ handleerror:
             Case -2000002
                 Dim tryinit As Integer
                 For tryinit = 0 To Combo1.Items.Count - 1 Step 1
+                    Application.DoEvents()
                     Combo1.SelectedIndex = tryinit
                     If init_port(Combo1.Text) = 0 Then
                         cmdOpenPort.Enabled = False
