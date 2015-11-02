@@ -1,6 +1,10 @@
 #Cadsoft Eagle files
 *.b#[#1-9]
 *.s#[#1-9]
+*.ger
+*.gpi
+*.dri
+*.xln
 
 #OS junk files
 [Tt]humbs.db
