@@ -14,6 +14,9 @@ SdFat SD;
 #include "LCD.h"
 
 File spcFile;
+unsigned char is_spc2 = 0;
+unsigned short spc2_total_songs;
+unsigned short songnum  __attribute__ ((section (".noinit")));
 
 static unsigned char spcbuf[256];           // 0x100  (256 bytes (of 64kb)) (temp buffer)
 static unsigned char boot_code[] =
@@ -77,7 +80,21 @@ void setup()
   // open a new file and immediately close it:
   printf("Opening file.spc...\n");
   spcFile = SD.open("file.spc", FILE_READ);
-  LoadAndPlaySPC();
+  if(!spcFile)
+    spcFile = SD.open("file.sp2", FILE_READ);
+  if(spcFile)
+  {
+    if((readSPC(0) == 'K') && (readSPC(1) == 'S') && (readSPC(2) == 'P') && (readSPC(3) == 'C') && (readSPC(4) == 0x1A))
+    {
+      is_spc2 = 1;
+      spc2_total_songs = (readSPC(7) | (readSPC(8) << 8));
+      if ((songnum+1) > spc2_total_songs)
+      {
+        songnum = 0;
+      }
+    }
+    LoadAndPlaySPC(songnum++);
+  }
 #endif
 }
 
@@ -224,29 +241,49 @@ void clearBuffer(unsigned char *buf, long len)
   }
 }
 
-void LoadAndPlaySPC()
+
+void get_spc2_page(unsigned char *buf, unsigned short song, unsigned char page, unsigned short count=256)
 {
-  unsigned char PCL = readSPC(0x25);    // 0x25     (1 byte)
-  unsigned char PCH = readSPC(0x26);    // 0x26     (1 byte)
-  unsigned char A = readSPC(0x27);      // 0x27     (1 byte)
-  unsigned char X = readSPC(0x28);      // 0x28     (1 byte)
-  unsigned char Y = readSPC(0x29);      // 0x29     (1 byte)
-  unsigned char ApuSW = readSPC(0x2A);  // 0x2A     (1 byte)
-  unsigned char ApuSP = readSPC(0x2B);  // 0x2B     (1 byte)
+  unsigned long spc2_offset = 16 + ((unsigned long)song * 1024);
+  unsigned long spcram_start = 16 + ((unsigned long)spc2_total_songs * 1024);
+  unsigned short page_number = readSPC(spc2_offset + (page * 2)) | (readSPC(spc2_offset + (page * 2) + 1) << 8);
+  spcram_start += page_number * 256;
+  readSPCRegion(buf,spcram_start,count);
+}
+
+void LoadAndPlaySPC(unsigned short song)
+{
+  unsigned long spc2_offset = 16 + ((unsigned long)song * 1024);
+  unsigned long spc2_page_offset = 0;
+  unsigned char PCL = readSPC(is_spc2?spc2_offset+704:0x25);    // 0x25     (1 byte)
+  unsigned char PCH = readSPC(is_spc2?spc2_offset+705:0x26);    // 0x26     (1 byte)
+  unsigned char A = readSPC(is_spc2?spc2_offset+706:0x27);      // 0x27     (1 byte)
+  unsigned char X = readSPC(is_spc2?spc2_offset+707:0x28);      // 0x28     (1 byte)
+  unsigned char Y = readSPC(is_spc2?spc2_offset+708:0x29);      // 0x29     (1 byte)
+  unsigned char ApuSW = readSPC(is_spc2?spc2_offset+709:0x2A);  // 0x2A     (1 byte)
+  unsigned char ApuSP = readSPC(is_spc2?spc2_offset+710:0x2B);  // 0x2B     (1 byte)
   unsigned char echo_clear = 1;
 
   // Read some ID tag stuff
   unsigned char tagBuffer[64];
   clearBuffer(&tagBuffer[0], 64);
-  readSPCRegion(&tagBuffer[0], 0x2EL, 0x20);
+  readSPCRegion(&tagBuffer[0], is_spc2?spc2_offset+768:0x2EL, 0x20);
   printf("SPC Track Name: %s\n",&tagBuffer[0]);
   clearBuffer(&tagBuffer[0], 64);
-  readSPCRegion(&tagBuffer[0], 0x4EL, 0x20);
+  readSPCRegion(&tagBuffer[0], is_spc2?spc2_offset+800:0x4EL, 0x20);
   printf("SPC Track Game: %s\n",&tagBuffer[0]);
 
   // Read some stuff
-  readSPCRegion(&spcdata[0], 0x100L, 256);
-  readSPCRegion(&dspdata[0], 0x10100L, 128);
+  if(is_spc2)
+  {
+    get_spc2_page(&spcdata[0], song, 0);
+    readSPCRegion(&dspdata[0], spc2_offset+512, 128);
+  }
+  else
+  {
+    readSPCRegion(&spcdata[0], 0x100L, 256);
+    readSPCRegion(&dspdata[0], 0x10100L, 128);
+  }
   
   unsigned short i,j,bootptr,spcinportiszero = 0;
   unsigned short count;
@@ -262,9 +299,28 @@ void LoadAndPlaySPC()
 
   printf("SPC echo region is: %04X\n", echo_region);
   printf("SPC echo size is: %04X\n", echo_size);
-
   //Locate a spot to write the bootloader now.
   int freespacesearch = 0;
+  unsigned short bootcode_offset = is_spc2?readSPC(spc2_offset+734)|(readSPC(spc2_offset+735)<<8):0;
+  if(bootcode_offset > 0)
+  {
+    freespacesearch = 4;  //No need to search for space, spc2 already tells us where to put it. :)
+    if(bootcode_offset == 1)
+    {
+      count = 0;
+    }
+    else if (bootcode_offset == 2)
+    {
+      count = sizeof(boot_code);
+      j = PCL | (PCH << 8);
+    }
+    else if (bootcode_offset > 255)
+    {
+      j = bootcode_offset;
+      count = sizeof(boot_code);
+    }
+  }
+  
   if(freespacesearch < 2)
   {
     for(i=255;i!=0xFFFF;i--) 
@@ -287,6 +343,9 @@ void LoadAndPlaySPC()
         else
         {
           count=0;
+          j=echo_region;
+          if(j == 0)
+            break;
         }
       }
       if(count==sizeof(boot_code)) {
@@ -312,7 +371,7 @@ void LoadAndPlaySPC()
       }
     }
   }
-  if(freespacesearch = 0 || freespacesearch == 3)
+  if(freespacesearch == 0 || freespacesearch == 3)
   {
     if(count != sizeof(boot_code))
     {
@@ -422,7 +481,10 @@ void LoadAndPlaySPC()
       {
         if (echo_size == 4)
         {
-          readSPCRegion(&spcbuf[0], i+0x100, 256);
+          if(is_spc2)
+            get_spc2_page(&spcbuf[0], song, i>>8);
+          else
+            readSPCRegion(&spcbuf[0], i+0x100, 256);
           spcbuf[0]=spcbuf[1]=spcbuf[2]=spcbuf[3]=0;
         }
         else
@@ -437,7 +499,10 @@ void LoadAndPlaySPC()
       else if (i == 0x100)
       {
         // Prepare the stack
-        readSPCRegion(&spcbuf[0], i+0x100, 256);
+        if(is_spc2)
+          get_spc2_page(&spcbuf[0], song, i>>8);
+        else
+          readSPCRegion(&spcbuf[0], i+0x100, 256);
         spcbuf[(ApuSP + 0x00) & 0xFF] = PCH;
         spcbuf[(ApuSP + 0xFF) & 0xFF] = PCL;
         spcbuf[(ApuSP + 0xFE) & 0xFF] = ApuSW;
@@ -450,30 +515,47 @@ void LoadAndPlaySPC()
         // Select proper SPC upper 64 RAM
         if (spcdata[0xF1] & 0x80)
         {
-          readSPCRegion(&spcbuf[0], i+0x100, 192);
-          readSPCRegion(&spcbuf[0xC0],0x101C0,64);
+          if(is_spc2)
+          {
+            get_spc2_page(&spcbuf[0], song, i>>8, 192);
+            readSPCRegion(&spcbuf[0xC0],spc2_offset+640,64);
+          }
+          else
+          {
+            readSPCRegion(&spcbuf[0], i+0x100, 192);
+            readSPCRegion(&spcbuf[0xC0],0x101C0,64);
+          }
           printf("Write spcram: FFC0-FFFF\n");
         }
         else
         {
-          readSPCRegion(&spcbuf[0], i+0x100, 256);
+          if(is_spc2)
+            get_spc2_page(&spcbuf[0], song, i>>8);
+          else
+            readSPCRegion(&spcbuf[0], i+0x100, 256);
         }
       }
       else
       { 
-        readSPCRegion(&spcbuf[0], i+0x100, 256);
+        if(is_spc2)
+          get_spc2_page(&spcbuf[0], song, i>>8);
+        else
+          readSPCRegion(&spcbuf[0], i+0x100, 256);
       }
     }
     unsigned char port0state = i & 0xFF;
 
     // Boot code section
-    if((i >= boot_code_dest) && (i < (boot_code_dest+boot_code_size))) {
-      WriteByteToAPUAndWaitForState(boot_code[i-boot_code_dest], port0state);     
-      if(i == boot_code_dest)
-        printf("Write bootcode start: %04X\n", i);
-      if(i == (boot_code_dest+boot_code_size-1))
-        printf("Write bootcode end: %04X\n", i);
-      continue;
+    if(bootcode_offset != 2)
+    {
+      if((i >= boot_code_dest) && (i < (boot_code_dest+boot_code_size))) {
+        WriteByteToAPUAndWaitForState(boot_code[i-boot_code_dest], port0state);     
+        if(i == boot_code_dest)
+          printf("Write bootcode start: %04X\n", i);
+        if(i == (boot_code_dest+boot_code_size-1))
+          printf("Write bootcode end: %04X\n", i);
+        continue;
+      }
     }
     
     // Normal data write
@@ -490,22 +572,25 @@ void LoadAndPlaySPC()
   i = i + 2;
   apu.write(0, i);
   i = 0;
-  printf("Wait for Play\n");
-  if(spcinportiszero) {
-    apu.write(3, 1);
-    apu.write(0, 1);
-  }
-  while(apu.read(0) != 0x53) {
-    i++;
-    if(i > 512) {
-      printf("Error loading SPC\n");
-      break;
+  if(bootcode_offset != 2)
+  {
+    printf("Wait for Play\n");
+    if(spcinportiszero) {
+      apu.write(3, 1);
+      apu.write(0, 1);
     }
+    while(apu.read(0) != 0x53) {
+      i++;
+      if(i > 512) {
+        printf("Error loading SPC\n");
+        break;
+      }
+    }
+    apu.write(0, spcdata[0xF4]);
+    apu.write(1, spcdata[0xF5]);
+    apu.write(2, spcdata[0xF6]);
+    apu.write(3, spcdata[0xF7]);
   }
-  apu.write(0, spcdata[0xF4]);
-  apu.write(1, spcdata[0xF5]);
-  apu.write(2, spcdata[0xF6]);
-  apu.write(3, spcdata[0xF7]);
   printf("Playing!\n");
 }
 #endif

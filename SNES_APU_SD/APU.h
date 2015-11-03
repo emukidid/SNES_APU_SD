@@ -30,6 +30,7 @@ private:
   void reset_arduino_mega();
   void reset_arduino_mega_xmem();
   void init_mega();
+  int init_mega_xmem();
   uint8_t mega_type;
   
   
