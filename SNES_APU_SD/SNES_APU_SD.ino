@@ -14,7 +14,7 @@ SdFat SD;
 #include "LCD.h"
 
 File spcFile;
-unsigned char is_spc2 = 0;
+unsigned char is_spc2;
 unsigned short spc2_total_songs;
 unsigned short songnum  __attribute__ ((section (".noinit")));
 
@@ -50,7 +50,6 @@ int serial_putchar(char c, FILE* f) {
 
 void setup()
 {
-  
   Serial.begin(250000);
 
    // Set up stdout
@@ -70,32 +69,51 @@ void setup()
   }
   printf("initialization done.\n");
 
-  if (SD.exists("file.spc")) {
-    printf("file.spc exists.\n");
-  }
-  else {
-    printf("file.spc doesn't exist.\n");
-  }
-
-  // open a new file and immediately close it:
-  printf("Opening file.spc...\n");
-  spcFile = SD.open("file.spc", FILE_READ);
+  OpenSPCFile("file.spc");
   if(!spcFile)
-    spcFile = SD.open("file.sp2", FILE_READ);
+    OpenSPCFile("file.sp2");
+
   if(spcFile)
   {
-    if((readSPC(0) == 'K') && (readSPC(1) == 'S') && (readSPC(2) == 'P') && (readSPC(3) == 'C') && (readSPC(4) == 0x1A))
+    if ((songnum+1) > spc2_total_songs)
     {
-      is_spc2 = 1;
-      spc2_total_songs = (readSPC(7) | (readSPC(8) << 8));
-      if ((songnum+1) > spc2_total_songs)
-      {
-        songnum = 0;
-      }
+      songnum = 0;
     }
     LoadAndPlaySPC(songnum++);
   }
 #endif
+}
+
+bool OpenSPCFile(char *filename)
+{
+  if(SD.exists(filename))
+  {
+    if(spcFile)
+    {
+      printf("Closing previous file\n");
+      spcFile.close();
+    }
+    printf("Opening %s...\n",filename);
+    spcFile = SD.open(filename,FILE_READ);
+    if(!spcFile)
+    {
+      printf("Could not open %s\n",filename);
+      return false;
+    }
+    is_spc2 = 0;
+    if((readSPC(0) == 'K') && (readSPC(1) == 'S') && (readSPC(2) == 'P') && (readSPC(3) == 'C') && (readSPC(4) == 0x1A))
+    {
+      printf("%s is an spc2 file\n");
+      is_spc2 = 1;
+      spc2_total_songs = (readSPC(7) | (readSPC(8) << 8));
+    }
+    return true;
+  }
+  else
+  {
+    printf("%s doesn't exist.\n",filename);
+    return false;
+  }
 }
 
 
@@ -774,8 +792,7 @@ void ProcessCommandFromSerial()
 void loop() //The main loop.  Define various subroutines, and call them here. :)
 {
   ProcessCommandFromSerial();
-  
-  
 }
+
 
 
