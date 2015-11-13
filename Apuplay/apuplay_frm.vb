@@ -85,7 +85,69 @@ Friend Class Form1
         SPC_Filename
     End Enum
     'Private Declare Function WriteCompressedByte Lib "APU_DLL.DLL" (ByVal byte1 As Byte, ByVal byte2 As Byte, ByVal byte3 As Byte, ByVal byte4 As Byte, ByVal compressedlen As Integer) As Integer
+    '0x8F, 0x00, 0x00, //      Mov [0], #byte_0
+    '0x8F, 0x00, 0x01, //      Mov [1], #byte_1
+    '0x8F, 0xFF, 0xFC, //      Mov [0FCh], #timer_2
+    '0x8F, 0xFF, 0xFB, //      Mov [0FBh], #timer_1
+    '0x8F, 0x4F, 0xFA, //      Mov [0FAh], #timer_0
+    '0x8F, 0x31, 0xF1, //      Mov [0F1h], #ctrl_byte
+    '0xCD, 0x53,       //      Mov X, #Ack_byte
+    '0xD8, 0xF4,       //      Mov [0F4h], X
 
+    '0xE4, 0xF4,       //IN0:  Mov A, [0F4h]
+    '0x68, 0x00,       //      Cmp A, #IO_Byte_0
+    '0xD0, 0xFA,       //      Bne IN0
+
+    '0xE4, 0xF5,       //IN1:  Mov A, [0F5h] 
+    '0x68, 0x00,       //      Cmp A, #IO_Byte_1 
+    '0xD0, 0xFA,       //      Bne IN1 
+
+    '0xE4, 0xF6,       //IN2:  Mov A, [0F6h] 
+    '0x68, 0x00,       //      Cmp A, #IO_Byte_2 
+    '0xD0, 0xFA,       //      Bne IN2 
+
+    '0xE4, 0xF7,       //IN3:  Mov A, [0F7h] 
+    '0x68, 0x00,       //      Cmp A, #IO_Byte_3 
+    '0xD0, 0xFA,       //      Bne IN3 
+
+    '0xE4, 0xFD,       //      Mov A, [0FDh]
+    '0xE4, 0xFE,       //      Mov A, [0FEh]
+    '0xE4, 0xFF,       //      Mov A, [0FFh]
+
+    '0x8F, 0x6C, 0xF2, //      Mov [0F2h], 6Ch
+    '0x8F, 0x00, 0xF3, //      Mov [0F3h], #echo_control_byte
+    '0x8F, 0x4C, 0xF2, //      Mov [0F2h], 4Ch
+    '0x8F, 0x00, 0xF3, //      Mov [0F3h], #key_on_byte
+    '0x8F, 0x7F, 0xF2, //      Mov [0F2h], #dsp_control_register_byte
+    '0xCD, 0xF5,       //      Mov X, #stack_pointer
+    '0xBD,             //      Mov SP, X
+    '0xE8, 0xFF,       //      Mov A, #A_register_byte
+    '0x8D, 0x00,       //      Mov Y, #Y_register_byte
+    '0xCD, 0x00,       //      Mov X, #X_register_byte
+    '0x7F,             //      RetI
+    Dim bootcode() As Byte = New Byte() {
+        &H8F, &H0, &H0,
+        &H8F, &H0, &H1,
+        &H8F, &HB0, &HF1,
+        &HCD, &H53,
+        &HD8, &HF4,
+        &HE4, &HF4,
+        &H68, &H0,
+        &HD0, &HFA,
+        &HE4, &HF7,
+        &H68, &H0,
+        &HD0, &HFA,
+        &H8F, &H31, &HF1,
+        &H8F, &H6C, &HF2,
+        &H8F, &H0, &HF3,
+        &H8F, &H4C, &HF2,
+        &H8F, &H0, &HF3,
+        &H8F, &H7F, &HF2,
+        &HAE,
+        &HCE,
+        &HEE,
+        &H7F
+    }
 
     ReadOnly _hackbytes(3) As Byte
     Dim _readcount As Integer
@@ -243,11 +305,14 @@ errorhandler:
             i = ReadSPC700_internal(0)
             i = i + 2
             WriteSPC700_internal(0, i)
+            If _hackbytes(3) = 0 Then
+                WriteSPC700(3, 1)   'Since I removed verification of IO ports 1 & 2,  
+                'if 3 is 0, there won't be enough time to write ports 1 & 2, if I don't make 3 non-zero. :)
+            End If
             If _usedBootcode Then
                 If Not _spcinportiszero Then
                     If Not waitInport(0, &H53, 512) Then Err.Raise(-2000004, , "Error Loading SPC")
                 Else
-                    WriteSPC700(3, 1)
                     WriteSPC700(0, 1)
                     If Not waitInport(0, &H53, 512) Then Err.Raise(-2000004, , "Error Loading SPC")
                 End If
@@ -634,88 +699,103 @@ OverFlow:
     Dim spcdata(65535) As Byte
     Dim spc2data(255) As Byte
     Dim spc2dataoffset As UInt16
+    Dim uploadpages(-1) As Byte
     Public Function IsAPUSpaceFree(ByVal Address As Integer) As Integer
         On Error GoTo handler
         Dim i As Integer
         Dim j As Integer
-        Dim _00_free As Integer = 0
-        Dim _ff_free As Integer = 0
-        Dim _00_ff_free As Integer = 0
         Dim min_search As Integer = 64
 
-        If (Address = 256) Then
-            last_to_stop = -1
-            stop_00_search = True
-            stop_ff_search = False
-            stop_00_ff_search = False
+        If uploadpages.Length > 0 Then
+            i = Address >> 8
+            j = 0
+            While uploadpages(i) = 0
+                j = j + 256
+                i = i + 1
+                If i = 256 Then Exit While
+            End While
+            IsAPUSpaceFree = j
+            Exit Function
         Else
-            stop_00_search = True
-            stop_ff_search = True
-            stop_00_ff_search = True
-            If (last_to_stop = -1) Then
+            Dim _00_free As Integer = 0
+            Dim _ff_free As Integer = 0
+            Dim _00_ff_free As Integer = 0
+
+
+            If (Address = 256) Then
+                last_to_stop = -1
                 stop_00_search = True
                 stop_ff_search = False
                 stop_00_ff_search = False
-            End If
-            If (last_to_stop = 0) Then
-                stop_00_search = False
-            ElseIf (last_to_stop = 1) Then
-                stop_ff_search = False
             Else
-                stop_00_ff_search = False
-            End If
-        End If
-
-        If (spcdata(Address) <> 0) And (spcdata(Address) <> 255) Then
-            IsAPUSpaceFree = 0
-            Exit Function
-        End If
-        For i = Address To 65535 Step 1
-            If (Not stop_ff_search) Then
-                If (spcdata(i) = 255) Then
-                    _ff_free = _ff_free + 1
-                Else
-                    If (stop_00_ff_search) Then
-                        If (i - Address) >= min_search Then
-                            last_to_stop = 1
-                        End If
-                        stop_ff_search = True
-                    End If
-                End If
-            End If
-            If (Not stop_00_search) Then
-                If (spcdata(i) = 0) Then
-                    _00_free = _00_free + 1
-                Else
+                stop_00_search = True
+                stop_ff_search = True
+                stop_00_ff_search = True
+                If (last_to_stop = -1) Then
                     stop_00_search = True
+                    stop_ff_search = False
+                    stop_00_ff_search = False
+                End If
+                If (last_to_stop = 0) Then
+                    stop_00_search = False
+                ElseIf (last_to_stop = 1) Then
+                    stop_ff_search = False
+                Else
+                    stop_00_ff_search = False
                 End If
             End If
-            If (Not stop_00_ff_search) Then
-                j = 0
-                If ((i - j) Mod 64 > 31) And (spcdata(i - j) = &HFF) Then
-                    _00_ff_free = _00_ff_free + 1
-                ElseIf ((i - j) Mod 64 <= 31) And (spcdata(i - j) = 0) Then
-                    _00_ff_free = _00_ff_free + 1
-                Else
-                    If (stop_ff_search) Then
-                        If (i - Address) >= min_search Then
-                            last_to_stop = 2
+
+            If (spcdata(Address) <> 0) And (spcdata(Address) <> 255) Then
+                IsAPUSpaceFree = 0
+                Exit Function
+            End If
+            For i = Address To 65535 Step 1
+                If (Not stop_ff_search) Then
+                    If (spcdata(i) = 255) Then
+                        _ff_free = _ff_free + 1
+                    Else
+                        If (stop_00_ff_search) Then
+                            If (i - Address) >= min_search Then
+                                last_to_stop = 1
+                            End If
+                            stop_ff_search = True
                         End If
-                        stop_ff_search = True
                     End If
-                    stop_00_ff_search = True
                 End If
-            End If
-            If (stop_ff_search And stop_00_search And stop_00_ff_search) Then
-                If ((i - Address) >= min_search) Then
-                    IsAPUSpaceFree = (i - Address) - ((i - Address) Mod 16)
-                    Exit Function
-                Else
-                    IsAPUSpaceFree = 0
-                    Exit Function
+                If (Not stop_00_search) Then
+                    If (spcdata(i) = 0) Then
+                        _00_free = _00_free + 1
+                    Else
+                        stop_00_search = True
+                    End If
                 End If
-            End If
-        Next
+                If (Not stop_00_ff_search) Then
+                    j = 0
+                    If ((i - j) Mod 64 > 31) And (spcdata(i - j) = &HFF) Then
+                        _00_ff_free = _00_ff_free + 1
+                    ElseIf ((i - j) Mod 64 <= 31) And (spcdata(i - j) = 0) Then
+                        _00_ff_free = _00_ff_free + 1
+                    Else
+                        If (stop_ff_search) Then
+                            If (i - Address) >= min_search Then
+                                last_to_stop = 2
+                            End If
+                            stop_ff_search = True
+                        End If
+                        stop_00_ff_search = True
+                    End If
+                End If
+                If (stop_ff_search And stop_00_search And stop_00_ff_search) Then
+                    If ((i - Address) >= min_search) Then
+                        IsAPUSpaceFree = (i - Address) - ((i - Address) Mod 16)
+                        Exit Function
+                    Else
+                        IsAPUSpaceFree = 0
+                        Exit Function
+                    End If
+                End If
+            Next
+        End If
 handler:
         If ((i - Address) >= min_search) Then
             IsAPUSpaceFree = (i - Address) - ((i - Address) Mod 16)
@@ -749,18 +829,15 @@ handler:
         Dim spc_pcl As Byte
         Dim spc_pch As Byte
         Dim spcram(63) As Byte
-        Dim uploadmask(-1) As Byte
-        Dim uploadpages(-1) As Byte
 
         Dim echosize As Integer
         Dim echoregion As Integer
 
-        Dim bootcode() As Byte
         Dim dsploader() As Byte
 
 
         Dim bootptr As Integer
-        Dim bootsize As Integer = 77
+        Dim bootsize As Integer = bootcode.Length
         Dim count As Short
         Dim i As Integer
         Dim j As Integer
@@ -768,15 +845,18 @@ handler:
 
         Dim boot_code As Integer = 0
 
+        Dim uploadmask(-1) As Byte
+        uploadpages = New Byte() {}
 
-        'frmToP.Timer1.Enabled = False
+
+    'frmToP.Timer1.Enabled = False
         PauseUpload.Text = "Pause Upload"
         _strcurrentspc = strSPCFile
         _intcurrentspctrack = intSPCTrack
 
 
         FileOpen(1, strSPCFile, OpenMode.Binary, OpenAccess.Read, OpenShare.Shared)
-        'FileOpen(1, strSPCFile, OpenMode.Binary)
+    'FileOpen(1, strSPCFile, OpenMode.Binary)
 
 
         If intSPCTrack < 0 Then
@@ -814,7 +894,14 @@ handler:
             lblOST.Text = " " & GetSP2Tag(SPC2TagType.OST_Title, intSPCTrack) & " "
             lblPublisher.Text = " " & GetSP2Tag(SPC2TagType.Publisher_Name, intSPCTrack) & " "
             lblComment.Text = " " & GetSP2Tag(SPC2TagType.Comment, intSPCTrack) & " "
-            uploadmask = GetSP2Mask(intSPCTrack)
+
+            Select Case lblGame.Text    'Since the control panel loads for these games, the upload mask
+                Case "  Star Ocean  ", "  Tales of Phantasia  " 'will crash these spcs with that control panel. :(
+                    Exit Select
+                Case Else
+                    uploadmask = GetSP2Mask(intSPCTrack)
+            End Select
+
 
             _playtime = GetSP2Time(0, intSPCTrack) + GetSP2Time(1, intSPCTrack)
 
@@ -848,345 +935,216 @@ handler:
                 Next
             Next
             FileClose(1)
+        End If
+
+        dsploader = My.Resources.SPCCODE_DSP
+        timerinit = VB.Timer()
+
+        If spcdata(&HF1) And &H80 Then
+            For i = 0 To 63
+                spcdata(&HFFC0 + i) = spcram(i)
+            Next
+        End If
+
+        echoregion = _DSPdata(&H6D) * CLng(256)
+        echosize = _DSPdata(&H7D) * CLng(2048)
+
+        If (((_DSPdata(&H6C) And &H20) = 0)) Then
+            If (echoregion + echosize) > 65792 Then
+                Err.Raise(-2000005, , "SPC FIle Echo region wraps around and corrupts stack. This is NOT supported on real hardware")
             End If
-
-            dsploader = My.Resources.SPCCODE_DSP
-            timerinit = VB.Timer()
-
-            If spcdata(&HF1) And &H80 Then
-                For i = 0 To 63
-                    spcdata(&HFFC0 + i) = spcram(i)
-                Next
-            End If
-
-            echoregion = _DSPdata(&H6D) * CLng(256)
-            echosize = _DSPdata(&H7D) * CLng(2048)
-
-            If (((_DSPdata(&H6C) And &H20) = 0)) Then
-                If (echoregion + echosize) > 65792 Then
-                    Err.Raise(-2000005, , "SPC FIle Echo region wraps around and corrupts stack. This is NOT supported on real hardware")
-                End If
-                If (echoregion + echosize) > 65536 Then
-                    If MessageBox.Show("SPC file Echo region wraps around, and will corrupt PAGE 0.  This SPC as a result might crash on real hardware. Load anyways?", "APUplay", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) = DialogResult.No Then
-                        Err.Raise(-2000005, , "SPC file Echo region wrapped around.")
-                    End If
-                End If
-                If (echoregion = 0) And (echosize > 0) Then
-                    Err.Raise(-2000005, , "SPC File Echo region corrupts stack. This is NOT supported on real hardware.")
+            If (echoregion + echosize) > 65536 Then
+                If MessageBox.Show("SPC file Echo region wraps around, and will corrupt PAGE 0.  This SPC as a result might crash on real hardware. Load anyways?", "APUplay", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) = DialogResult.No Then
+                    Err.Raise(-2000005, , "SPC file Echo region wrapped around.")
                 End If
             End If
+            If (echoregion = 0) And (echosize > 0) Then
+                Err.Raise(-2000005, , "SPC File Echo region corrupts stack. This is NOT supported on real hardware.")
+            End If
+        End If
 
-            If echosize = 0 Then echosize = 4
-            For i = echoregion To 65535 Step 1
-                If i >= echoregion And i <= (echoregion + echosize - 1) Then
-                    If ((_DSPdata(&H6C) And &H20) = 0) And (_echoclear = 0) Then
-                        spcdata(i) = 0
-                    ElseIf _echoclear = 1 Then
-                        spcdata(i) = 0
-                    End If
+        If echosize = 0 Then echosize = 4
+        For i = echoregion To 65535 Step 1
+            If i >= echoregion And i <= (echoregion + echosize - 1) Then
+                If ((_DSPdata(&H6C) And &H20) = 0) And (_echoclear = 0) Then
+                    spcdata(i) = 0
+                ElseIf _echoclear = 1 Then
+                    spcdata(i) = 0
                 End If
-            Next i
+            End If
+        Next
 
-            If (boot_code = 2) Then bootsize = 0
-            If (bootsize = 77) Then
-                bootcode = My.Resources.SPCCODE_BOOT
+        If (boot_code = 2) Then bootsize = 0
+        If (bootsize = bootcode.Length) Then
 
-                _hackbytes(0) = spcdata(&HF4) 'Inports 0-3 to be written upon load completion
-                _hackbytes(1) = spcdata(&HF5) 'Load Completion is Acknowledged by a read of 0x53 on Port 0.
-                _hackbytes(2) = spcdata(&HF6)
-                _hackbytes(3) = spcdata(&HF7)
+            _hackbytes(0) = spcdata(&HF4) 'Inports 0-3 to be written upon load completion
+            _hackbytes(1) = spcdata(&HF5) 'Load Completion is Acknowledged by a read of 0x53 on Port 0.
+            _hackbytes(2) = spcdata(&HF6)
+            _hackbytes(3) = spcdata(&HF7)
 
-                _spcinportiszero = False
-                If (spcdata(&HF4) = 0) Then
-                    If (spcdata(&HF5) = 0) Then
-                        If (spcdata(&HF6) = 0) Then
-                            If (spcdata(&HF7) = 0) Then
-                                _spcinportiszero = True
-                            End If
-                        End If
-                    End If
+            _spcinportiszero = False
+            If (spcdata(&HF4) = 0) Then
+                If (spcdata(&HF7) = 0) Then
+                    _spcinportiszero = True
                 End If
+            End If
 
-                If Not _spcinportiszero Then
-                    bootcode(&H19) = spcdata(&HF4)          'Inport 0
-                Else
-                    bootcode(&H19) = spcdata(&HF4) + 1      'Inport 0
-                End If
-                bootcode(&H1F) = spcdata(&HF5)          'Inport 1
-                bootcode(&H25) = spcdata(&HF6)          'Inport 2
-                bootcode(&H2B) = spcdata(&HF7)          'Inport 3
-                bootcode(&H1) = spcdata(&H0)            'SPCRam Address 0x0000
-                bootcode(&H4) = spcdata(&H1)            'SPCRam Address 0x0001
-                bootcode(&H7) = spcdata(&HFC)           'Timer 2
-                bootcode(&HA) = spcdata(&HFB)           'Timer 1
-                bootcode(&HD) = spcdata(&HFA)           'Timer 0
-                bootcode(&H10) = spcdata(&HF1)          'Control Register
-                bootcode(&H38) = _DSPdata(&H6C)          'DSP Echo Control Register
-                _DSPdata(&H6C) = &H60                        'And Set it off to start
-                bootcode(&H3E) = _DSPdata(&H4C)          'DSP KeyON Register
-                _DSPdata(&H4C) = &H0                         'And Set it off to start
-                bootcode(&H41) = spcdata(&HF2)          'Current DSP Register address
 
-                bootcode(&H44) = (spc_sp + &H100 - 3) Mod 256
-                spcdata(&H100 + ((spc_sp + &H100 - 0) Mod 256)) = spc_pch   'Program Counter High Address
-                spcdata(&H100 + ((spc_sp + &H100 - 1) Mod 256)) = spc_pcl   'Program Counter Low Address
-                spcdata(&H100 + ((spc_sp + &H100 - 2) Mod 256)) = spc_sw    'Program Status Word
+            bootcode(1) = spcdata(&H0)            'SPCRam Address 0x0000
+            bootcode(4) = spcdata(&H1)            'SPCRam Address 0x0001
+            If Not _spcinportiszero Then
+                bootcode(16) = spcdata(&HF4)          'Inport 0
+            Else
+                bootcode(16) = spcdata(&HF4) + 1      'Inport 0
+            End If
+            bootcode(22) = spcdata(&HF7)          'Inport 3
+            bootcode(26) = (spcdata(&HF1) And &HCF)          'Control Register
+            bootcode(32) = _DSPdata(&H6C)          'DSP Echo Control Register
+            _DSPdata(&H6C) = &H60                        'And Set it off to start
+            bootcode(38) = _DSPdata(&H4C)          'DSP KeyON Register
+            _DSPdata(&H4C) = &H0                         'And Set it off to start
+            bootcode(41) = spcdata(&HF2)          'Current DSP Register address
 
-                bootcode(&H47) = spc_a                  'A Register
-                bootcode(&H49) = spc_y                  'Y Register
-                bootcode(&H4B) = spc_x                  'X Register
+            spcdata(&HFF) = (spc_sp + &H100 - 6) Mod 256
+            spcdata(&H100 + ((spc_sp + &H100 - 0) Mod 256)) = spc_pch   'Program Counter High Address
+            spcdata(&H100 + ((spc_sp + &H100 - 1) Mod 256)) = spc_pcl   'Program Counter Low Address
+            spcdata(&H100 + ((spc_sp + &H100 - 2) Mod 256)) = spc_sw    'Program Status Word
+            spcdata(&H100 + ((spc_sp + &H100 - 3) Mod 256)) = spc_y    'Y Register
+            spcdata(&H100 + ((spc_sp + &H100 - 4) Mod 256)) = spc_x    'X Register
+            spcdata(&H100 + ((spc_sp + &H100 - 5) Mod 256)) = spc_a    'A Register
 
-                count = 0
-                If (boot_code = 0) Then
-                    If (_freespacesearch < 2) Then
-                        For j = 255 To 0 Step -1
-                            '    bootbyte = spcdata(65471)
-                            For bootptr = 65471 To &H100 Step -1
-                                If (bootptr > echoregion + echosize) _
-                                      Or (bootptr < echoregion) Then
-                                    If spcdata(bootptr) = j Then
-                                        count = count + 1
-                                    Else
-                                        count = 0
-                                    End If
-                                    If count = bootsize Then Exit For
-                                Else
-                                    count = 0
-                                    '            bootbyte = spcdata(bootptr)
-                                    '            spcdata(bootptr) = 0
-                                End If
-                            Next bootptr
-                            If count = bootsize Then Exit For
-                        Next j
-                    End If
-                    If (_freespacesearch = 0) Or (_freespacesearch = 2) Then
-                        If (count <> bootsize) Then
-                            If (echosize < bootsize) Or (echoregion = 0) Then
+            count = 0
+            If (boot_code = 0) Then
+                If (_freespacesearch < 2) Then
+                    For j = 255 To 0 Step -1
+    '    bootbyte = spcdata(65471)
+                        For bootptr = 65471 To &H100 Step -1
+                            If (bootptr > echoregion + echosize) _
+                            Or (bootptr < echoregion) Then
+                            If spcdata(bootptr) = j Then
+                                count = count + 1
+                            Else
                                 count = 0
-                            Else
-                                count = bootsize
-                                bootptr = echoregion
-                                'bootcode(&H38) = &H60   'Bootloader will not survive echo being turned on, if loaded here.
-                                count = bootsize  'Stupid bug, where the bootloader is loaded, either incompletely, or not at all, sometimes
-                                'causing the spc to not load/play at all.  Amazing that this bug survived for a few years.
                             End If
-                        End If
-                    End If
-                    If (_freespacesearch = 0) Or (_freespacesearch = 3) Then
-                        If (count <> bootsize) Then
-                            For bootptr = 65471 To &H100 Step -1
-                                k = 0
-                                If ((bootptr - k) Mod 64 > 31) And (spcdata(bootptr - k) = &HFF) Then
-                                    count = count + 1
-                                ElseIf ((bootptr - k) Mod 64 <= 31) And (spcdata(bootptr - k) = 0) Then
-                                    count = count + 1
-                                Else
-                                    count = 0
-                                End If
-                                If count = bootsize Then Exit For
-                            Next
-                        End If
-                    End If
-                    If count <> bootsize Then
-                        bootptr = &HFF00 'Last resort,  free space not found any other way.
-                        'not guaranteed to work correctly.
-                        'Err.Raise(-2000003, , "This spc file does not have sufficient ram to be loaded with the selected free space strategy")
-                    End If
-                ElseIf (boot_code = 1) Then
-                    bootptr = &HFF00 'Last resort,  free space not found any other way.
-                Else
-                    bootptr = boot_code
-                End If
-
-                For i = bootptr To bootptr + bootsize - 1
-                    spcdata(i) = bootcode(i - bootptr)
-                Next i
-            End If
-
-            If uploadmask.Length > 0 Then
-                uploadpages = New Byte(255) {}
-                For i = 0 To 255
-                    uploadpages(i) = 0
-                Next
-                uploadpages(bootptr >> 8) = 1
-                uploadpages((bootptr + 77) >> 8) = 1
-                For i = 0 To 31
-                    If (uploadmask(i) And 128) = 128 Then uploadpages((i * 8) + 0) = 1
-                    If (uploadmask(i) And 64) = 64 Then uploadpages((i * 8) + 1) = 1
-                    If (uploadmask(i) And 32) = 32 Then uploadpages((i * 8) + 2) = 1
-                    If (uploadmask(i) And 16) = 16 Then uploadpages((i * 8) + 3) = 1
-                    If (uploadmask(i) And 8) = 8 Then uploadpages((i * 8) + 4) = 1
-                    If (uploadmask(i) And 4) = 4 Then uploadpages((i * 8) + 5) = 1
-                    If (uploadmask(i) And 2) = 2 Then uploadpages((i * 8) + 6) = 1
-                    If (uploadmask(i) And 1) = 1 Then uploadpages((i * 8) + 7) = 1
-                Next
-            End If
-
-            Dim resetdelay As Double
-            Dim retrycount As Integer = 0
-            ResetAPU_internal()
-            resetdelay = VB.Timer
-            Do While (VB.Timer - resetdelay) < 0.05
-                Application.DoEvents()
-            Loop
-            Do While (ReadSPC700_internal(0) <> &HAA) Or (ReadSPC700_internal(1) <> &HBB) Or _
-                  (ReadSPC700_internal(2) <> &H0) Or (ReadSPC700_internal(3) <> &H0)
-                ResetAPU_internal()
-                resetdelay = VB.Timer
-                Do While (VB.Timer - resetdelay) < 0.05
-                    Application.DoEvents()
-                Loop
-                retrycount = retrycount + 1
-                If (retrycount > 20) Then Err.Raise(-2000010, , "Error resetting the APU")
-            Loop
-
-            For i = 0 To 127
-                StartSPC700(_DSPdata(i))
-            Next i
-            For i = 0 To 255
-                StartSPC700(spcdata(i))
-            Next i
-
-            '    InitSPC700
-            '    For i = 0 To 15
-            '        WriteSPC700_internal 1, dsploader(i)
-            '        WriteSPC700_internal 0, i
-            '        Do Until ReadSPC700_internal(0) = i
-            '        Loop
-            '    Next i
-            '    WriteSPC700_internal 1, 0
-            '    i = ReadSPC700_internal(0)
-            '    i = i + 2
-            '    WriteSPC700_internal 0, i
-            ''   Do Until ReadSPC700_internal(0) = i
-            ''       Loop
-            '    If Not waitInport(0, i, 512) Then Err.Raise -2000000, , "Error Loading SPC"
-            '    For i = 0 To 127
-            '        WriteSPC700_internal 1, dspdata(i)
-            '        WriteSPC700_internal 0, i
-            '        'Do Until ReadSPC700_internal(0) = i
-            '            If i = 127 Then
-            '                If Not waitInport(0, &HAA, 512) Then
-            '                    Err.Raise -2000000, , "Error Loading SPC"
-            '                End If
-            '            Else
-            '                If Not waitInport(0, i, 512) Then
-            '                    Err.Raise -2000000, , "Error Loading SPC"
-            '                End If
-            '            End If
-            '
-            '        'Loop
-            '    Next i
-            ''    Do Until ReadSPC700_internal(0) = &HAA
-            ''    Loop
-            '    If Not waitInport(0, &HAA, 512) Then Err.Raise -2000000, , "Error Loading SPC"
-            '    InitSPC700
-            '    For i = 2 To &HEF
-            '
-            '        WriteSPC700_internal 1, spcdata(i)
-            '        WriteSPC700_internal 0, i - 2
-            '        j = 0
-            '        'Do Until ReadSPC700_internal(0) = i - 2
-            '        'tmrReadport_Timer
-            '        'DoEvents
-            '        'j = j + 1
-            '        'If (j > 128) Then Err.Raise -2000000, , "Error Loading SPC"
-            '        'Loop
-            '        If Not waitInport(0, i - 2, 64) Then Err.Raise -2000000, , "Error Loading SPC, Address = " & Hex(i - 2) & " Data = " & Hex(spcdata(i))
-            '        apuLoad.Value = i
-            '    Next i
-
-            'WriteSPC700_internal(1, 1)
-            'WriteSPC700_internal(2, &H0)
-            'WriteSPC700_internal(3, &H1)
-            'k = ReadSPC700_internal(0)
-            'k = k + 2
-            'WriteSPC700_internal(0, k)
-            'If Not waitInport(0, k, 512) Then Err.Raise(-2000000, , "Error Loading SPC")
-            'SetPort0(0)
-            Dim quickupload As Boolean = True
-            Dim datauploaded As Boolean = False
-            Dim dataskip As Boolean = True
-
-
-            For i = &H100 To 65535 Step 16
-                If quickupload Then
-                    For j = i To 65535 Step 16
-                        Dim freespace As Integer = 0
-                        If uploadpages.Length > 0 Then
-                            If (uploadpages(j >> 8) = 0) Then
-                                freespace = 256
-                            End If
+                            If count = bootsize Then Exit For
                         Else
-                            freespace = IsAPUSpaceFree(j)
-                        End If
-                        If (freespace > 0) Or ((j >= echoregion) And (j < (echoregion + echosize)) And (echosize <> 4)) And ((j < bootptr) Or (j >= (bootptr + bootsize))) Then
-                            'If (spcdata(j + 0) = &HFF And spcdata(j + 1) = &HFF And spcdata(j + 2) = &HFF And spcdata(j + 3) = &HFF And spcdata(j + 4) = &HFF And spcdata(j + 5) = &HFF And spcdata(j + 6) = &HFF And spcdata(j + 7) = &HFF And spcdata(j + 8) = &HFF And spcdata(j + 9) = &HFF And spcdata(j + 10) = &HFF And spcdata(j + 11) = &HFF And spcdata(j + 12) = &HFF And spcdata(j + 13) = &HFF And spcdata(j + 14) = &HFF And spcdata(j + 15) = &HFF) Then
-                            If ((j - i) <> 0) Then
-                                datauploaded = True
-                                xfer_error = StartWrite16bytes(i >> 8, i And &HFF, (j - i) >> 8, (j - i) And &HFF)
-                                If xfer_error > 0 Then
-                                    Err.Raise(-2000000, , "Error Loading SPC")
-                                End If
-                                For k = i To (j - 1) Step 16
-                                    If (k Mod 256) = 0 Then
-                                        apuLoad.Value = k
-                                        Application.DoEvents()
-                                        'readcount = readcount + 256
-                                    End If
-                                    _readcount = _readcount + 16
-                                    xfer_error = Write16bytes(spcdata(k + 0), spcdata(k + 1), spcdata(k + 2), spcdata(k + 3), spcdata(k + 4), spcdata(k + 5), spcdata(k + 6), spcdata(k + 7), spcdata(k + 8), spcdata(k + 9), spcdata(k + 10), spcdata(k + 11), spcdata(k + 12), spcdata(k + 13), spcdata(k + 14), spcdata(k + 15))
-                                    If xfer_error > 0 Then
-                                        Err.Raise(-2000000, , "Error Loading SPC")
-                                    End If
-                                Next
-                                xfer_error = FinishWrite16bytes()
-                                If xfer_error > 0 Then
-                                    Err.Raise(-2000000, , "Error Loading SPC")
-                                End If
-                            Else
-                                If (dataskip) Then
-                                    datauploaded = True
-                                    dataskip = False
-                                End If
-                            End If
-                            'For k = j To 65535 Step 16
-                            '    If (spcdata(k + 0) <> &HFF Or spcdata(k + 1) <> &HFF Or spcdata(k + 2) <> &HFF Or spcdata(k + 3) <> &HFF Or spcdata(k + 4) <> &HFF Or spcdata(k + 5) <> &HFF Or spcdata(k + 6) <> &HFF Or spcdata(k + 7) <> &HFF Or spcdata(k + 8) <> &HFF Or spcdata(k + 9) <> &HFF Or spcdata(k + 10) <> &HFF Or spcdata(k + 11) <> &HFF Or spcdata(k + 12) <> &HFF Or spcdata(k + 13) <> &HFF Or spcdata(k + 14) <> &HFF Or spcdata(k + 15) <> &HFF) Then
-                            '        i = (k - 16)
-                            '        Exit For
-                            '    Else
-                            '        i = k
-                            '    End If
-                            '    If (k Mod 256) = 0 Then
-                            '        apuLoad.Value = k
-                            '        System.Windows.Forms.Application.DoEvents()
-                            '        'readcount = readcount + 256
-                            '    End If
-                            'Next
-                            If uploadpages.Length > 0 Then
-                                Dim l As Integer = (j >> 8)
-                                k = 0
-                                While uploadpages(l) = 0
-                                    k = k + 256
-                                    l = l + 1
-                                    If l = 256 Then Exit While
-                                End While
-                            Else
-                                k = IsAPUSpaceFree(j)
-                            End If
-                            If ((j >= echoregion) And (j < (echoregion + echosize)) And (echosize <> 4)) Then
-                                k = k + (echosize - (j - echoregion))
-                            End If
-                            i = k + j - 16
-                            If (k + j) = 65536 Then
-                                i = 65536
-                                datauploaded = True
-                            End If
-                            Exit For
+                            count = 0
+    '            bootbyte = spcdata(bootptr)
+    '            spcdata(bootptr) = 0
                         End If
                     Next
-                    If (datauploaded = False) And (i < (j - 1)) Then
-                        xfer_error = StartWrite16bytes(i >> 8, i And &HFF, (65536 - i) >> 8, (65536 - i) And &HFF)
+                    If count = bootsize Then Exit For
+                Next
+            End If
+            If (_freespacesearch = 0) Or (_freespacesearch = 2) Then
+                If (count <> bootsize) Then
+                    If (echosize < bootsize) Or (echoregion = 0) Then
+                        count = 0
+                    Else
+                        bootptr = echoregion
+                                            'bootcode(&H38) = &H60   'Bootloader will not survive echo being turned on, if loaded here.
+                        count = bootsize    'Stupid bug, where the bootloader is loaded, either incompletely, or not at all, sometimes
+                                            'causing the spc to not load/play at all.  Amazing that this bug survived for a few years.
+                    End If
+                End If
+            End If
+            If (_freespacesearch = 0) Or (_freespacesearch = 3) Then
+                If (count <> bootsize) Then
+                    For bootptr = 65471 To &H100 Step -1
+                        k = 0
+                        If ((bootptr - k) Mod 64 > 31) And (spcdata(bootptr - k) = &HFF) Then
+                            count = count + 1
+                        ElseIf ((bootptr - k) Mod 64 <= 31) And (spcdata(bootptr - k) = 0) Then
+                            count = count + 1
+                        Else
+                            count = 0
+                        End If
+                        If count = bootsize Then Exit For
+                    Next
+                End If
+            End If
+            If count <> bootsize Then
+                bootptr = &HFF00 'Last resort,  free space not found any other way.
+                                 'not guaranteed to work correctly.
+            End If
+        ElseIf (boot_code = 1) Then
+            bootptr = &HFF00 'Last resort,  free space not found any other way.
+        Else
+            bootptr = boot_code
+        End If
+
+        For i = bootptr To bootptr + bootsize - 1
+            spcdata(i) = bootcode(i - bootptr)
+        Next
+    End If
+
+    If uploadmask.Length > 0 Then
+        uploadpages = New Byte(255) {}
+        uploadpages(bootptr >> 8) = 1
+        uploadpages((bootptr + bootcode.Length) >> 8) = 1
+        For i = 0 To 31
+            If (uploadmask(i) And 128) = 128 Then uploadpages((i * 8) + 0) = 1
+            If (uploadmask(i) And 64) = 64 Then uploadpages((i * 8) + 1) = 1
+            If (uploadmask(i) And 32) = 32 Then uploadpages((i * 8) + 2) = 1
+            If (uploadmask(i) And 16) = 16 Then uploadpages((i * 8) + 3) = 1
+            If (uploadmask(i) And 8) = 8 Then uploadpages((i * 8) + 4) = 1
+            If (uploadmask(i) And 4) = 4 Then uploadpages((i * 8) + 5) = 1
+            If (uploadmask(i) And 2) = 2 Then uploadpages((i * 8) + 6) = 1
+            If (uploadmask(i) And 1) = 1 Then uploadpages((i * 8) + 7) = 1
+        Next
+       ' For j = 0 To 3
+       '     For i = 255 To 1 Step -1    'Paranoid shifting. Assume the page is used if the prior page is used.
+       '         If (uploadpages(i - 1)) = 1 Then
+       '             uploadpages(i) = 1
+       '         End If
+       '     Next
+       '     For i = 0 To 254            'Also assume the page is used if the next page is used.
+       '         If (uploadpages(i + 1)) = 1 Then
+       '             uploadpages(i) = 1
+       '         End If
+       '     Next
+       'Next
+    End If
+
+    Dim resetdelay As Double
+    Dim retrycount As Integer = 0
+    ResetAPU_internal()
+    resetdelay = VB.Timer
+    Do While (VB.Timer - resetdelay) < 0.05
+        Application.DoEvents()
+    Loop
+    Do While (ReadSPC700_internal(0) <> &HAA) Or (ReadSPC700_internal(1) <> &HBB) Or _
+        (ReadSPC700_internal(2) <> &H0) Or (ReadSPC700_internal(3) <> &H0)
+        ResetAPU_internal()
+        resetdelay = VB.Timer
+        Do While (VB.Timer - resetdelay) < 0.05
+            Application.DoEvents()
+        Loop
+        retrycount = retrycount + 1
+        If (retrycount > 20) Then Err.Raise(-2000010, , "Error resetting the APU")
+    Loop
+
+    For i = 0 To 127
+        StartSPC700(_DSPdata(i))
+    Next
+    For i = 0 To 255
+        StartSPC700(spcdata(i))
+    Next
+
+    Dim quickupload As Boolean = True
+    Dim datauploaded As Boolean = False
+    Dim dataskip As Boolean = True
+
+
+    For i = &H100 To 65535 Step 16
+        If quickupload Then
+            For j = i To 65535 Step 16
+                Dim freespace As Integer = 0
+                Dim j_in_echo As Boolean = ((j >= echoregion) And (j < (echoregion + echosize)) And (echosize <> 4) And (uploadpages.Length = 0))
+                If (IsAPUSpaceFree(j) > 0) Or j_in_echo And ((j < bootptr) Or (j >= (bootptr + bootsize))) Then
+                    If ((j - i) <> 0) Then
+                        datauploaded = True
+                        xfer_error = StartWrite16bytes(i >> 8, i And &HFF, (j - i) >> 8, (j - i) And &HFF)
                         If xfer_error > 0 Then
                             Err.Raise(-2000000, , "Error Loading SPC")
                         End If
@@ -1194,7 +1152,6 @@ handler:
                             If (k Mod 256) = 0 Then
                                 apuLoad.Value = k
                                 Application.DoEvents()
-                                'readcount = readcount + 256
                             End If
                             _readcount = _readcount + 16
                             xfer_error = Write16bytes(spcdata(k + 0), spcdata(k + 1), spcdata(k + 2), spcdata(k + 3), spcdata(k + 4), spcdata(k + 5), spcdata(k + 6), spcdata(k + 7), spcdata(k + 8), spcdata(k + 9), spcdata(k + 10), spcdata(k + 11), spcdata(k + 12), spcdata(k + 13), spcdata(k + 14), spcdata(k + 15))
@@ -1206,135 +1163,128 @@ handler:
                         If xfer_error > 0 Then
                             Err.Raise(-2000000, , "Error Loading SPC")
                         End If
-                        Exit For
                     Else
-                        datauploaded = False
+                        If (dataskip) Then
+                            datauploaded = True
+                            dataskip = False
+                        End If
                     End If
-                    Continue For
-                Else
-
-                    'apuLoad.Value = i
-                    'System.Windows.Forms.Application.DoEvents()
-
-
-                    'l = l + 4
-                    'For i = 0 To l Step 4
-                    ' WriteSPC700_internal_WP0I 1, spcdata(i)
-                    '  WriteSPC700_internal 0, i Mod 256
-                    '   debugprint ReadSPC700_internal(0)
-                    'debugprint Hex(i)
-                    'debugprint Hex(i And &H7F)
-                    'If ((i And &H7F) = 0) Then
-                    If i Mod 256 = 0 Then
-                        'WriteSPC700_internal 1, 1
-                        'WriteSPC700_internal 2, (i And &HFF)
-                        'WriteSPC700_internal 3, (RShiftLong(i, 8) And &HFF)
-
-                        'k = ReadSPC700_internal(0)
-                        'k = k + 2
-                        'WriteSPC700_internal 0, k
-                        '    Do Until ReadSPC700_internal(0) = i
-                        '        Loop
-                        'If Not waitInport(0, k, 512) Then Err.Raise -2000000, , "Error Loading SPC"
-                        'SetPort0 0
-                        apuLoad.Value = i
-                        Application.DoEvents()
-                        _readcount = _readcount + 256
+                        k = IsAPUSpaceFree(j)
+                        If j_in_echo Then
+                            k = k + (echosize - (j - echoregion))
+                        End If
+                        i = k + j - 16
+                        If (k + j) = 65536 Then
+                            i = 65536
+                            datauploaded = True
+                        End If
+                        Exit For
                     End If
-                End If
-
-                xfer_error = Write16bytes(spcdata(i + 0), spcdata(i + 1), spcdata(i + 2), spcdata(i + 3), spcdata(i + 4), spcdata(i + 5), spcdata(i + 6), spcdata(i + 7), spcdata(i + 8), spcdata(i + 9), spcdata(i + 10), spcdata(i + 11), spcdata(i + 12), spcdata(i + 13), spcdata(i + 14), spcdata(i + 15))
-                'xfer_error = WriteCompressedByte(compspcdata(i), compspcdata(i + 1), compspcdata(i + 2), compspcdata(i + 3), l)
-                If xfer_error > 0 Then Err.Raise(-2000000, , "Error Loading SPC")
-
-                ' debugprint i, xfer_error
-            Next i
-
-            ''For i = 65472 To 65535 Step 16
-            ''    If spcdata(&HF1) And &H80 Then
-            ''        '            WriteSPC700_internal 1, spcram(i - 65472)
-            ''        'If WriteSPC700_internal_WP0I(1, spcram(i - 65472)) = 1 Then Err.Raise -2000000, , "Error Loading SPC"
-            ''        xfer_error = Write16bytes(spcram((i - 65472) + 0), spcram((i - 65472) + 1), spcram((i - 65472) + 2), spcram((i - 65472) + 3), spcram((i - 65472) + 4), spcram((i - 65472) + 5), spcram((i - 65472) + 6), spcram((i - 65472) + 7), spcram((i - 65472) + 8), spcram((i - 65472) + 9), spcram((i - 65472) + 10), spcram((i - 65472) + 11), spcram((i - 65472) + 12), spcram((i - 65472) + 13), spcram((i - 65472) + 14), spcram((i - 65472) + 15))
-            ''    Else
-            ''        '            WriteSPC700_internal 1, spcdata(i)
-            ''        'If WriteSPC700_internal_WP0I(1, spcdata(i)) = 1 Then Err.Raise -2000000, , "Error Loading SPC"
-            ''        xfer_error = Write16bytes(spcdata(i + 0), spcdata(i + 1), spcdata(i + 2), spcdata(i + 3), spcdata(i + 4), spcdata(i + 5), spcdata(i + 6), spcdata(i + 7), spcdata(i + 8), spcdata(i + 9), spcdata(i + 10), spcdata(i + 11), spcdata(i + 12), spcdata(i + 13), spcdata(i + 14), spcdata(i + 15))
-            ''    End If
-            ''    If xfer_error > 0 Then Err.Raise(-2000000, , "Error Loading SPC")
-            ''    '  WriteSPC700_internal 0, i Mod 256
-            ''    If i Mod 256 = 0 Then
-            ''        apuLoad.Value = i
-            ''        System.Windows.Forms.Application.DoEvents()
-            ''    End If
-            ''Next i
-            FlushRead()
-            If (bootptr > 0) Then
-                WriteSPC700_internal(3, bootptr >> 8)
-                WriteSPC700_internal(2, bootptr And &HFF)
-                WriteSPC700_internal(1, 0)
-                _usedBootcode = True
-            Else
-                WriteSPC700_internal(3, spc_pch)
-                WriteSPC700_internal(2, spc_pcl)
-                WriteSPC700_internal(1, 0)
-                _usedBootcode = False
-            End If
-            _uploadcomplete = True
-            If _uploadstate Then FinishUpload()
-
-            txtUploadSpeed.Text = "Time to Upload: " & Math.Round(VB.Timer() - timerinit, 3) & " seconds"
-
-            Debugprint("Boot Pointer Location = " & Hex(bootptr))
-            Debugprint("Echo Pointer Location = " & Hex(echoregion))
-            Debugprint("Echo Size = " & Hex(echosize))
-
-            _strselectedspc = strSPCFile
-            _intselectedspctrack = intSPCTrack
-            If Not _uploadcomplete Then
-                PauseUpload.Visible = False
-            End If
-            _uploadstate = False
-            Exit Sub
-handleerror:
-            Dim error_i As Integer
-            Select Case Err.Number
-                Case 32755
-                    PauseUpload.Hide()
-                Case -2000005
-                    error_i = MsgBox("This SPC file has an echo region that wraps to the beginning" & Chr(13) & _
-                                     "and may or may not play correctly, do you wish to try anyways?", MsgBoxStyle.YesNo, "APU Play Win")
-                    If (error_i = vbYes) Then Resume Next
-                Case -2000002
-                    Dim tryinit As Integer
-                    For tryinit = 0 To Combo1.Items.Count - 1 Step 1
-                        Application.DoEvents()
-                        Combo1.SelectedIndex = tryinit
-                        If init_port(Combo1.Text) = 0 Then
-                            cmdOpenPort.Enabled = False
-                            Command2.Enabled = False
-                            Combo1.Enabled = False
-                            Initialize.Enabled = True
-                            Resume
+                Next
+                If (datauploaded = False) And (i < (j - 1)) Then
+                    xfer_error = StartWrite16bytes(i >> 8, i And &HFF, (65536 - i) >> 8, (65536 - i) And &HFF)
+                    If xfer_error > 0 Then
+                        Err.Raise(-2000000, , "Error Loading SPC")
+                    End If
+                    For k = i To (j - 1) Step 16
+                        If (k Mod 256) = 0 Then
+                            apuLoad.Value = k
+                            Application.DoEvents()
+    'readcount = readcount + 256
+                        End If
+                        _readcount = _readcount + 16
+                        xfer_error = Write16bytes(spcdata(k + 0), spcdata(k + 1), spcdata(k + 2), spcdata(k + 3), spcdata(k + 4), spcdata(k + 5), spcdata(k + 6), spcdata(k + 7), spcdata(k + 8), spcdata(k + 9), spcdata(k + 10), spcdata(k + 11), spcdata(k + 12), spcdata(k + 13), spcdata(k + 14), spcdata(k + 15))
+                        If xfer_error > 0 Then
+                            Err.Raise(-2000000, , "Error Loading SPC")
                         End If
                     Next
-                    PauseUpload.Hide()
-                    MsgBox("Communcation port to APU hardware not open, and attempts to open it, have failed.", , "APU Play win")
-                Case -2000000
-                    PauseUpload.Hide()
-                    MsgBox("Communication port to APU hardware closed unexpectedly", , "APU Play win")
-                Case 9
+                    xfer_error = FinishWrite16bytes()
+                    If xfer_error > 0 Then
+                        Err.Raise(-2000000, , "Error Loading SPC")
+                    End If
+                    Exit For
+                Else
+                    datauploaded = False
+                End If
+                Continue For
+            Else
+                If i Mod 256 = 0 Then
+                    apuLoad.Value = i
+                    Application.DoEvents()
+                    _readcount = _readcount + 256
+                End If
+            End If
+            xfer_error = Write16bytes(spcdata(i + 0), spcdata(i + 1), spcdata(i + 2), spcdata(i + 3), spcdata(i + 4), spcdata(i + 5), spcdata(i + 6), spcdata(i + 7), spcdata(i + 8), spcdata(i + 9), spcdata(i + 10), spcdata(i + 11), spcdata(i + 12), spcdata(i + 13), spcdata(i + 14), spcdata(i + 15))
+            If xfer_error > 0 Then Err.Raise(-2000000, , "Error Loading SPC")
+        Next
+        FlushRead()
+        If (bootptr > 0) Then
+            WriteSPC700_internal(3, bootptr >> 8)
+            WriteSPC700_internal(2, bootptr And &HFF)
+            WriteSPC700_internal(1, 0)
+            _usedBootcode = True
+        Else
+            WriteSPC700_internal(3, spc_pch)
+            WriteSPC700_internal(2, spc_pcl)
+            WriteSPC700_internal(1, 0)
+            _usedBootcode = False
+        End If
+        _uploadcomplete = True
+        If _uploadstate Then FinishUpload()
+
+        txtUploadSpeed.Text = "Time to Upload: " & Math.Round(VB.Timer() - timerinit, 3) & " seconds"
+
+        Debugprint("Boot Pointer Location = " & Hex(bootptr))
+        Debugprint("Echo Pointer Location = " & Hex(echoregion))
+        Debugprint("Echo Size = " & Hex(echosize))
+
+        _strselectedspc = strSPCFile
+        _intselectedspctrack = intSPCTrack
+        If Not _uploadcomplete Then
+            PauseUpload.Visible = False
+        End If
+        _uploadstate = False
+        Exit Sub
+handleerror:
+        Dim error_i As Integer
+        Select Case Err.Number
+        Case 32755
+            PauseUpload.Hide()
+        Case -2000005
+            error_i = MsgBox("This SPC file has an echo region that wraps to the beginning" & Chr(13) & _
+            "and may or may not play correctly, do you wish to try anyways?", MsgBoxStyle.YesNo, "APU Play Win")
+            If (error_i = vbYes) Then Resume Next
+        Case -2000002
+            Dim tryinit As Integer
+            For tryinit = 0 To Combo1.Items.Count - 1 Step 1
+                Application.DoEvents()
+                Combo1.SelectedIndex = tryinit
+                If init_port(Combo1.Text) = 0 Then
+                    cmdOpenPort.Enabled = False
+                    Command2.Enabled = False
+                    Combo1.Enabled = False
+                    Initialize.Enabled = True
                     Resume
-                Case 55
-                    FileClose(1)
-                    Resume
-                Case Else
-                    PauseUpload.Hide()
-                    MsgBox(Err.Number & " - " & Err.Description, , "APU Play win")
-            End Select
-            'Resume
-            enablebuttons(True)
-            Debugprint(Err.Number & " - " & Err.Description)
+                End If
+            Next
+            PauseUpload.Hide()
+            MsgBox("Communcation port to APU hardware not open, and attempts to open it, have failed.", , "APU Play win")
+        Case -2000000
+            PauseUpload.Hide()
+            MsgBox("Communication port to APU hardware closed unexpectedly", , "APU Play win")
+        Case 9
+            Resume
+        Case 55
+            FileClose(1)
+            Resume
+        Case Else
+            PauseUpload.Hide()
+            MsgBox(Err.Number & " - " & Err.Description, , "APU Play win")
+        End Select
+        enablebuttons(True)
+        Debugprint(Err.Number & " - " & Err.Description)
     End Sub
+
 
     Public Function IsSPC(ByRef filename As String) As Integer
         On Error GoTo errorhandler

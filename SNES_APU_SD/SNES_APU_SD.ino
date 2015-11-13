@@ -23,10 +23,7 @@ static unsigned char boot_code[] =
 {
     0x8F, 0x00, 0x00, //      Mov [0], #byte_0
     0x8F, 0x00, 0x01, //      Mov [1], #byte_1
-    0x8F, 0xFF, 0xFC, //      Mov [0FCh], #timer_2
-    0x8F, 0xFF, 0xFB, //      Mov [0FBh], #timer_1
-    0x8F, 0x4F, 0xFA, //      Mov [0FAh], #timer_0
-    0x8F, 0x31, 0xF1, //      Mov [0F1h], #ctrl_byte
+    0x8F, 0xB0, 0xF1, //      Mov [0F1h], #0B0h   ;Clear the IO ports
     0xCD, 0x53,       //      Mov X, #Ack_byte
     0xD8, 0xF4,       //      Mov [0F4h], X
     
@@ -34,32 +31,20 @@ static unsigned char boot_code[] =
     0x68, 0x00,       //      Cmp A, #IO_Byte_0
     0xD0, 0xFA,       //      Bne IN0
     
-    0xE4, 0xF5,       //IN1:  Mov A, [0F5h] 
-    0x68, 0x00,       //      Cmp A, #IO_Byte_1 
-    0xD0, 0xFA,       //      Bne IN1 
-    
-    0xE4, 0xF6,       //IN2:  Mov A, [0F6h] 
-    0x68, 0x00,       //      Cmp A, #IO_Byte_2 
-    0xD0, 0xFA,       //      Bne IN2 
-    
     0xE4, 0xF7,       //IN3:  Mov A, [0F7h] 
     0x68, 0x00,       //      Cmp A, #IO_Byte_3 
     0xD0, 0xFA,       //      Bne IN3 
-    
-    0xE4, 0xFD,       //      Mov A, [0FDh]
-    0xE4, 0xFE,       //      Mov A, [0FEh]
-    0xE4, 0xFF,       //      Mov A, [0FFh]
+
+    0x8F, 0x31, 0xF1, //      Mov [0F1h], #ctrl_byte
     
     0x8F, 0x6C, 0xF2, //      Mov [0F2h], 6Ch
     0x8F, 0x00, 0xF3, //      Mov [0F3h], #echo_control_byte
     0x8F, 0x4C, 0xF2, //      Mov [0F2h], 4Ch
     0x8F, 0x00, 0xF3, //      Mov [0F3h], #key_on_byte
     0x8F, 0x7F, 0xF2, //      Mov [0F2h], #dsp_control_register_byte
-    0xCD, 0xF5,       //      Mov X, #stack_pointer
-    0xBD,             //      Mov SP, X
-    0xE8, 0xFF,       //      Mov A, #A_register_byte
-    0x8D, 0x00,       //      Mov Y, #Y_register_byte
-    0xCD, 0x00,       //      Mov X, #X_register_byte
+    0xAE,             //      Pop A
+    0xCE,             //      Pop X
+    0xEE,             //      Pop Y
     0x7F,             //      RetI
 } ;
 #endif
@@ -79,15 +64,15 @@ static unsigned char DSPdata[] =
   0xC4, 0xF4,       //        Mov [0F4h], A
   0xBC,             //        Inc A
   0x10, 0xF2,       //        Bpl START
-  0x2F, 0xB7,       //        Bra 0FFC9h  ;Right when IPL puts AA-BB on the IO ports and waits for CC.
-  /*
-  0x8F, 0xFF, 0xFC, //0x0F
-  0x8F, 0xFF, 0xFB, //0x12
-  0x8F, 0xFF, 0xFA, //0x15
-  0xCD, 0xF5,       //0x18
-  0xBD,*/
+
+  0x8F, 0xFF, 0xFC, //      Mov [0FCh], #timer_2
+  0x8F, 0xFF, 0xFB, //      Mov [0FBh], #timer_1
+  0x8F, 0x4F, 0xFA, //      Mov [0FAh], #timer_0
   
+  0xCD, 0xF5,       //      Mov X, #stack_pointer
+  0xBD,             //      Mov SP, X
   
+  0x2F, 0xAB,       //        Bra 0FFC9h  ;Right when IPL puts AA-BB on the IO ports and waits for CC.
 };
 
 
@@ -202,14 +187,19 @@ void APU_StartSPC700(unsigned char *dspdata, unsigned char *spcdata, int SD_mode
   //'G'
   int port0state = 0, i = 0;
 
+  DSPdata[15] = spcdata[0xFC];  //Helps to shrink the bootcode by 30 bytes.
+  DSPdata[18] = spcdata[0xFB];  //bootcode was formerly 77 bytes long.
+  DSPdata[21] = spcdata[0xFA];
+  DSPdata[24] = spcdata[0xFF];
+
   if (SD_mode) printf("Uploading DSP Register\n");
   //Upload the DSP register, and the first page of SPC data at serial port speed.
-  APU_StartWrite(0x0002,DSPdata,16);
+  APU_StartWrite(0x0002,DSPdata,sizeof(DSPdata));
   apu.write(2,0x02);
   apu.write(3,0x00);
   apu.write(1,0x00);
-  apu.write(0,0x11);
-  while(apu.read(0)!=0x11); 
+  apu.write(0,sizeof(DSPdata)+1);
+  while(apu.read(0)!=(sizeof(DSPdata)+1)); 
   if (SD_mode) 
   {
     printf("Done\n"); 
@@ -480,26 +470,20 @@ void LoadAndPlaySPC(unsigned short song)
   printf("boot_code_size: %04X\n", boot_code_size);
 
   // Adjust the boot code with values from this SPC
-  boot_code[0x19] = spcdata[0xF4] + (spcinportiszero ? 1:0);  // Inport 0
-  boot_code[0x1F] = spcdata[0xF5];  // Inport 1
-  boot_code[0x25] = spcdata[0xF6];  // Inport 2
-  boot_code[0x2B] = spcdata[0xF7];  // Inport 3
-  boot_code[0x01] = spcdata[0x00];  // SPCRam Address 0x0000
-  boot_code[0x04] = spcdata[0x01];  // SPCRam Address 0x0001
-  boot_code[0x07] = spcdata[0xFC];  // Timer 2
-  boot_code[0x0A] = spcdata[0xFB];  // Timer 1
-  boot_code[0x0D] = spcdata[0xFA];  // Timer 0
-  boot_code[0x10] = spcdata[0xF1];  // Control Register
-  boot_code[0x38] = dspdata[0x6C];      // DSP Echo Control Register
-  boot_code[0x3E] = dspdata[0x4C];      // DSP KeyON Register
-  boot_code[0x41] = spcdata[0xF2];  // Current DSP Register Address
-  boot_code[0x47] = A;  // A Register
-  boot_code[0x49] = Y;  // Y Register
-  boot_code[0x4B] = X;  // X Register
-  if(ApuSP < 3)
-    boot_code[0x44] = ApuSP + 0x100-3;  // Stack Pointer
+  boot_code[ 1] = spcdata[0x00];  // SPCRam Address 0x0000
+  boot_code[ 4] = spcdata[0x01];  // SPCRam Address 0x0001
+  boot_code[16] = spcdata[0xF4] + (spcinportiszero ? 1:0);  // Inport 0
+  boot_code[22] = spcdata[0xF7];  // Inport 3
+  boot_code[26] = spcdata[0xF1] & 0xCF;  // Control Register
+  boot_code[32] = dspdata[0x6C];      // DSP Echo Control Register
+  boot_code[38] = dspdata[0x4C];      // DSP KeyON Register
+  boot_code[41] = spcdata[0xF2];  // Current DSP Register Address
+
+  if(ApuSP < 6)
+    boot_code[0x44] = ApuSP + 0x100-6;  // Stack Pointer
   else
-    boot_code[0x44] = ApuSP - 3;        // Stack Pointer
+    boot_code[0x44] = ApuSP - 6;        // Stack Pointer
+  spcdata[0xFF] = ApuSP;
 
   // Reset the APU
   int resetAttempts = 0;
@@ -574,9 +558,15 @@ void LoadAndPlaySPC(unsigned short song)
         spcbuf[(ApuSP + 0x00) & 0xFF] = PCH;
         spcbuf[(ApuSP + 0xFF) & 0xFF] = PCL;
         spcbuf[(ApuSP + 0xFE) & 0xFF] = ApuSW;
+        spcbuf[(ApuSP + 0xFD) & 0xFF] = Y;
+        spcbuf[(ApuSP + 0xFC) & 0xFF] = X;
+        spcbuf[(ApuSP + 0xFB) & 0xFF] = A;
         printf("Write PCH: %04X=%02X\n", i, PCH);   // Program Counter High Address
         printf("Write PCL: %04X=%02X\n", i, PCL);   // Program Counter Low Address
         printf("Write PSW: %04X=%02X\n", i, ApuSW); // Program Status Word
+        printf("Write A: %04X=%02X\n", i, A);       // A Register
+        printf("Write X: %04X=%02X\n", i, X);       // X Register
+        printf("Write Y: %04X=%02X\n", i, Y);       // Y Register
       }
       else if (i == 0xFF00)
       {
