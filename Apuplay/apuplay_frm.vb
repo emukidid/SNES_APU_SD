@@ -397,17 +397,6 @@ errorhandler:
 
 
 
-    Private Sub HScroll1_Change(ByVal newScrollValue As Integer)
-        If (newScrollValue > 0) Then
-            tmrReadport.Enabled = True
-            tmrReadport.Interval = newScrollValue
-        Else
-            tmrReadport.Enabled = False
-        End If
-    End Sub
-
-
-
 
     Private Sub Initialize_Click(ByVal eventSender As Object, ByVal eventArgs As EventArgs) Handles Initialize.Click
         ClosePort()
@@ -530,25 +519,19 @@ handleerror:
     End Sub
 
     Private Sub Timer1_Tick(ByVal eventSender As Object, ByVal eventArgs As EventArgs) Handles Timer1.Tick
-        Static prevreadcount(9) As Short
+        Static prevreadcount(4) As Short
         Dim i As Short
-        prevreadcount(0) = prevreadcount(1)
-        prevreadcount(1) = prevreadcount(2)
-        prevreadcount(2) = prevreadcount(3)
+        For i = 0 To 3
+            prevreadcount(i) = prevreadcount(i + 1)
+        Next
         prevreadcount(3) = _readcount
-        prevreadcount(4) = prevreadcount(5)
-        prevreadcount(5) = prevreadcount(6)
-        prevreadcount(6) = prevreadcount(7)
-        prevreadcount(7) = prevreadcount(8)
-        prevreadcount(8) = prevreadcount(9)
-        prevreadcount(9) = _readcount
         _readcount = 0
 
-        For i = 0 To 3
+        For i = 0 To 4
             _readcount = _readcount + prevreadcount(i)
         Next i
 
-        txtReadSpeed.Text = _readcount / 4 & " B/s"
+        txtReadSpeed.Text = _readcount / 5 & " B/s"
         _readcount = 0
 
     End Sub
@@ -895,7 +878,10 @@ handler:
             lblOST.Text = " " & GetSP2Tag(SPC2TagType.OST_Title, intSPCTrack) & " "
             lblPublisher.Text = " " & GetSP2Tag(SPC2TagType.Publisher_Name, intSPCTrack) & " "
             lblComment.Text = " " & GetSP2Tag(SPC2TagType.Comment, intSPCTrack) & " "
-            uploadmask = GetSP2Mask(intSPCTrack)
+
+            If Not NoUploadMask.Checked Then
+                uploadmask = GetSP2Mask(intSPCTrack)
+            End If
 
             If (lblGame.Text <> previous_song) Then
                 'Since the control panel loads for these games, the upload mask
@@ -1805,24 +1791,15 @@ GetTime_error_handler:
         txtIn(1).Enabled = enabled_Renamed
         txtIn(2).Enabled = enabled_Renamed
         txtIn(3).Enabled = enabled_Renamed
-        HScroll1.Enabled = enabled_Renamed
         Text1.Enabled = enabled_Renamed
         cmdReset.Enabled = enabled_Renamed
         cmdLoadAPU.Enabled = enabled_Renamed
         cmdLoadPrev.Enabled = enabled_Renamed
-        'tmrReadport.Enabled = enabled_Renamed
-        If (enabled_Renamed) Then
-            HScroll1_Change(HScroll1.Value)
-        Else
-            tmrReadport.Enabled = False
+        RefreshApuPorts.Enabled = enabled_Renamed
+        If RefreshApuPorts.Checked Then
+            tmrReadport.Enabled = enabled_Renamed
         End If
-        'frmToP.Timer1.Enabled = False
-    End Sub
-    Private Sub HScroll1_Scroll(ByVal eventSender As Object, ByVal eventArgs As ScrollEventArgs) Handles HScroll1.Scroll
-        Select Case eventArgs.Type
-            Case ScrollEventType.EndScroll
-                HScroll1_Change(eventArgs.NewValue)
-        End Select
+
     End Sub
 
     Private Sub RadioButton1_CheckedChanged(ByVal sender As Object, ByVal e As EventArgs) Handles RadioButton1.CheckedChanged
@@ -2119,4 +2096,8 @@ AddSP2:
     Private Sub txtUploadSpeed_TextChanged(sender As System.Object, e As System.EventArgs) Handles txtUploadSpeed.TextChanged
 
     End Sub
+
+Private Sub CheckBox1_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles RefreshApuPorts.CheckedChanged
+    tmrReadport.Enabled = RefreshApuPorts.Checked
+End Sub
 End Class

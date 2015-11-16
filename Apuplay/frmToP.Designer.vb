@@ -46,7 +46,6 @@
 	Public WithEvents _optOutput_0 As System.Windows.Forms.RadioButton
 	Public WithEvents Frame1 As System.Windows.Forms.GroupBox
     'Public WithEvents _SldGraficEqualizer_0 As Axmscomctl.AxSlider
-	Public WithEvents vsVOL As System.Windows.Forms.VScrollBar
     'Public WithEvents _SldGraficEqualizer_1 As Axmscomctl.AxSlider
     'Public WithEvents _SldGraficEqualizer_2 As Axmscomctl.AxSlider
     'Public WithEvents _SldGraficEqualizer_3 As Axmscomctl.AxSlider
@@ -73,59 +72,59 @@
 	'It can be modified using the Windows Form Designer.
 	'Do not modify it using the code editor.
 	<System.Diagnostics.DebuggerStepThrough()> Private Sub InitializeComponent()
-        Me.components = New System.ComponentModel.Container
+        Me.components = New System.ComponentModel.Container()
         Me.ToolTip1 = New System.Windows.Forms.ToolTip(Me.components)
-        Me.cboGEDSP = New System.Windows.Forms.ComboBox
-        Me.Frame3 = New System.Windows.Forms.GroupBox
-        Me._optTACT_10 = New System.Windows.Forms.RadioButton
-        Me._optTACT_9 = New System.Windows.Forms.RadioButton
-        Me._optTACT_8 = New System.Windows.Forms.RadioButton
-        Me._optTACT_7 = New System.Windows.Forms.RadioButton
-        Me._optTACT_6 = New System.Windows.Forms.RadioButton
-        Me._optTACT_5 = New System.Windows.Forms.RadioButton
-        Me._optTACT_4 = New System.Windows.Forms.RadioButton
-        Me._optTACT_3 = New System.Windows.Forms.RadioButton
-        Me._optTACT_2 = New System.Windows.Forms.RadioButton
-        Me._optTACT_1 = New System.Windows.Forms.RadioButton
-        Me._optTACT_0 = New System.Windows.Forms.RadioButton
+        Me.cboGEDSP = New System.Windows.Forms.ComboBox()
+        Me.Frame3 = New System.Windows.Forms.GroupBox()
+        Me._optTACT_10 = New System.Windows.Forms.RadioButton()
+        Me._optTACT_9 = New System.Windows.Forms.RadioButton()
+        Me._optTACT_8 = New System.Windows.Forms.RadioButton()
+        Me._optTACT_7 = New System.Windows.Forms.RadioButton()
+        Me._optTACT_6 = New System.Windows.Forms.RadioButton()
+        Me._optTACT_5 = New System.Windows.Forms.RadioButton()
+        Me._optTACT_4 = New System.Windows.Forms.RadioButton()
+        Me._optTACT_3 = New System.Windows.Forms.RadioButton()
+        Me._optTACT_2 = New System.Windows.Forms.RadioButton()
+        Me._optTACT_1 = New System.Windows.Forms.RadioButton()
+        Me._optTACT_0 = New System.Windows.Forms.RadioButton()
         Me.Timer1 = New System.Windows.Forms.Timer(Me.components)
-        Me.Command1 = New System.Windows.Forms.Button
-        Me.Stop_Renamed = New System.Windows.Forms.Button
-        Me.cmdPlay = New System.Windows.Forms.Button
-        Me.cmdPause = New System.Windows.Forms.Button
-        Me.cmdFastForward = New System.Windows.Forms.Button
-        Me.Frame2 = New System.Windows.Forms.GroupBox
-        Me.optPanDelay = New System.Windows.Forms.RadioButton
-        Me.optDry = New System.Windows.Forms.RadioButton
-        Me.optReverb = New System.Windows.Forms.RadioButton
-        Me.Frame1 = New System.Windows.Forms.GroupBox
-        Me._optOutput_2 = New System.Windows.Forms.RadioButton
-        Me._optOutput_1 = New System.Windows.Forms.RadioButton
-        Me._optOutput_0 = New System.Windows.Forms.RadioButton
-        Me.vsVOL = New System.Windows.Forms.VScrollBar
-        Me.lblPattern = New System.Windows.Forms.Label
-        Me.lblLoop = New System.Windows.Forms.Label
-        Me.Label6 = New System.Windows.Forms.Label
-        Me.Label5 = New System.Windows.Forms.Label
-        Me.Label4 = New System.Windows.Forms.Label
-        Me.Label3 = New System.Windows.Forms.Label
-        Me.Label2 = New System.Windows.Forms.Label
-        Me.Label1 = New System.Windows.Forms.Label
-        Me.lblVOL = New System.Windows.Forms.Label
+        Me.Command1 = New System.Windows.Forms.Button()
+        Me.Stop_Renamed = New System.Windows.Forms.Button()
+        Me.cmdPlay = New System.Windows.Forms.Button()
+        Me.cmdPause = New System.Windows.Forms.Button()
+        Me.cmdFastForward = New System.Windows.Forms.Button()
+        Me.Frame2 = New System.Windows.Forms.GroupBox()
+        Me.optPanDelay = New System.Windows.Forms.RadioButton()
+        Me.optDry = New System.Windows.Forms.RadioButton()
+        Me.optReverb = New System.Windows.Forms.RadioButton()
+        Me.Frame1 = New System.Windows.Forms.GroupBox()
+        Me._optOutput_2 = New System.Windows.Forms.RadioButton()
+        Me._optOutput_1 = New System.Windows.Forms.RadioButton()
+        Me._optOutput_0 = New System.Windows.Forms.RadioButton()
+        Me.lblPattern = New System.Windows.Forms.Label()
+        Me.lblLoop = New System.Windows.Forms.Label()
+        Me.Label6 = New System.Windows.Forms.Label()
+        Me.Label5 = New System.Windows.Forms.Label()
+        Me.Label4 = New System.Windows.Forms.Label()
+        Me.Label3 = New System.Windows.Forms.Label()
+        Me.Label2 = New System.Windows.Forms.Label()
+        Me.Label1 = New System.Windows.Forms.Label()
+        Me.lblVOL = New System.Windows.Forms.Label()
         Me.optOutput = New Microsoft.VisualBasic.Compatibility.VB6.RadioButtonArray(Me.components)
         Me.optTACT = New Microsoft.VisualBasic.Compatibility.VB6.RadioButtonArray(Me.components)
-        Me._SldGraficEqualizer_0 = New System.Windows.Forms.TrackBar
-        Me._SldGraficEqualizer_1 = New System.Windows.Forms.TrackBar
-        Me._SldGraficEqualizer_2 = New System.Windows.Forms.TrackBar
-        Me._SldGraficEqualizer_3 = New System.Windows.Forms.TrackBar
-        Me._SldGraficEqualizer_4 = New System.Windows.Forms.TrackBar
-        Me._SldGraficEqualizer_5 = New System.Windows.Forms.TrackBar
-        Me._SldGraficEqualizer_6 = New System.Windows.Forms.TrackBar
-        Me._SldGraficEqualizer_7 = New System.Windows.Forms.TrackBar
-        Me._SldGraficEqualizer_8 = New System.Windows.Forms.TrackBar
-        Me.sldPan = New System.Windows.Forms.TrackBar
-        Me.sldTrans = New System.Windows.Forms.TrackBar
-        Me.sldPitch = New System.Windows.Forms.TrackBar
+        Me._SldGraficEqualizer_0 = New System.Windows.Forms.TrackBar()
+        Me._SldGraficEqualizer_1 = New System.Windows.Forms.TrackBar()
+        Me._SldGraficEqualizer_2 = New System.Windows.Forms.TrackBar()
+        Me._SldGraficEqualizer_3 = New System.Windows.Forms.TrackBar()
+        Me._SldGraficEqualizer_4 = New System.Windows.Forms.TrackBar()
+        Me._SldGraficEqualizer_5 = New System.Windows.Forms.TrackBar()
+        Me._SldGraficEqualizer_6 = New System.Windows.Forms.TrackBar()
+        Me._SldGraficEqualizer_7 = New System.Windows.Forms.TrackBar()
+        Me._SldGraficEqualizer_8 = New System.Windows.Forms.TrackBar()
+        Me.sldPan = New System.Windows.Forms.TrackBar()
+        Me.sldTrans = New System.Windows.Forms.TrackBar()
+        Me.sldPitch = New System.Windows.Forms.TrackBar()
+        Me.TrackBar1 = New System.Windows.Forms.TrackBar()
         Me.Frame3.SuspendLayout()
         Me.Frame2.SuspendLayout()
         Me.Frame1.SuspendLayout()
@@ -143,6 +142,7 @@
         CType(Me.sldPan, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.sldTrans, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.sldPitch, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.TrackBar1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'cboGEDSP
@@ -562,19 +562,6 @@
         Me._optOutput_0.Text = "Stereo"
         Me._optOutput_0.UseVisualStyleBackColor = False
         '
-        'vsVOL
-        '
-        Me.vsVOL.Cursor = System.Windows.Forms.Cursors.Default
-        Me.vsVOL.LargeChange = 1
-        Me.vsVOL.Location = New System.Drawing.Point(24, 40)
-        Me.vsVOL.Maximum = 0
-        Me.vsVOL.Minimum = -63
-        Me.vsVOL.Name = "vsVOL"
-        Me.vsVOL.Size = New System.Drawing.Size(17, 113)
-        Me.vsVOL.TabIndex = 0
-        Me.vsVOL.TabStop = True
-        Me.vsVOL.Value = -63
-        '
         'lblPattern
         '
         Me.lblPattern.AutoSize = True
@@ -612,9 +599,9 @@
         Me.Label6.Location = New System.Drawing.Point(224, 288)
         Me.Label6.Name = "Label6"
         Me.Label6.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.Label6.Size = New System.Drawing.Size(33, 17)
+        Me.Label6.Size = New System.Drawing.Size(57, 17)
         Me.Label6.TabIndex = 28
-        Me.Label6.Text = "Pitch"
+        Me.Label6.Text = "Pitch: 0"
         '
         'Label5
         '
@@ -625,9 +612,9 @@
         Me.Label5.Location = New System.Drawing.Point(224, 256)
         Me.Label5.Name = "Label5"
         Me.Label5.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.Label5.Size = New System.Drawing.Size(33, 17)
+        Me.Label5.Size = New System.Drawing.Size(57, 19)
         Me.Label5.TabIndex = 27
-        Me.Label5.Text = "Trans"
+        Me.Label5.Text = "Trans: 0"
         '
         'Label4
         '
@@ -638,9 +625,9 @@
         Me.Label4.Location = New System.Drawing.Point(224, 232)
         Me.Label4.Name = "Label4"
         Me.Label4.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.Label4.Size = New System.Drawing.Size(25, 17)
+        Me.Label4.Size = New System.Drawing.Size(57, 19)
         Me.Label4.TabIndex = 24
-        Me.Label4.Text = "Pan"
+        Me.Label4.Text = "Pan: 0"
         '
         'Label3
         '
@@ -667,7 +654,7 @@
         Me.Label2.Size = New System.Drawing.Size(297, 17)
         Me.Label2.TabIndex = 12
         Me.Label2.Text = " 30.................150...............550................2K..................9Khz" & _
-            ""
+    ""
         '
         'Label1
         '
@@ -678,7 +665,7 @@
         Me.Label1.Location = New System.Drawing.Point(16, 16)
         Me.Label1.Name = "Label1"
         Me.Label1.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.Label1.Size = New System.Drawing.Size(41, 17)
+        Me.Label1.Size = New System.Drawing.Size(48, 21)
         Me.Label1.TabIndex = 2
         Me.Label1.Text = "Volume"
         '
@@ -706,7 +693,7 @@
         Me._SldGraficEqualizer_0.Minimum = -15
         Me._SldGraficEqualizer_0.Name = "_SldGraficEqualizer_0"
         Me._SldGraficEqualizer_0.Orientation = System.Windows.Forms.Orientation.Vertical
-        Me._SldGraficEqualizer_0.Size = New System.Drawing.Size(42, 113)
+        Me._SldGraficEqualizer_0.Size = New System.Drawing.Size(45, 113)
         Me._SldGraficEqualizer_0.TabIndex = 48
         Me._SldGraficEqualizer_0.Value = -7
         '
@@ -717,7 +704,7 @@
         Me._SldGraficEqualizer_1.Minimum = -15
         Me._SldGraficEqualizer_1.Name = "_SldGraficEqualizer_1"
         Me._SldGraficEqualizer_1.Orientation = System.Windows.Forms.Orientation.Vertical
-        Me._SldGraficEqualizer_1.Size = New System.Drawing.Size(42, 113)
+        Me._SldGraficEqualizer_1.Size = New System.Drawing.Size(45, 113)
         Me._SldGraficEqualizer_1.TabIndex = 49
         Me._SldGraficEqualizer_1.Value = -7
         '
@@ -728,7 +715,7 @@
         Me._SldGraficEqualizer_2.Minimum = -15
         Me._SldGraficEqualizer_2.Name = "_SldGraficEqualizer_2"
         Me._SldGraficEqualizer_2.Orientation = System.Windows.Forms.Orientation.Vertical
-        Me._SldGraficEqualizer_2.Size = New System.Drawing.Size(42, 113)
+        Me._SldGraficEqualizer_2.Size = New System.Drawing.Size(45, 113)
         Me._SldGraficEqualizer_2.TabIndex = 50
         Me._SldGraficEqualizer_2.Value = -7
         '
@@ -739,7 +726,7 @@
         Me._SldGraficEqualizer_3.Minimum = -15
         Me._SldGraficEqualizer_3.Name = "_SldGraficEqualizer_3"
         Me._SldGraficEqualizer_3.Orientation = System.Windows.Forms.Orientation.Vertical
-        Me._SldGraficEqualizer_3.Size = New System.Drawing.Size(42, 113)
+        Me._SldGraficEqualizer_3.Size = New System.Drawing.Size(45, 113)
         Me._SldGraficEqualizer_3.TabIndex = 51
         Me._SldGraficEqualizer_3.Value = -7
         '
@@ -750,7 +737,7 @@
         Me._SldGraficEqualizer_4.Minimum = -15
         Me._SldGraficEqualizer_4.Name = "_SldGraficEqualizer_4"
         Me._SldGraficEqualizer_4.Orientation = System.Windows.Forms.Orientation.Vertical
-        Me._SldGraficEqualizer_4.Size = New System.Drawing.Size(42, 113)
+        Me._SldGraficEqualizer_4.Size = New System.Drawing.Size(45, 113)
         Me._SldGraficEqualizer_4.TabIndex = 52
         Me._SldGraficEqualizer_4.Value = -7
         '
@@ -761,7 +748,7 @@
         Me._SldGraficEqualizer_5.Minimum = -15
         Me._SldGraficEqualizer_5.Name = "_SldGraficEqualizer_5"
         Me._SldGraficEqualizer_5.Orientation = System.Windows.Forms.Orientation.Vertical
-        Me._SldGraficEqualizer_5.Size = New System.Drawing.Size(42, 113)
+        Me._SldGraficEqualizer_5.Size = New System.Drawing.Size(45, 113)
         Me._SldGraficEqualizer_5.TabIndex = 53
         Me._SldGraficEqualizer_5.Value = -7
         '
@@ -772,7 +759,7 @@
         Me._SldGraficEqualizer_6.Minimum = -15
         Me._SldGraficEqualizer_6.Name = "_SldGraficEqualizer_6"
         Me._SldGraficEqualizer_6.Orientation = System.Windows.Forms.Orientation.Vertical
-        Me._SldGraficEqualizer_6.Size = New System.Drawing.Size(42, 113)
+        Me._SldGraficEqualizer_6.Size = New System.Drawing.Size(45, 113)
         Me._SldGraficEqualizer_6.TabIndex = 54
         Me._SldGraficEqualizer_6.Value = -7
         '
@@ -783,7 +770,7 @@
         Me._SldGraficEqualizer_7.Minimum = -15
         Me._SldGraficEqualizer_7.Name = "_SldGraficEqualizer_7"
         Me._SldGraficEqualizer_7.Orientation = System.Windows.Forms.Orientation.Vertical
-        Me._SldGraficEqualizer_7.Size = New System.Drawing.Size(42, 113)
+        Me._SldGraficEqualizer_7.Size = New System.Drawing.Size(45, 113)
         Me._SldGraficEqualizer_7.TabIndex = 55
         Me._SldGraficEqualizer_7.Value = -7
         '
@@ -794,40 +781,49 @@
         Me._SldGraficEqualizer_8.Minimum = -15
         Me._SldGraficEqualizer_8.Name = "_SldGraficEqualizer_8"
         Me._SldGraficEqualizer_8.Orientation = System.Windows.Forms.Orientation.Vertical
-        Me._SldGraficEqualizer_8.Size = New System.Drawing.Size(42, 113)
+        Me._SldGraficEqualizer_8.Size = New System.Drawing.Size(45, 113)
         Me._SldGraficEqualizer_8.TabIndex = 56
         Me._SldGraficEqualizer_8.Value = -7
         '
         'sldPan
         '
-        Me.sldPan.Location = New System.Drawing.Point(264, 224)
-        Me.sldPan.Maximum = 0
-        Me.sldPan.Minimum = -63
+        Me.sldPan.Location = New System.Drawing.Point(275, 224)
+        Me.sldPan.Maximum = 32
+        Me.sldPan.Minimum = -31
         Me.sldPan.Name = "sldPan"
-        Me.sldPan.Size = New System.Drawing.Size(169, 42)
+        Me.sldPan.Size = New System.Drawing.Size(158, 45)
         Me.sldPan.TabIndex = 57
         Me.sldPan.TickStyle = System.Windows.Forms.TickStyle.TopLeft
-        Me.sldPan.Value = -32
         '
         'sldTrans
         '
-        Me.sldTrans.Location = New System.Drawing.Point(264, 255)
-        Me.sldTrans.Maximum = 15
+        Me.sldTrans.Location = New System.Drawing.Point(275, 255)
+        Me.sldTrans.Maximum = 7
+        Me.sldTrans.Minimum = -8
         Me.sldTrans.Name = "sldTrans"
-        Me.sldTrans.Size = New System.Drawing.Size(169, 42)
+        Me.sldTrans.Size = New System.Drawing.Size(158, 45)
         Me.sldTrans.TabIndex = 58
         Me.sldTrans.TickStyle = System.Windows.Forms.TickStyle.TopLeft
-        Me.sldTrans.Value = 8
         '
         'sldPitch
         '
-        Me.sldPitch.Location = New System.Drawing.Point(264, 285)
-        Me.sldPitch.Maximum = 63
+        Me.sldPitch.Location = New System.Drawing.Point(275, 285)
+        Me.sldPitch.Maximum = 31
+        Me.sldPitch.Minimum = -32
         Me.sldPitch.Name = "sldPitch"
-        Me.sldPitch.Size = New System.Drawing.Size(169, 42)
+        Me.sldPitch.Size = New System.Drawing.Size(158, 45)
         Me.sldPitch.TabIndex = 59
         Me.sldPitch.TickStyle = System.Windows.Forms.TickStyle.TopLeft
-        Me.sldPitch.Value = 32
+        '
+        'TrackBar1
+        '
+        Me.TrackBar1.Location = New System.Drawing.Point(19, 40)
+        Me.TrackBar1.Maximum = 63
+        Me.TrackBar1.Name = "TrackBar1"
+        Me.TrackBar1.Orientation = System.Windows.Forms.Orientation.Vertical
+        Me.TrackBar1.Size = New System.Drawing.Size(45, 113)
+        Me.TrackBar1.TabIndex = 60
+        Me.TrackBar1.Value = 63
         '
         'frmToP
         '
@@ -835,6 +831,7 @@
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.BackColor = System.Drawing.SystemColors.Control
         Me.ClientSize = New System.Drawing.Size(446, 326)
+        Me.Controls.Add(Me.TrackBar1)
         Me.Controls.Add(Me.sldPitch)
         Me.Controls.Add(Me.sldTrans)
         Me.Controls.Add(Me.sldPan)
@@ -856,7 +853,6 @@
         Me.Controls.Add(Me.cmdFastForward)
         Me.Controls.Add(Me.Frame2)
         Me.Controls.Add(Me.Frame1)
-        Me.Controls.Add(Me.vsVOL)
         Me.Controls.Add(Me.lblPattern)
         Me.Controls.Add(Me.lblLoop)
         Me.Controls.Add(Me.Label6)
@@ -889,10 +885,11 @@
         CType(Me.sldPan, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.sldTrans, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.sldPitch, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.TrackBar1, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
-    End Sub
+End Sub
     Friend WithEvents _SldGraficEqualizer_0 As System.Windows.Forms.TrackBar
     Friend WithEvents _SldGraficEqualizer_1 As System.Windows.Forms.TrackBar
     Friend WithEvents _SldGraficEqualizer_2 As System.Windows.Forms.TrackBar
@@ -905,5 +902,6 @@
     Friend WithEvents sldPan As System.Windows.Forms.TrackBar
     Friend WithEvents sldTrans As System.Windows.Forms.TrackBar
     Friend WithEvents sldPitch As System.Windows.Forms.TrackBar
+    Friend WithEvents TrackBar1 As System.Windows.Forms.TrackBar
 #End Region 
 End Class

@@ -136,7 +136,8 @@ Friend Class frmToP
 		
 		
 		
-		vsVOL.Value = 63 * -1
+        TrackBar1.Value = 63
+        vsVOL_Change(63)
         grafic_change(0, _SldGraficEqualizer_0.Value)
         grafic_change(1, _SldGraficEqualizer_1.Value)
         grafic_change(2, _SldGraficEqualizer_2.Value)
@@ -147,9 +148,9 @@ Friend Class frmToP
         grafic_change(7, _SldGraficEqualizer_7.Value)
         grafic_change(8, _SldGraficEqualizer_8.Value)
 		optOutput(2).Checked = True
-		sldPitch.Value = 32
-		sldTrans.Value = 8
-        sldPan.Value = 32 * -1
+        sldPitch.Value = 0
+        sldTrans.Value = 0
+        sldPan.Value = 0
         sldPan_Change(eventSender, New EventArgs())
         sldTrans_Change(eventSender, New EventArgs())
         sldPitch_Change(eventSender, New EventArgs())
@@ -186,7 +187,7 @@ Friend Class frmToP
         sendCommand((&H6))
         eventfired = Not eventfired
         WaitforStatechange(portstate)
-        vsVOL_Change(vsVOL.Value)
+        vsVOL_Change(TrackBar1.Value)
 
         grafic_change(0, _SldGraficEqualizer_0.Value)
         grafic_change(1, _SldGraficEqualizer_1.Value)
@@ -275,10 +276,11 @@ Friend Class frmToP
         portstate = ReadSPC700(0)
         WriteSPC700(1, &H3F)
         WriteSPC700(2, &HFF)
-        WriteSPC700(3, (sldPan.Value * -1 * 2) + 1)
+        WriteSPC700(3, ((sldPan.Value - 32) * 2 * -1) + 1)
         sendCommand((&HE))
         eventfired = Not eventfired
         WaitforStatechange(portstate)
+        Label4.Text = "Pan: " & sldPan.Value
     End Sub
 	
 	Private Sub Slider1_Change()
@@ -292,10 +294,11 @@ Friend Class frmToP
         portstate = ReadSPC700(0)
         WriteSPC700(1, &H3F)
         WriteSPC700(2, &HFF)
-        WriteSPC700(3, sldPitch.Value * 2)
+        WriteSPC700(3, (sldPitch.Value + 32) * 2)
         sendCommand((&H10))
         eventfired = Not eventfired
         WaitforStatechange(portstate)
+        Label6.Text = "Pitch: " & sldPitch.Value
     End Sub
 	
     Private Sub sldTrans_Change(ByVal eventSender As System.Object, ByVal eventArgs As System.EventArgs) Handles sldTrans.Scroll
@@ -303,10 +306,11 @@ Friend Class frmToP
         portstate = ReadSPC700(0)
         WriteSPC700(1, &H3F)
         WriteSPC700(2, &HFF)
-        WriteSPC700(3, (sldTrans.Value) - 8)
+        WriteSPC700(3, sldTrans.Value)
         sendCommand((&HF))
         eventfired = Not eventfired
         WaitforStatechange(portstate)
+        Label5.Text = "Trans: " & sldTrans.Value
     End Sub
 	
 	Private Sub Stop_Renamed_Click(ByVal eventSender As System.Object, ByVal eventArgs As System.EventArgs) Handles Stop_Renamed.Click
@@ -341,15 +345,13 @@ Friend Class frmToP
 		End If
 	End Sub
 	
-	'UPGRADE_NOTE: vsVOL.Change was changed from an event to a procedure. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="4E2DC008-5EDA-4547-8317-C9316952674F"'
-	'UPGRADE_WARNING: VScrollBar event vsVOL.Change has a new behavior. Click for more: 'ms-help://MS.VSCC.v90/dv_commoner/local/redirect.htm?keyword="6BA9B8D2-2A32-4B6E-8D36-44949974A5B4"'
-    Private Sub vsVOL_Change(ByVal newScrollValue As Integer)
+	Private Sub vsVOL_Change(ByVal newScrollValue As Integer)
         Dim portstate As Byte
         WriteSPC700(1, &H3F)
         WriteSPC700(2, &HFF)
-        WriteSPC700(3, newScrollValue * 4 * -1)
+        WriteSPC700(3, newScrollValue * 4)
         portstate = ReadSPC700(0)
-        lblVOL.Text = CStr(newScrollValue * -1)
+        lblVOL.Text = CStr(newScrollValue)
         sendCommand((&HD))
         eventfired = Not eventfired
         WaitforStatechange(portstate)
@@ -403,7 +405,7 @@ Friend Class frmToP
         sldPitch_Change(sldPitch, New System.EventArgs())
         sldTrans_Change(sldTrans, New System.EventArgs())
         sldPan_Change(sldPan, New System.EventArgs())
-        vsVOL_Change(vsVOL.Value)
+        vsVOL_Change(TrackBar1.Value)
         grafic_change(0, _SldGraficEqualizer_0.Value)
         grafic_change(1, _SldGraficEqualizer_1.Value)
         grafic_change(2, _SldGraficEqualizer_2.Value)
@@ -447,12 +449,12 @@ Friend Class frmToP
 			End If
 		End If
 	End Sub
-	Private Sub vsVOL_Scroll(ByVal eventSender As System.Object, ByVal eventArgs As System.Windows.Forms.ScrollEventArgs) Handles vsVOL.Scroll
-		Select Case eventArgs.type
-			Case System.Windows.Forms.ScrollEventType.EndScroll
-				vsVOL_Change(eventArgs.newValue)
-		End Select
-	End Sub
+    Private Sub vsVOL_Scroll(ByVal eventSender As System.Object, ByVal eventArgs As System.Windows.Forms.ScrollEventArgs)
+        Select Case eventArgs.Type
+            Case System.Windows.Forms.ScrollEventType.EndScroll
+                vsVOL_Change(eventArgs.NewValue)
+        End Select
+    End Sub
 
     Private Sub frmToP_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
 
@@ -495,4 +497,7 @@ Friend Class frmToP
     End Sub
 
 
+Private Sub TrackBar1_Scroll(sender As System.Object, e As System.EventArgs) Handles TrackBar1.Scroll
+        vsVOL_Change(TrackBar1.Value)
+End Sub
 End Class

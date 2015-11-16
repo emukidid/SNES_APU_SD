@@ -42,7 +42,6 @@
     Public WithEvents Timer1 As System.Windows.Forms.Timer
     Public WithEvents apuLoad As System.Windows.Forms.ProgressBar
     Public WithEvents cmdLoadAPU As System.Windows.Forms.Button
-    Public WithEvents HScroll1 As System.Windows.Forms.HScrollBar
     Public WithEvents cmdReset As System.Windows.Forms.Button
     Public SPCbrowseOpen As System.Windows.Forms.OpenFileDialog
     Public WithEvents _txtIn_3 As System.Windows.Forms.TextBox
@@ -89,7 +88,6 @@
         Me.Timer1 = New System.Windows.Forms.Timer(Me.components)
         Me.apuLoad = New System.Windows.Forms.ProgressBar()
         Me.cmdLoadAPU = New System.Windows.Forms.Button()
-        Me.HScroll1 = New System.Windows.Forms.HScrollBar()
         Me.cmdReset = New System.Windows.Forms.Button()
         Me.SPCbrowseOpen = New System.Windows.Forms.OpenFileDialog()
         Me._txtIn_3 = New System.Windows.Forms.TextBox()
@@ -125,6 +123,8 @@
         Me.ListBox1 = New System.Windows.Forms.ListBox()
         Me.Panel1 = New System.Windows.Forms.Panel()
         Me.Panel2 = New System.Windows.Forms.Panel()
+        Me.NoUploadMask = New System.Windows.Forms.CheckBox()
+        Me.RefreshApuPorts = New System.Windows.Forms.CheckBox()
         Me.Button3 = New System.Windows.Forms.Button()
         Me.Panel3 = New System.Windows.Forms.Panel()
         Me.lblComment = New System.Windows.Forms.TextBox()
@@ -374,18 +374,6 @@
         Me.cmdLoadAPU.TabIndex = 14
         Me.cmdLoadAPU.Text = "Load APU"
         Me.cmdLoadAPU.UseVisualStyleBackColor = False
-        '
-        'HScroll1
-        '
-        Me.HScroll1.Cursor = System.Windows.Forms.Cursors.Default
-        Me.HScroll1.LargeChange = 1
-        Me.HScroll1.Location = New System.Drawing.Point(0, 2)
-        Me.HScroll1.Maximum = 1000
-        Me.HScroll1.Name = "HScroll1"
-        Me.HScroll1.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.HScroll1.Size = New System.Drawing.Size(241, 22)
-        Me.HScroll1.TabIndex = 13
-        Me.HScroll1.TabStop = True
         '
         'cmdReset
         '
@@ -803,7 +791,8 @@
         '
         'Panel2
         '
-        Me.Panel2.Controls.Add(Me.HScroll1)
+        Me.Panel2.Controls.Add(Me.NoUploadMask)
+        Me.Panel2.Controls.Add(Me.RefreshApuPorts)
         Me.Panel2.Controls.Add(Me.Button3)
         Me.Panel2.Controls.Add(Me.Button2)
         Me.Panel2.Controls.Add(Me.cmdReset)
@@ -815,6 +804,26 @@
         Me.Panel2.Name = "Panel2"
         Me.Panel2.Size = New System.Drawing.Size(248, 83)
         Me.Panel2.TabIndex = 48
+        '
+        'NoUploadMask
+        '
+        Me.NoUploadMask.AutoSize = True
+        Me.NoUploadMask.Location = New System.Drawing.Point(137, 6)
+        Me.NoUploadMask.Name = "NoUploadMask"
+        Me.NoUploadMask.Size = New System.Drawing.Size(103, 18)
+        Me.NoUploadMask.TabIndex = 48
+        Me.NoUploadMask.Text = "No Upload Mask"
+        Me.NoUploadMask.UseVisualStyleBackColor = True
+        '
+        'RefreshApuPorts
+        '
+        Me.RefreshApuPorts.AutoSize = True
+        Me.RefreshApuPorts.Location = New System.Drawing.Point(6, 6)
+        Me.RefreshApuPorts.Name = "RefreshApuPorts"
+        Me.RefreshApuPorts.Size = New System.Drawing.Size(116, 18)
+        Me.RefreshApuPorts.TabIndex = 47
+        Me.RefreshApuPorts.Text = "Refresh APU Ports"
+        Me.RefreshApuPorts.UseVisualStyleBackColor = True
         '
         'Button3
         '
@@ -1091,6 +1100,7 @@
         Me.Panel1.ResumeLayout(False)
         Me.Panel1.PerformLayout()
         Me.Panel2.ResumeLayout(False)
+        Me.Panel2.PerformLayout()
         Me.Panel3.ResumeLayout(False)
         Me.Panel3.PerformLayout()
         Me.SplitContainer1.Panel1.ResumeLayout(False)
@@ -1099,7 +1109,7 @@
         Me.SplitContainer1.ResumeLayout(False)
         Me.ResumeLayout(False)
 
-    End Sub
+End Sub
     Friend WithEvents GroupBox1 As System.Windows.Forms.GroupBox
     Friend WithEvents RadioButton4 As System.Windows.Forms.RadioButton
     Friend WithEvents RadioButton3 As System.Windows.Forms.RadioButton
@@ -1129,5 +1139,7 @@
     Friend WithEvents chkAutoPlay As System.Windows.Forms.CheckBox
     Friend WithEvents tmrAutoPlay As System.Windows.Forms.Timer
     Friend WithEvents lblComment As System.Windows.Forms.TextBox
+    Friend WithEvents NoUploadMask As System.Windows.Forms.CheckBox
+    Friend WithEvents RefreshApuPorts As System.Windows.Forms.CheckBox
 #End Region
 End Class

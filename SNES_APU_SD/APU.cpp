@@ -1,6 +1,3 @@
-unsigned short magic_value  __attribute__ ((section (".noinit")));
-unsigned char mega_type_persistent __attribute__ ((section (".noinit")));
-
 #include "APU.h"
 
 #include <inttypes.h>
@@ -8,10 +5,15 @@ unsigned char mega_type_persistent __attribute__ ((section (".noinit")));
 
 APU::APU()
 {
-  init();
+  init(APU_TYPE_XMEM);
 }
 
-void APU::init()
+APU::APU(uint8_t type)
+{
+  init(type);
+}
+
+void APU::init(uint8_t type)
 {
 #if not (defined(__AVR_ATmega2560__) || defined(__AVR_ATmega1280__))
   PORTB = 0x0F;
@@ -19,9 +21,11 @@ void APU::init()
   PORTC |= 0x3F;
   DDRC |= 0x3F;
 #else
+  mega_type = type;
+  if (mega_type)
     init_mega_xmem();
-    mega_type = MEGA_TYPE_XMEM;
-    XMCRA = (1<<SRE);
+  else
+    init_mega();
 #endif
 }
 
@@ -38,10 +42,8 @@ void APU::init_mega()
 
 int APU::init_mega_xmem()
 {
-  DDRC = 0xFF; //Xmem Address lines (APU A0, A1, A7)
-  PORTC = 0xFF; 
-  PORTG |= 0x07; //Xmem control lines (APU /RD, /WR)
-  DDRG |= 0x07;
+  XMCRB = 0;
+  XMCRA = (1<<SRE);
   PORTL |= 0xC0; //Reset line, additional address lines
   DDRL |= 0xC0;
   DDRD |= 0x80; //Additional address lines
@@ -197,7 +199,10 @@ void APU::write_arduino_mega_xmem(uint8_t address, uint8_t data)
 void APU::reset_arduino_mega_xmem()
 {
   digitalWrite(RESET_PIN_1,LOW);
+  digitalWrite(RESET_PIN_1,LOW);
+  digitalWrite(RESET_PIN_1,LOW);
   //delay(1);
+  digitalWrite(RESET_PIN_1,HIGH);
   digitalWrite(RESET_PIN_1,HIGH);
 }
 #endif

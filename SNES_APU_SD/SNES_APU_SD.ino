@@ -4,9 +4,12 @@
  * 
  * Loads SPC tracks from SD to the SHVC-SOUND (aka SNES APU)
  */
+
+ 
 #include <Firmata.h>
 #include <EEPROM.h>
 #include "APU.h"
+APU apu(APU_TYPE_XMEM);
 
 #ifdef ARDUINO_MEGA
 #include <SPI.h>
@@ -54,7 +57,6 @@ static unsigned char spcdata[256];           // 0x100  (256 bytes (of 64kb)) (he
 static unsigned char dspdata[128];           // 0x10100  (128 bytes)
 
 FILE serial_stdout;
-APU apu;
 
 static unsigned char DSPdata[] =
 {  //For loading the 128 byte DSP ram. DO NOT CHANGE.
