@@ -149,7 +149,10 @@ Friend Class frmToP
 		optOutput(2).Checked = True
 		sldPitch.Value = 32
 		sldTrans.Value = 8
-		sldPan.Value = 32 * -1
+        sldPan.Value = 32 * -1
+        sldPan_Change(eventSender, New EventArgs())
+        sldTrans_Change(eventSender, New EventArgs())
+        sldPitch_Change(eventSender, New EventArgs())
         optReverb.Checked = True
         Timer1.Enabled = True
         Timer1.Interval = 50

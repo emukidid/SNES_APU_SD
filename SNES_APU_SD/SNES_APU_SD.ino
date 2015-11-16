@@ -5,6 +5,7 @@
  * Loads SPC tracks from SD to the SHVC-SOUND (aka SNES APU)
  */
 #include <Firmata.h>
+#include <EEPROM.h>
 #include "APU.h"
 
 #ifdef ARDUINO_MEGA
@@ -119,6 +120,7 @@ void setup()
 #endif
 }
 
+#ifdef ARDUINO_MEGA
 bool OpenSPCFile(char *filename)
 {
   if(SD.exists(filename))
@@ -150,6 +152,7 @@ bool OpenSPCFile(char *filename)
     return false;
   }
 }
+#endif
 
 
 
@@ -666,6 +669,45 @@ unsigned char ReadByteFromSerial()
   return Serial.read();
 }
 
+unsigned char ReadHexFromSerial()
+{
+  while ((Serial.available() < 2));
+  unsigned char data = 0;
+  unsigned char data2 = Serial.read();
+  if(data2 >= 'a')
+  {
+    data2 -= 'a';
+    data2 += 10;
+  }
+  else if (data2 >= 'A')
+  {
+    data2 -= 'A';
+    data2 += 10;
+  }
+  else
+  {
+    data2 -= '0';
+  }
+  data = data2 << 4;
+  data2 = Serial.read();
+  if(data2 >= 'a')
+  {
+    data2 -= 'a';
+    data2 += 10;
+  }
+  else if (data2 >= 'A')
+  {
+    data2 -= 'A';
+    data2 += 10;
+  }
+  else
+  {
+    data2 -= '0';
+  }
+  data |= data2;
+  return data;
+}
+
 
 void ProcessCommandFromSerial()
 {
@@ -703,6 +745,7 @@ void ProcessCommandFromSerial()
     address=ReadByteFromSerial()-'0';
     data=apu.read(address);
     Serial.write(data);
+    //printf("Data at port %d is 0x%.2X\n",address,data);
     break;
   case 'r':  //Read and returns 2 consecutive IO ports.
     address=ReadByteFromSerial()-'0';
@@ -761,6 +804,7 @@ void ProcessCommandFromSerial()
   case 'W':  //Write a single IO port.
     address=ReadByteFromSerial()-'0';
     data=ReadByteFromSerial();
+    //data=ReadHexFromSerial();
     i=0;  //Must timeout any wait loops, if the respective drivers are not running.
     switch(address-4)
     {

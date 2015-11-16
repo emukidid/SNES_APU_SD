@@ -806,6 +806,7 @@ handler:
         End If
     End Function
 
+    Dim previous_song As String
     Public Sub LoadAPU(ByRef strSPCFile As String, Optional ByVal intSPCTrack As Integer = -1)
         On Error GoTo handleerror
         If PauseUpload.Visible Then Exit Sub
@@ -894,13 +895,21 @@ handler:
             lblOST.Text = " " & GetSP2Tag(SPC2TagType.OST_Title, intSPCTrack) & " "
             lblPublisher.Text = " " & GetSP2Tag(SPC2TagType.Publisher_Name, intSPCTrack) & " "
             lblComment.Text = " " & GetSP2Tag(SPC2TagType.Comment, intSPCTrack) & " "
+            uploadmask = GetSP2Mask(intSPCTrack)
 
-            Select Case lblGame.Text    'Since the control panel loads for these games, the upload mask
-                Case "  Star Ocean  ", "  Tales of Phantasia  " 'will crash these spcs with that control panel. :(
-                    Exit Select
-                Case Else
-                    uploadmask = GetSP2Mask(intSPCTrack)
-            End Select
+            If (lblGame.Text <> previous_song) Then
+                'Since the control panel loads for these games, the upload mask
+                'will crash these spcs with that control panel when loaded for the first time :(
+                Select Case lblGame.Text
+                    Case "  Star Ocean  ", "  Tales of Phantasia  "
+                        If uploadmask.Length > 0 Then
+                            For i = 1 To 7
+                                uploadmask(i) = &HFF
+                            Next
+                        End If
+                End Select
+                previous_song = lblGame.Text
+            End If
 
 
             _playtime = GetSP2Time(0, intSPCTrack) + GetSP2Time(1, intSPCTrack)
