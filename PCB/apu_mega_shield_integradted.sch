@@ -23690,11 +23690,11 @@ wide body 7.5 mm/JEDEC MS-013AA</description>
 <part name="R6" library="adafruit" deviceset="R-US_" device="R0805" value="1K"/>
 <part name="GND1" library="supply1" deviceset="GND" device=""/>
 <part name="JP1" library="pinhead" deviceset="PINHD-1X16" device="" value="LCD"/>
-<part name="UP" library="switch-omron" deviceset="10-XX" device=""/>
-<part name="DOWN" library="switch-omron" deviceset="10-XX" device=""/>
-<part name="LEFT" library="switch-omron" deviceset="10-XX" device=""/>
-<part name="RIGHT" library="switch-omron" deviceset="10-XX" device=""/>
-<part name="SELECT" library="switch-omron" deviceset="10-XX" device=""/>
+<part name="UP" library="switch-omron" deviceset="10-XX" device="" value="UP"/>
+<part name="DOWN" library="switch-omron" deviceset="10-XX" device="" value="DOWN"/>
+<part name="LEFT" library="switch-omron" deviceset="10-XX" device="" value="LEFT"/>
+<part name="RIGHT" library="switch-omron" deviceset="10-XX" device="" value="RIGHT"/>
+<part name="SELECT" library="switch-omron" deviceset="10-XX" device="" value="SELECT"/>
 <part name="Q1" library="crystal" deviceset="CRYTAL" device="SMD" value="32.768"/>
 <part name="IC3" library="adafruit" deviceset="DS1307" device="SMT" value="DS1307"/>
 <part name="P+13" library="supply1" deviceset="VCC" device=""/>
@@ -23717,7 +23717,6 @@ wide body 7.5 mm/JEDEC MS-013AA</description>
 <part name="P+1" library="supply1" deviceset="VCC" device=""/>
 <part name="SUPPLY2" library="supply2" deviceset="GND" device=""/>
 <part name="X1" library="adafruit" deviceset="MICROSD" device="MOLEX"/>
-<part name="R1" library="resistor" deviceset="R-US_" device="R0805" value="220"/>
 <part name="R2" library="resistor" deviceset="R-US_" device="R0805" value="10K"/>
 <part name="R3" library="resistor" deviceset="R-US_" device="R0805" value="10K"/>
 <part name="R7" library="resistor" deviceset="R-US_" device="R0805" value="10K"/>
@@ -23728,33 +23727,33 @@ wide body 7.5 mm/JEDEC MS-013AA</description>
 <part name="R14" library="resistor" deviceset="R-US_" device="R0805" value="10K"/>
 <part name="R15" library="resistor" deviceset="R-US_" device="R0805" value="10K"/>
 <part name="IC5" library="apu_pcb" deviceset="S-SMP" device=""/>
-<part name="C50" library="apu_pcb" deviceset="CAPACITOR" device=""/>
-<part name="C51" library="apu_pcb" deviceset="CAPACITOR" device=""/>
+<part name="C50" library="apu_pcb" deviceset="CAPACITOR" device="" value="47uF"/>
+<part name="C51" library="apu_pcb" deviceset="CAPACITOR" device="" value="47uF"/>
 <part name="IC6" library="apu_pcb" deviceset="S-DSP" device=""/>
 <part name="P+4" library="supply1" deviceset="VCC" device=""/>
 <part name="GND3" library="supply1" deviceset="GND" device=""/>
-<part name="C9" library="apu_pcb" deviceset="C0805" device=""/>
-<part name="C10" library="apu_pcb" deviceset="C0805" device=""/>
-<part name="C11" library="apu_pcb" deviceset="C0805" device=""/>
-<part name="C12" library="apu_pcb" deviceset="C0805" device=""/>
-<part name="C13" library="apu_pcb" deviceset="C0805" device=""/>
-<part name="C14" library="apu_pcb" deviceset="C0805" device=""/>
-<part name="C15" library="apu_pcb" deviceset="C0805" device=""/>
-<part name="C16" library="apu_pcb" deviceset="C0805" device=""/>
-<part name="C17" library="apu_pcb" deviceset="C0805" device=""/>
-<part name="C18" library="apu_pcb" deviceset="C0805" device=""/>
-<part name="C19" library="apu_pcb" deviceset="C0805" device=""/>
-<part name="C20" library="apu_pcb" deviceset="C0805" device=""/>
-<part name="C21" library="apu_pcb" deviceset="C0805" device=""/>
-<part name="R16" library="apu_pcb" deviceset="R0805" device=""/>
-<part name="R17" library="apu_pcb" deviceset="R0805" device=""/>
-<part name="R18" library="apu_pcb" deviceset="R0805" device=""/>
-<part name="R19" library="apu_pcb" deviceset="R0805" device=""/>
-<part name="R20" library="apu_pcb" deviceset="R0805" device=""/>
-<part name="R21" library="apu_pcb" deviceset="R0805" device=""/>
-<part name="R22" library="apu_pcb" deviceset="R0805" device=""/>
-<part name="R23" library="apu_pcb" deviceset="R0805" device=""/>
-<part name="C22" library="apu_pcb" deviceset="C0805" device=""/>
+<part name="C9" library="apu_pcb" deviceset="C0805" device="" value="1000pF"/>
+<part name="C10" library="apu_pcb" deviceset="C0805" device="" value="100pF"/>
+<part name="C11" library="apu_pcb" deviceset="C0805" device="" value="1800pF"/>
+<part name="C12" library="apu_pcb" deviceset="C0805" device="" value="1000pF"/>
+<part name="C13" library="apu_pcb" deviceset="C0805" device="" value="100pF"/>
+<part name="C14" library="apu_pcb" deviceset="C0805" device="" value="1800pF"/>
+<part name="C15" library="apu_pcb" deviceset="C0805" device="" value="0.1uF"/>
+<part name="C16" library="apu_pcb" deviceset="C0805" device="" value="0.1uF"/>
+<part name="C17" library="apu_pcb" deviceset="C0805" device="" value="0.1uF"/>
+<part name="C18" library="apu_pcb" deviceset="C0805" device="" value="0.1uF"/>
+<part name="C19" library="apu_pcb" deviceset="C0805" device="" value="0.1uF"/>
+<part name="C20" library="apu_pcb" deviceset="C0805" device="" value="3pF"/>
+<part name="C21" library="apu_pcb" deviceset="C0805" device="" value="3pF"/>
+<part name="R16" library="apu_pcb" deviceset="R0805" device="" value="22K"/>
+<part name="R17" library="apu_pcb" deviceset="R0805" device="" value="22K"/>
+<part name="R18" library="apu_pcb" deviceset="R0805" device="" value="22K"/>
+<part name="R19" library="apu_pcb" deviceset="R0805" device="" value="22K"/>
+<part name="R20" library="apu_pcb" deviceset="R0805" device="" value="22K"/>
+<part name="R21" library="apu_pcb" deviceset="R0805" device="" value="22K"/>
+<part name="R22" library="apu_pcb" deviceset="R0805" device="" value="5.1K"/>
+<part name="R23" library="apu_pcb" deviceset="R0805" device="" value="5.1K"/>
+<part name="C22" library="apu_pcb" deviceset="C0805" device="" value="0.1uF"/>
 <part name="GND5" library="supply1" deviceset="GND" device=""/>
 <part name="GND6" library="supply1" deviceset="GND" device=""/>
 <part name="GND7" library="supply1" deviceset="GND" device=""/>
@@ -23764,9 +23763,9 @@ wide body 7.5 mm/JEDEC MS-013AA</description>
 <part name="GND10" library="supply1" deviceset="GND" device=""/>
 <part name="IC8" library="apu_pcb" deviceset="SRAM" device="" value="5x832 SRAM"/>
 <part name="IC9" library="apu_pcb" deviceset="SRAM" device="" value="5x832 SRAM"/>
-<part name="X2" library="apu_pcb" deviceset="CRYSTAL" device=""/>
+<part name="X2" library="apu_pcb" deviceset="CRYSTAL" device="" value="24.576Mhz"/>
 <part name="IC10" library="apu_pcb" deviceset="UPD6376" device="" value="DAC"/>
-<part name="C23" library="apu_pcb" deviceset="C0805" device=""/>
+<part name="C23" library="apu_pcb" deviceset="C0805" device="" value="0.1uF"/>
 <part name="C24" library="rcl" deviceset="C-EU" device="C0805" value="0.1uF"/>
 <part name="P+5" library="supply1" deviceset="VCC" device=""/>
 <part name="GND11" library="supply1" deviceset="GND" device=""/>
@@ -23818,23 +23817,18 @@ wide body 7.5 mm/JEDEC MS-013AA</description>
 <instance part="JP1" gate="A" x="215.9" y="114.3" rot="R90"/>
 <instance part="UP" gate="1" x="147.32" y="-17.78" smashed="yes" rot="MR270">
 <attribute name="NAME" x="148.844" y="-22.606" size="1.778" layer="95" rot="MR0"/>
-<attribute name="VALUE" x="144.145" y="-13.97" size="1.778" layer="96" rot="MR0"/>
 </instance>
 <instance part="DOWN" gate="1" x="147.32" y="-30.48" smashed="yes" rot="MR270">
 <attribute name="NAME" x="150.876" y="-35.56" size="1.778" layer="95" rot="MR0"/>
-<attribute name="VALUE" x="144.145" y="-26.67" size="1.778" layer="96" rot="MR0"/>
 </instance>
 <instance part="LEFT" gate="1" x="132.08" y="-22.86" smashed="yes" rot="MR270">
 <attribute name="NAME" x="135.128" y="-27.94" size="1.778" layer="95" rot="MR0"/>
-<attribute name="VALUE" x="128.905" y="-19.05" size="1.778" layer="96" rot="MR0"/>
 </instance>
 <instance part="RIGHT" gate="1" x="165.1" y="-22.86" smashed="yes" rot="MR270">
 <attribute name="NAME" x="169.164" y="-27.686" size="1.778" layer="95" rot="MR0"/>
-<attribute name="VALUE" x="161.925" y="-19.05" size="1.778" layer="96" rot="MR0"/>
 </instance>
 <instance part="SELECT" gate="1" x="182.88" y="-22.86" smashed="yes" rot="MR270">
 <attribute name="NAME" x="187.198" y="-27.686" size="1.778" layer="95" rot="MR0"/>
-<attribute name="VALUE" x="179.705" y="-19.05" size="1.778" layer="96" rot="MR0"/>
 </instance>
 <instance part="Q1" gate="G$1" x="111.76" y="127" rot="R180"/>
 <instance part="IC3" gate="G$1" x="114.3" y="109.22"/>
@@ -23868,7 +23862,6 @@ wide body 7.5 mm/JEDEC MS-013AA</description>
 <instance part="P+1" gate="VCC" x="383.54" y="-2.54"/>
 <instance part="SUPPLY2" gate="GND" x="383.54" y="-15.24"/>
 <instance part="X1" gate="G$1" x="353.06" y="15.24"/>
-<instance part="R1" gate="G$1" x="233.68" y="121.92" rot="R270"/>
 <instance part="R2" gate="G$1" x="142.24" y="5.08" rot="R270"/>
 <instance part="R3" gate="G$1" x="182.88" y="5.08" rot="R270"/>
 <instance part="R7" gate="G$1" x="177.8" y="10.16" rot="R270"/>
@@ -24642,9 +24635,6 @@ wide body 7.5 mm/JEDEC MS-013AA</description>
 <wire x1="243.84" y1="127" x2="243.84" y2="134.62" width="0.1524" layer="91"/>
 <wire x1="243.84" y1="114.3" x2="243.84" y2="116.84" width="0.1524" layer="91"/>
 <label x="256.54" y="134.62" size="1.778" layer="95"/>
-<pinref part="R1" gate="G$1" pin="1"/>
-<wire x1="233.68" y1="127" x2="243.84" y2="127" width="0.1524" layer="91"/>
-<junction x="243.84" y="127"/>
 </segment>
 <segment>
 <pinref part="JP1" gate="A" pin="13"/>
@@ -25207,8 +25197,11 @@ wide body 7.5 mm/JEDEC MS-013AA</description>
 <net name="N$14" class="0">
 <segment>
 <pinref part="JP1" gate="A" pin="15"/>
-<pinref part="R1" gate="G$1" pin="2"/>
 <wire x1="233.68" y1="111.76" x2="233.68" y2="116.84" width="0.1524" layer="91"/>
+<wire x1="233.68" y1="116.84" x2="251.46" y2="116.84" width="0.1524" layer="91"/>
+<wire x1="251.46" y1="116.84" x2="251.46" y2="101.6" width="0.1524" layer="91"/>
+<pinref part="U$6" gate="G$1" pin="46"/>
+<wire x1="251.46" y1="101.6" x2="259.08" y2="101.6" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$15" class="0">
@@ -25268,7 +25261,7 @@ wide body 7.5 mm/JEDEC MS-013AA</description>
 <instance part="C23" gate="G$1" x="17.78" y="20.32" rot="R180"/>
 </instances>
 <busses>
-<bus name="PA[0..7],PD[0..7],!P_RD,!P_WR,!RESET,!MUTE,SMPCLK,LEFT,RIGHT,GND,VCC,XTAL1,XTAL2,A[0..14],D[0..7],!CE0,!CE1,!OE,!WE,L.OUT,R.OUT,BCK,LRCK,SO,AVCC">
+<bus name="PA[0..7],PD[0..7],!RD,!WR,RST,!MUTE,SMPCLK,LEFT,RIGHT,GND,VCC,XTAL1,XTAL2,A[0..32],D[0..15],!CE0,!CE1,!OE,!WE,L.OUT,R.OUT,BCK,LRCK,SO,AVCC">
 <segment>
 <wire x1="134.62" y1="60.96" x2="134.62" y2="12.7" width="0.762" layer="92"/>
 <wire x1="134.62" y1="12.7" x2="88.9" y2="12.7" width="0.762" layer="92"/>
@@ -25691,18 +25684,6 @@ wide body 7.5 mm/JEDEC MS-013AA</description>
 <segment>
 <pinref part="IC6" gate="G$1" pin="!RESET"/>
 <wire x1="139.7" y1="60.96" x2="134.62" y2="60.96" width="0.1524" layer="91"/>
-</segment>
-</net>
-<net name="SMPCLK" class="0">
-<segment>
-<pinref part="IC6" gate="G$1" pin="SMPCLK"/>
-<wire x1="139.7" y1="55.88" x2="134.62" y2="55.88" width="0.1524" layer="91"/>
-</segment>
-</net>
-<net name="!MUTE" class="1">
-<segment>
-<pinref part="IC6" gate="G$1" pin="!MUTE"/>
-<wire x1="139.7" y1="58.42" x2="134.62" y2="58.42" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="R1" class="2">
@@ -26301,12 +26282,15 @@ wide body 7.5 mm/JEDEC MS-013AA</description>
 </sheet>
 </sheets>
 <errors>
+<approved hash="101,1,302.26,-7.62,IC2B,O,,,,"/>
+<approved hash="101,1,302.26,-17.78,IC2C,O,,,,"/>
 <approved hash="102,1,335.28,-2.54,GND1,GND,,,,"/>
 <approved hash="102,1,335.28,5.08,VDD,+3V3,,,,"/>
 <approved hash="102,1,335.28,2.54,VSS,GND,,,,"/>
-<approved hash="104,1,355.6,137.16,U1,VDD,VCC,,,"/>
+<approved hash="104,1,355.6,137.16,IC11,VDD,VCC,,,"/>
 <approved hash="104,1,330.2,-10.16,IC2P,VSS,GND,,,"/>
 <approved hash="104,1,330.2,5.08,IC2P,VDD,+3V3,,,"/>
+<approved hash="104,1,129.54,106.68,IC3,VBAT,N$15,,,"/>
 </errors>
 </schematic>
 </drawing>

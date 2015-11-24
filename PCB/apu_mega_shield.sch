@@ -22647,7 +22647,6 @@ Metric Code Size 5664</description>
 <part name="P+1" library="supply1" deviceset="VCC" device=""/>
 <part name="SUPPLY2" library="supply2" deviceset="GND" device=""/>
 <part name="X1" library="adafruit" deviceset="MICROSD" device="MOLEX"/>
-<part name="R1" library="resistor" deviceset="R-US_" device="R0805" value="220"/>
 <part name="R2" library="resistor" deviceset="R-US_" device="R0805" value="10K"/>
 <part name="R3" library="resistor" deviceset="R-US_" device="R0805" value="10K"/>
 <part name="R7" library="resistor" deviceset="R-US_" device="R0805" value="10K"/>
@@ -22756,7 +22755,6 @@ Metric Code Size 5664</description>
 <instance part="P+1" gate="VCC" x="383.54" y="-2.54"/>
 <instance part="SUPPLY2" gate="GND" x="383.54" y="-15.24"/>
 <instance part="X1" gate="G$1" x="353.06" y="15.24"/>
-<instance part="R1" gate="G$1" x="233.68" y="121.92" rot="R270"/>
 <instance part="R2" gate="G$1" x="142.24" y="10.16" rot="R270"/>
 <instance part="R3" gate="G$1" x="182.88" y="10.16" rot="R270"/>
 <instance part="R7" gate="G$1" x="177.8" y="10.16" rot="R270"/>
@@ -23600,9 +23598,6 @@ Metric Code Size 5664</description>
 <wire x1="243.84" y1="127" x2="243.84" y2="134.62" width="0.1524" layer="91"/>
 <wire x1="243.84" y1="114.3" x2="243.84" y2="116.84" width="0.1524" layer="91"/>
 <label x="256.54" y="134.62" size="1.778" layer="95"/>
-<pinref part="R1" gate="G$1" pin="1"/>
-<wire x1="233.68" y1="127" x2="243.84" y2="127" width="0.1524" layer="91"/>
-<junction x="243.84" y="127"/>
 </segment>
 <segment>
 <pinref part="JP1" gate="A" pin="13"/>
@@ -24182,8 +24177,11 @@ Metric Code Size 5664</description>
 <net name="N$14" class="0">
 <segment>
 <pinref part="JP1" gate="A" pin="15"/>
-<pinref part="R1" gate="G$1" pin="2"/>
 <wire x1="233.68" y1="111.76" x2="233.68" y2="116.84" width="0.1524" layer="91"/>
+<wire x1="233.68" y1="116.84" x2="251.46" y2="116.84" width="0.1524" layer="91"/>
+<wire x1="251.46" y1="116.84" x2="251.46" y2="101.6" width="0.1524" layer="91"/>
+<pinref part="U$6" gate="G$1" pin="46"/>
+<wire x1="251.46" y1="101.6" x2="259.08" y2="101.6" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$15" class="0">
