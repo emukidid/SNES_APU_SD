@@ -143,6 +143,10 @@
         Me.ListBox3 = New System.Windows.Forms.ListBox()
         Me.ListBox2 = New System.Windows.Forms.ListBox()
         Me.tmrAutoPlay = New System.Windows.Forms.Timer(Me.components)
+        Me.StatusStrip1 = New System.Windows.Forms.StatusStrip()
+        Me.BootCodeLocation = New System.Windows.Forms.ToolStripStatusLabel()
+        Me.UploadTime = New System.Windows.Forms.ToolStripStatusLabel()
+        Me.ToolStripStatusLabel1 = New System.Windows.Forms.ToolStripStatusLabel()
         Me.Frame1.SuspendLayout()
         CType(Me.Image1, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.txtIn, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -154,6 +158,7 @@
         Me.SplitContainer1.Panel1.SuspendLayout()
         Me.SplitContainer1.Panel2.SuspendLayout()
         Me.SplitContainer1.SuspendLayout()
+        Me.StatusStrip1.SuspendLayout()
         Me.SuspendLayout()
         '
         'Command2
@@ -287,7 +292,7 @@
         Me.Text1.Name = "Text1"
         Me.Text1.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.Text1.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
-        Me.Text1.Size = New System.Drawing.Size(173, 73)
+        Me.Text1.Size = New System.Drawing.Size(173, 51)
         Me.Text1.TabIndex = 26
         '
         'cmdOpenPort
@@ -871,7 +876,7 @@
         Me.Panel3.Dock = System.Windows.Forms.DockStyle.Left
         Me.Panel3.Location = New System.Drawing.Point(0, 0)
         Me.Panel3.Name = "Panel3"
-        Me.Panel3.Size = New System.Drawing.Size(390, 520)
+        Me.Panel3.Size = New System.Drawing.Size(390, 498)
         Me.Panel3.TabIndex = 49
         '
         'lblComment
@@ -887,7 +892,7 @@
         'chkAutoPlay
         '
         Me.chkAutoPlay.AutoSize = True
-        Me.chkAutoPlay.Location = New System.Drawing.Point(190, 480)
+        Me.chkAutoPlay.Location = New System.Drawing.Point(188, 471)
         Me.chkAutoPlay.Name = "chkAutoPlay"
         Me.chkAutoPlay.Size = New System.Drawing.Size(72, 18)
         Me.chkAutoPlay.TabIndex = 62
@@ -1046,7 +1051,7 @@
         Me.SplitContainer1.Panel2.Controls.Add(Me.ListBox3)
         Me.SplitContainer1.Panel2.Controls.Add(Me.ListBox2)
         Me.SplitContainer1.Panel2.Controls.Add(Me.ListBox1)
-        Me.SplitContainer1.Size = New System.Drawing.Size(1087, 520)
+        Me.SplitContainer1.Size = New System.Drawing.Size(1087, 498)
         Me.SplitContainer1.SplitterDistance = 388
         Me.SplitContainer1.TabIndex = 50
         '
@@ -1076,6 +1081,31 @@
         Me.tmrAutoPlay.Enabled = True
         Me.tmrAutoPlay.Interval = 250
         '
+        'StatusStrip1
+        '
+        Me.StatusStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.BootCodeLocation, Me.ToolStripStatusLabel1, Me.UploadTime})
+        Me.StatusStrip1.Location = New System.Drawing.Point(0, 498)
+        Me.StatusStrip1.Name = "StatusStrip1"
+        Me.StatusStrip1.Size = New System.Drawing.Size(1087, 22)
+        Me.StatusStrip1.TabIndex = 51
+        Me.StatusStrip1.Text = "StatusStrip1"
+        '
+        'BootCodeLocation
+        '
+        Me.BootCodeLocation.Name = "BootCodeLocation"
+        Me.BootCodeLocation.Size = New System.Drawing.Size(0, 17)
+        '
+        'UploadTime
+        '
+        Me.UploadTime.Name = "UploadTime"
+        Me.UploadTime.Size = New System.Drawing.Size(0, 17)
+        '
+        'ToolStripStatusLabel1
+        '
+        Me.ToolStripStatusLabel1.Name = "ToolStripStatusLabel1"
+        Me.ToolStripStatusLabel1.Size = New System.Drawing.Size(18, 17)
+        Me.ToolStripStatusLabel1.Text = " - "
+        '
         'Form1
         '
         Me.AllowDrop = True
@@ -1085,6 +1115,7 @@
         Me.ClientSize = New System.Drawing.Size(1087, 520)
         Me.Controls.Add(Me.SplitContainer1)
         Me.Controls.Add(Me.Image1)
+        Me.Controls.Add(Me.StatusStrip1)
         Me.Cursor = System.Windows.Forms.Cursors.Default
         Me.Font = New System.Drawing.Font("Arial", 8.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.Location = New System.Drawing.Point(4, 23)
@@ -1107,7 +1138,10 @@
         Me.SplitContainer1.Panel1.PerformLayout()
         Me.SplitContainer1.Panel2.ResumeLayout(False)
         Me.SplitContainer1.ResumeLayout(False)
+        Me.StatusStrip1.ResumeLayout(False)
+        Me.StatusStrip1.PerformLayout()
         Me.ResumeLayout(False)
+        Me.PerformLayout()
 
 End Sub
     Friend WithEvents GroupBox1 As System.Windows.Forms.GroupBox
@@ -1141,5 +1175,9 @@ End Sub
     Friend WithEvents lblComment As System.Windows.Forms.TextBox
     Friend WithEvents NoUploadMask As System.Windows.Forms.CheckBox
     Friend WithEvents RefreshApuPorts As System.Windows.Forms.CheckBox
+    Friend WithEvents StatusStrip1 As System.Windows.Forms.StatusStrip
+    Friend WithEvents BootCodeLocation As System.Windows.Forms.ToolStripStatusLabel
+    Friend WithEvents ToolStripStatusLabel1 As System.Windows.Forms.ToolStripStatusLabel
+    Friend WithEvents UploadTime As System.Windows.Forms.ToolStripStatusLabel
 #End Region
 End Class

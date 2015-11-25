@@ -789,6 +789,73 @@ handler:
         End If
     End Function
 
+    Public Function FindBootCodeOffset(search_method As Integer) As Integer
+        Dim bootptr As Integer
+        Dim bootsize As Integer = bootcode.Length
+        Dim count As Integer
+        Dim j As Integer
+        Dim k As Integer
+        Dim echoregion As Integer = _DSPdata(&H6D) * CLng(256)
+        Dim echosize As Integer = (_DSPdata(&H7D) And 15) * CLng(2048)
+        If (_freespacesearch < 2) Then
+                    For j = 255 To 0 Step -1
+    '    bootbyte = spcdata(65471)
+                        For bootptr = 65471 To &H100 Step -1
+                            If (bootptr > echoregion + echosize) _
+                            Or (bootptr < echoregion) Then
+                            If spcdata(bootptr) = j Then
+                                count = count + 1
+                            Else
+                                count = 0
+                            End If
+                                If count = bootsize Then
+                                    Exit For
+                                End If
+                        Else
+                            count = 0
+    '            bootbyte = spcdata(bootptr)
+    '            spcdata(bootptr) = 0
+                        End If
+                    Next
+                    If count = bootsize Then Exit For
+                Next
+            End If
+            If (_freespacesearch = 0) Or (_freespacesearch = 2) Then
+                If (count <> bootsize) Then
+                    If (echosize < bootsize) Or (echoregion = 0) Then
+                        count = 0
+                    Else
+                        bootptr = echoregion
+                                            'bootcode(&H38) = &H60   'Bootloader will not survive echo being turned on, if loaded here.
+                        count = bootsize    'Stupid bug, where the bootloader is loaded, either incompletely, or not at all, sometimes
+                                            'causing the spc to not load/play at all.  Amazing that this bug survived for a few years.
+                    End If
+                End If
+            End If
+            If (_freespacesearch = 0) Or (_freespacesearch = 3) Then
+                If (count <> bootsize) Then
+                    For bootptr = 65471 To &H100 Step -1
+                        k = 0
+                        If ((bootptr - k) Mod 64 > 31) And (spcdata(bootptr - k) = &HFF) Then
+                            count = count + 1
+                        ElseIf ((bootptr - k) Mod 64 <= 31) And (spcdata(bootptr - k) = 0) Then
+                            count = count + 1
+                        Else
+                            count = 0
+                        End If
+                        If count = bootsize Then
+                            Exit For
+                        End If
+                    Next
+                End If
+            End If
+            If count <> bootsize Then
+                bootptr = &HFF00 'Last resort,  free space not found any other way.
+                                 'not guaranteed to work correctly.
+            End If
+            FindBootCodeOffset = bootptr
+    End Function
+
     Dim previous_song As String
     Public Sub LoadAPU(ByRef strSPCFile As String, Optional ByVal intSPCTrack As Integer = -1)
         On Error GoTo handleerror
@@ -822,7 +889,6 @@ handler:
 
         Dim bootptr As Integer
         Dim bootsize As Integer = bootcode.Length
-        Dim count As Short
         Dim i As Integer
         Dim j As Integer
         Dim k As Integer
@@ -831,6 +897,9 @@ handler:
 
         Dim uploadmask(-1) As Byte
         uploadpages = New Byte() {}
+
+        BootCodeLocation.Text = ""
+        UploadTime.Text = ""
 
 
     'frmToP.Timer1.Enabled = False
@@ -942,7 +1011,7 @@ handler:
         End If
 
         echoregion = _DSPdata(&H6D) * CLng(256)
-        echosize = _DSPdata(&H7D) * CLng(2048)
+        echosize = (_DSPdata(&H7D) And 15) * CLng(2048)
 
         If (((_DSPdata(&H6C) And &H20) = 0)) Then
             If (echoregion + echosize) > 65792 Then
@@ -969,7 +1038,10 @@ handler:
             End If
         Next
 
-        If (boot_code = 2) Then bootsize = 0
+        If (boot_code = 2) Then
+            bootsize = 0
+            BootCodeLocation.Text = "This SPC has no need for bootcode. :)"
+        End If
         If (bootsize = bootcode.Length) Then
 
             _hackbytes(0) = spcdata(&HF4) 'Inports 0-3 to be written upon load completion
@@ -1008,72 +1080,26 @@ handler:
             spcdata(&H100 + ((spc_sp + &H100 - 4) Mod 256)) = spc_x    'X Register
             spcdata(&H100 + ((spc_sp + &H100 - 5) Mod 256)) = spc_a    'A Register
 
-            count = 0
-            If (boot_code = 0) Then
-                If (_freespacesearch < 2) Then
-                    For j = 255 To 0 Step -1
-    '    bootbyte = spcdata(65471)
-                        For bootptr = 65471 To &H100 Step -1
-                            If (bootptr > echoregion + echosize) _
-                            Or (bootptr < echoregion) Then
-                            If spcdata(bootptr) = j Then
-                                count = count + 1
-                            Else
-                                count = 0
-                            End If
-                            If count = bootsize Then Exit For
-                        Else
-                            count = 0
-    '            bootbyte = spcdata(bootptr)
-    '            spcdata(bootptr) = 0
-                        End If
-                    Next
-                    If count = bootsize Then Exit For
-                Next
-            End If
-            If (_freespacesearch = 0) Or (_freespacesearch = 2) Then
-                If (count <> bootsize) Then
-                    If (echosize < bootsize) Or (echoregion = 0) Then
-                        count = 0
-                    Else
-                        bootptr = echoregion
-                                            'bootcode(&H38) = &H60   'Bootloader will not survive echo being turned on, if loaded here.
-                        count = bootsize    'Stupid bug, where the bootloader is loaded, either incompletely, or not at all, sometimes
-                                            'causing the spc to not load/play at all.  Amazing that this bug survived for a few years.
-                    End If
-                End If
-            End If
-            If (_freespacesearch = 0) Or (_freespacesearch = 3) Then
-                If (count <> bootsize) Then
-                    For bootptr = 65471 To &H100 Step -1
-                        k = 0
-                        If ((bootptr - k) Mod 64 > 31) And (spcdata(bootptr - k) = &HFF) Then
-                            count = count + 1
-                        ElseIf ((bootptr - k) Mod 64 <= 31) And (spcdata(bootptr - k) = 0) Then
-                            count = count + 1
-                        Else
-                            count = 0
-                        End If
-                        If count = bootsize Then Exit For
-                    Next
-                End If
-            End If
-            If count <> bootsize Then
-                bootptr = &HFF00 'Last resort,  free space not found any other way.
-                                 'not guaranteed to work correctly.
-            End If
+        If (boot_code = 0) Then
+            bootptr = FindBootCodeOffset(_freespacesearch)
         ElseIf (boot_code = 1) Then
             bootptr = &HFF00 'Last resort,  free space not found any other way.
         Else
+            bootptr = FindBootCodeOffset(0)
+            If bootptr <> boot_code Then
+                BootCodeLocation.Text = "Warning: Inconsistent Bootcode location. Found offset: " & Hex(bootptr) & ", SPC2 specified "
+            End If
             bootptr = boot_code
         End If
 
+        BootCodeLocation.Text = BootCodeLocation.Text & "Boot code Offset: " & Hex(bootptr)
         For i = bootptr To bootptr + bootsize - 1
             spcdata(i) = bootcode(i - bootptr)
         Next
     End If
 
     If uploadmask.Length > 0 Then
+        BootCodeLocation.Text = BootCodeLocation.Text & ", upload mask specified in SPC2."
         uploadpages = New Byte(255) {}
         uploadpages(bootptr >> 8) = 1
         uploadpages((bootptr + bootcode.Length) >> 8) = 1
@@ -1227,7 +1253,7 @@ handler:
         _uploadcomplete = True
         If _uploadstate Then FinishUpload()
 
-        txtUploadSpeed.Text = "Time to Upload: " & Math.Round(VB.Timer() - timerinit, 3) & " seconds"
+        UploadTime.Text = "Time to Upload: " & Math.Round(VB.Timer() - timerinit, 3) & " seconds"
 
         Debugprint("Boot Pointer Location = " & Hex(bootptr))
         Debugprint("Echo Pointer Location = " & Hex(echoregion))
@@ -2021,35 +2047,22 @@ AddSP2:
         Static timeout As Boolean = False
         Static timeoutticks As Integer = 5000
 
-        If _justUploaded Then
-            timeoutticks = 5000
-            _justUploaded = False
-            timeout = False
-        End If
-
         If _playtime > 0 Then
-            timeoutticks = timeoutticks - tmrAutoPlay.Interval
             _playtime = _playtime - tmrAutoPlay.Interval
-            If timeoutticks <= 0 Then
-                timeout = True
-            End If
-
-            If (timeout) Then
-                Dim hours As Integer = 0, minutes As Integer = 0, seconds As Integer = 0, milliseconds As Integer = 0
-                milliseconds = _playtime Mod 1000
-                seconds = _playtime \ 1000
-                minutes = seconds \ 60
-                hours = minutes \ 60
-                minutes = minutes Mod 60
-                seconds = seconds Mod 60
-                If Not chkAutoPlay.Checked() Then
-                    txtUploadSpeed.Text = "Play Time Left: Infinite :)"
+            Dim hours As Integer = 0, minutes As Integer = 0, seconds As Integer = 0, milliseconds As Integer = 0
+            milliseconds = _playtime Mod 1000
+            seconds = _playtime \ 1000
+            minutes = seconds \ 60
+            hours = minutes \ 60
+            minutes = minutes Mod 60
+            seconds = seconds Mod 60
+            If Not chkAutoPlay.Checked() Then
+                txtUploadSpeed.Text = "Play Time Left: Infinite :)"
+            Else
+                If (hours > 0) Then
+                    txtUploadSpeed.Text = "Play Time Left: " & hours.ToString() & ":" & minutes.ToString("00") & ":" & seconds.ToString("00")
                 Else
-                    If (hours > 0) Then
-                        txtUploadSpeed.Text = "Play Time Left: " & hours.ToString() & ":" & minutes.ToString("00") & ":" & seconds.ToString("00")
-                    Else
-                        txtUploadSpeed.Text = "Play Time Left: " & minutes.ToString() & ":" & seconds.ToString("00")
-                    End If
+                    txtUploadSpeed.Text = "Play Time Left: " & minutes.ToString() & ":" & seconds.ToString("00")
                 End If
             End If
 
