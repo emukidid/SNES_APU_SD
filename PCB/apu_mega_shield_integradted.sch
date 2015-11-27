@@ -24521,14 +24521,14 @@ wide body 7.5 mm/JEDEC MS-013AA</description>
 </net>
 <net name="A11" class="0">
 <segment>
-<pinref part="IC11" gate="A" pin="A16"/>
-<wire x1="355.6" y1="78.74" x2="345.44" y2="78.74" width="0.1524" layer="91"/>
-<label x="347.98" y="78.74" size="1.778" layer="95"/>
-</segment>
-<segment>
 <pinref part="U$6" gate="G$1" pin="34"/>
 <wire x1="261.62" y1="116.84" x2="259.08" y2="116.84" width="0.1524" layer="91"/>
 <label x="256.54" y="116.84" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="IC11" gate="A" pin="A14"/>
+<wire x1="355.6" y1="86.36" x2="345.44" y2="86.36" width="0.1524" layer="91"/>
+<label x="347.98" y="86.36" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="A12" class="0">
@@ -24545,14 +24545,14 @@ wide body 7.5 mm/JEDEC MS-013AA</description>
 </net>
 <net name="A13" class="0">
 <segment>
-<pinref part="IC11" gate="A" pin="A14"/>
-<wire x1="355.6" y1="86.36" x2="345.44" y2="86.36" width="0.1524" layer="91"/>
-<label x="347.98" y="86.36" size="1.778" layer="95"/>
-</segment>
-<segment>
 <pinref part="U$6" gate="G$1" pin="32"/>
 <wire x1="261.62" y1="119.38" x2="259.08" y2="119.38" width="0.1524" layer="91"/>
 <label x="256.54" y="119.38" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="IC11" gate="A" pin="A12"/>
+<wire x1="355.6" y1="88.9" x2="345.44" y2="88.9" width="0.1524" layer="91"/>
+<label x="347.98" y="88.9" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="A14" class="0">
@@ -24598,9 +24598,9 @@ wide body 7.5 mm/JEDEC MS-013AA</description>
 <label x="256.54" y="106.68" size="1.778" layer="95"/>
 </segment>
 <segment>
-<pinref part="IC11" gate="A" pin="A12"/>
-<wire x1="345.44" y1="88.9" x2="355.6" y2="88.9" width="0.1524" layer="91"/>
-<label x="347.98" y="88.9" size="1.778" layer="95"/>
+<pinref part="IC11" gate="A" pin="A16"/>
+<wire x1="355.6" y1="78.74" x2="345.44" y2="78.74" width="0.1524" layer="91"/>
+<label x="347.98" y="78.74" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="VCC" class="1">
