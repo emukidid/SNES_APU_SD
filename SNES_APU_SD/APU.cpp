@@ -54,6 +54,8 @@ int APU::init_mega_xmem()
   //SRWx1 = 1, SRWx0 = 0 - Wait two cycles during read/write strobe
   //SRWx1 = 1, SRWx0 = 1 -      And wait one cycle before driving out new address.
 
+  DDRC = 0xFF;
+  PORTC = 0x00;
   XMCRB = (0 << XMBK) // External Memory Bus-keeper enable
         | (0 << XMM2) | (0 << XMM1) | (0 << XMM0); //External Memory High Mask
 
