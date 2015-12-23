@@ -43,7 +43,31 @@ void APU::init_mega()
 int APU::init_mega_xmem()
 {
   XMCRB = 0;
-  XMCRA = (1<<SRE);
+  XMCRA = (1<<SRE)  //Enable Xmem Interface
+        | (1 << SRL2) | (0 << SRL1) | (0 << SRL0) //Set upper sector limit
+        | (0 << SRW11) | (0 << SRW10) //Set upper sector wait-states
+        | (0 << SRW01) | (0 << SRW00); //Set lower sector wait-states.
+  //SRE - Enable XMem Interface
+  //SRL2 = 1, SRL1 = 0, SRL0 = 0 - Lower sector = 0x2200-0x7FFF, Upper sector = 0x8000-0xFFFF
+  //SRWx1 = 0, SRWx0 = 0 - No wait-states
+  //SRWx1 = 0, SRWx0 = 1 - Wait one cycle during read/write strobe
+  //SRWx1 = 1, SRWx0 = 0 - Wait two cycles during read/write strobe
+  //SRWx1 = 1, SRWx0 = 1 -      And wait one cycle before driving out new address.
+
+  XMCRB = (0 << XMBK) // External Memory Bus-keeper enable
+        | (0 << XMM2) | (0 << XMM1) | (0 << XMM0); //External Memory High Mask
+
+  // XMM2 XMM1 XMM0 - Released IO pins (Arduino notation, AVR notation)
+  // 0    0    0    - None
+  // 0    0    1    - 30   , PC7
+  // 0    1    0    - 30-31, PC6-PC7
+  // 0    1    1    - 30-32, PC5-PC7
+  // 1    0    0    - 30-33, PC4-PC7
+  // 1    0    1    - 30-34, PC3-PC7
+  // 1    1    0    - 30-35, PC2-PC7
+  // 1    1    1    - 30-37, PC0-PC7
+
+  
   PORTL |= 0xC0; //Reset line, additional address lines
   DDRL |= 0xC0;
   DDRD |= 0x80; //Additional address lines

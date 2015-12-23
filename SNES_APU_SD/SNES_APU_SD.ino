@@ -501,6 +501,7 @@ void LoadAndPlaySPC(unsigned short song)
     delay(50);
     if(resetAttempts > 20)
     {
+      printf("Expected AABB0000, Got %.2X%.2X%.2X%.2X :(",apu.read(0),apu.read(1),apu.read(2),apu.read(3));
       printf("Failed to reset the APU\n");
       while(1);
     }

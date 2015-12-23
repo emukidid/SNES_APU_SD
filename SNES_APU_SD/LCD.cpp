@@ -33,6 +33,7 @@ LiquidCrystal::LiquidCrystal()
 void LiquidCrystal::init()
 {
   DDRF = 0xFF;
+  DDRH = 0xFF;
   DDRK = 0x07;
   _displayfunction = LCD_8BITMODE | LCD_1LINE | LCD_5x8DOTS;
   
@@ -249,6 +250,8 @@ void LiquidCrystal::write8bits(uint8_t value) {
     if (value & (1 << (7 - i))) reverse_bits |= (1 << i);
   DDRF = 0xFF;
   PORTF = reverse_bits;
+  DDRH = 0xFF;
+  PORTH = value;
   pulseEnable();
 }
 #endif
