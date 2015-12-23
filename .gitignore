@@ -1,9 +1,21 @@
 #Cadsoft Eagle files
 *.b#[#1-9]
 *.s#[#1-9]
+*.l#[#1-9]
 *.ger
 *.gpi
 *.dri
+*.cam
+*.drd
+*.gbl
+*.gbo
+*.gbp
+*.gbs
+*.gm1
+*.gtl
+*.gto
+*.gtp
+*.gts
 *.xln
 
 #OS junk files
@@ -63,3 +75,4 @@ packages/
 #ncrunch
 *ncrunch*
 *crunch*.local.xml
+/PCB/standalone_lib

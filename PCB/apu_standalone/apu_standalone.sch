@@ -6,7 +6,7 @@
 <setting alwaysvectorfont="no"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="100" unitdist="mil" unit="mil" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
+<grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="no" active="no"/>
 <layer number="2" name="Route2" color="1" fill="3" visible="no" active="no"/>
@@ -14600,13 +14600,13 @@ wide body 7.5 mm/JEDEC MS-013AA</description>
 <wire x1="1.4" y1="0.8" x2="1.4" y2="-0.8" width="0.127" layer="51"/>
 <wire x1="1.4" y1="-0.8" x2="-1.4" y2="-0.8" width="0.127" layer="51"/>
 <wire x1="-1.4" y1="-0.8" x2="-1.4" y2="0.8" width="0.127" layer="51"/>
-<wire x1="-1.6" y1="0.8" x2="-1.6" y2="-0.8" width="0.22" layer="21"/>
-<wire x1="1.6" y1="0.8" x2="1.6" y2="-0.8" width="0.22" layer="21"/>
-<smd name="1" x="-1" y="0" dx="2" dy="0.7" layer="1" rot="R90"/>
-<smd name="2" x="0" y="0" dx="2" dy="0.7" layer="1" rot="R90"/>
-<smd name="3" x="1" y="0" dx="2" dy="0.7" layer="1" rot="R90"/>
-<text x="-1.45" y="1.35" size="0.3556" layer="25">&gt;NAME</text>
-<text x="-1.45" y="-1.688" size="0.3556" layer="27">&gt;VALUE</text>
+<wire x1="-2.1" y1="1.8" x2="-2.1" y2="-1.8" width="0.22" layer="21"/>
+<wire x1="2.1" y1="1.8" x2="2.1" y2="-1.8" width="0.22" layer="21"/>
+<smd name="1" x="-1.5" y="0" dx="4.1" dy="0.7" layer="1" rot="R90"/>
+<smd name="2" x="0" y="0" dx="4.1" dy="1" layer="1" rot="R90"/>
+<smd name="3" x="1.5" y="0" dx="4.1" dy="0.7" layer="1" rot="R90"/>
+<text x="-1.45" y="2.35" size="0.3556" layer="25">&gt;NAME</text>
+<text x="-1.45" y="-2.688" size="0.3556" layer="27">&gt;VALUE</text>
 </package>
 <package name="TQFP100">
 <description>&lt;b&gt;100-lead Thin Quad Flat Pack Package Outline&lt;/b&gt;</description>
@@ -14941,8 +14941,8 @@ wide body 7.5 mm/JEDEC MS-013AA</description>
 <pad name="2" x="-1.25" y="4.71" drill="0.95" shape="octagon"/>
 <pad name="3" x="-1.25" y="2.71" drill="0.95" shape="octagon"/>
 <pad name="4" x="1.25" y="2.71" drill="0.95" shape="octagon"/>
-<pad name="P$1" x="-6" y="0" drill="2.2"/>
-<pad name="P$2" x="6" y="0" drill="2.2"/>
+<pad name="P$1" x="-6" y="0" drill="2.33"/>
+<pad name="P$2" x="6" y="0" drill="2.33"/>
 <text x="-6.35" y="6.35" size="1.27" layer="25">&gt;NAME</text>
 <text x="7.62" y="-8.89" size="1.27" layer="27" rot="R90">&gt;VALUE</text>
 </package>
@@ -16983,9 +16983,9 @@ Source: http://www.niccomp.com/Catalog/nis.pdf</description>
 <part name="ICSP" library="SmartPrj" deviceset="PINHD-2X3" device="" value="3x2M"/>
 <part name="GND13" library="supply1" deviceset="GND" device=""/>
 <part name="P+6" library="supply1" deviceset="VCC" device=""/>
-<part name="C32" library="apu_pcb" deviceset="C0805" device="" value="100n"/>
+<part name="C29" library="apu_pcb" deviceset="C0805" device="" value="100n"/>
 <part name="GND25" library="supply1" deviceset="GND" device=""/>
-<part name="C33" library="apu_pcb" deviceset="C0805" device="" value="100n"/>
+<part name="C30" library="apu_pcb" deviceset="C0805" device="" value="100n"/>
 <part name="GND27" library="supply1" deviceset="GND" device=""/>
 <part name="RX" library="adafruit" deviceset="LED" device="CHIP-LED0805"/>
 <part name="TX" library="adafruit" deviceset="LED" device="CHIP-LED0805"/>
@@ -16994,7 +16994,7 @@ Source: http://www.niccomp.com/Catalog/nis.pdf</description>
 <part name="IC15" library="SmartPrj" deviceset="FT232RL" device=""/>
 <part name="X4" library="SmartPrj" deviceset="PN61729" device=""/>
 <part name="F1" library="rcl" deviceset="L-EU" device="L1812" value="500mA"/>
-<part name="C34" library="apu_pcb" deviceset="C0805" device="" value="100n"/>
+<part name="C31" library="apu_pcb" deviceset="C0805" device="" value="100n"/>
 <part name="GND28" library="supply1" deviceset="GND" device=""/>
 <part name="C35" library="apu_pcb" deviceset="C0805" device="" value="100n"/>
 <part name="RESET-EN" library="jumper" deviceset="SJ" device=""/>
@@ -18383,18 +18383,18 @@ Source: http://www.niccomp.com/Catalog/nis.pdf</description>
 <instance part="C51" gate="G$1" x="17.78" y="53.34"/>
 <instance part="IC6" gate="G$1" x="160.02" y="83.82"/>
 <instance part="P+4" gate="VCC" x="25.4" y="71.12"/>
-<instance part="GND3" gate="1" x="12.7" y="7.62"/>
+<instance part="GND3" gate="1" x="12.7" y="-20.32"/>
 <instance part="C9" gate="G$1" x="15.24" y="129.54" rot="R90"/>
 <instance part="C10" gate="G$1" x="40.64" y="129.54" rot="R90"/>
 <instance part="C11" gate="G$1" x="27.94" y="139.7" rot="R90"/>
 <instance part="C12" gate="G$1" x="17.78" y="101.6" rot="R270"/>
 <instance part="C13" gate="G$1" x="43.18" y="101.6" rot="R90"/>
 <instance part="C14" gate="G$1" x="30.48" y="111.76" rot="R90"/>
-<instance part="C15" gate="G$1" x="17.78" y="48.26" rot="R180"/>
-<instance part="C16" gate="G$1" x="17.78" y="15.24" rot="R180"/>
-<instance part="C17" gate="G$1" x="17.78" y="43.18" rot="R180"/>
-<instance part="C18" gate="G$1" x="17.78" y="38.1" rot="R180"/>
-<instance part="C19" gate="G$1" x="17.78" y="33.02" rot="R180"/>
+<instance part="C15" gate="G$1" x="17.78" y="43.18" rot="R180"/>
+<instance part="C16" gate="G$1" x="17.78" y="35.56" rot="R180"/>
+<instance part="C17" gate="G$1" x="17.78" y="27.94" rot="R180"/>
+<instance part="C18" gate="G$1" x="17.78" y="20.32" rot="R180"/>
+<instance part="C19" gate="G$1" x="17.78" y="12.7" rot="R180"/>
 <instance part="C20" gate="G$1" x="121.92" y="35.56"/>
 <instance part="C21" gate="G$1" x="121.92" y="20.32"/>
 <instance part="R16" gate="G$1" x="7.62" y="134.62" rot="R180"/>
@@ -18405,7 +18405,7 @@ Source: http://www.niccomp.com/Catalog/nis.pdf</description>
 <instance part="R21" gate="G$1" x="38.1" y="106.68" rot="R180"/>
 <instance part="R22" gate="G$1" x="78.74" y="132.08" rot="R270"/>
 <instance part="R23" gate="G$1" x="76.2" y="109.22" rot="R270"/>
-<instance part="C22" gate="G$1" x="17.78" y="25.4"/>
+<instance part="C22" gate="G$1" x="17.78" y="2.54"/>
 <instance part="GND5" gate="1" x="78.74" y="121.92"/>
 <instance part="GND6" gate="1" x="76.2" y="99.06"/>
 <instance part="GND7" gate="1" x="40.64" y="121.92"/>
@@ -18419,7 +18419,7 @@ Source: http://www.niccomp.com/Catalog/nis.pdf</description>
 <instance part="IC9" gate="G$1" x="210.82" y="45.72"/>
 <instance part="X2" gate="X1" x="127" y="27.94" rot="R90"/>
 <instance part="IC10" gate="G$1" x="63.5" y="22.86"/>
-<instance part="C23" gate="G$1" x="17.78" y="20.32" rot="R180"/>
+<instance part="C23" gate="G$1" x="17.78" y="-5.08" rot="R180"/>
 </instances>
 <busses>
 <bus name="PA[0..7],PD[0..7],!RD,!WR,RST,!MUTE,SMPCLK,LEFT,RIGHT,GND,VCC,XTAL1,XTAL2,A[0..32],D[0..15],!CE0,!CE1,!OE,!WE,L.OUT,R.OUT,BCK,LRCK,SO,AVCC">
@@ -18703,30 +18703,30 @@ Source: http://www.niccomp.com/Catalog/nis.pdf</description>
 <segment>
 <pinref part="GND3" gate="1" pin="GND"/>
 <pinref part="C16" gate="G$1" pin="2"/>
-<wire x1="12.7" y1="10.16" x2="12.7" y2="15.24" width="0.1524" layer="91"/>
+<wire x1="12.7" y1="-17.78" x2="12.7" y2="35.56" width="0.1524" layer="91"/>
 <pinref part="C22" gate="G$1" pin="1"/>
-<wire x1="12.7" y1="15.24" x2="12.7" y2="20.32" width="0.1524" layer="91"/>
-<junction x="12.7" y="15.24"/>
+<wire x1="12.7" y1="35.56" x2="12.7" y2="-5.08" width="0.1524" layer="91"/>
+<junction x="12.7" y="35.56"/>
 <pinref part="C19" gate="G$1" pin="2"/>
-<wire x1="12.7" y1="20.32" x2="12.7" y2="25.4" width="0.1524" layer="91"/>
-<wire x1="12.7" y1="25.4" x2="12.7" y2="33.02" width="0.1524" layer="91"/>
-<junction x="12.7" y="25.4"/>
+<wire x1="12.7" y1="-5.08" x2="12.7" y2="2.54" width="0.1524" layer="91"/>
+<wire x1="12.7" y1="2.54" x2="12.7" y2="12.7" width="0.1524" layer="91"/>
+<junction x="12.7" y="2.54"/>
 <pinref part="C18" gate="G$1" pin="2"/>
-<wire x1="12.7" y1="33.02" x2="12.7" y2="38.1" width="0.1524" layer="91"/>
-<junction x="12.7" y="33.02"/>
+<wire x1="12.7" y1="12.7" x2="12.7" y2="20.32" width="0.1524" layer="91"/>
+<junction x="12.7" y="12.7"/>
 <pinref part="C17" gate="G$1" pin="2"/>
-<wire x1="12.7" y1="38.1" x2="12.7" y2="43.18" width="0.1524" layer="91"/>
-<junction x="12.7" y="38.1"/>
+<wire x1="12.7" y1="20.32" x2="12.7" y2="27.94" width="0.1524" layer="91"/>
+<junction x="12.7" y="20.32"/>
 <pinref part="C15" gate="G$1" pin="2"/>
-<wire x1="12.7" y1="43.18" x2="12.7" y2="48.26" width="0.1524" layer="91"/>
-<junction x="12.7" y="43.18"/>
+<wire x1="12.7" y1="27.94" x2="12.7" y2="43.18" width="0.1524" layer="91"/>
+<junction x="12.7" y="27.94"/>
 <pinref part="C51" gate="G$1" pin="-"/>
 <pinref part="IC7" gate="SUPPLY" pin="GND"/>
-<wire x1="12.7" y1="48.26" x2="12.7" y2="53.34" width="0.1524" layer="91"/>
-<junction x="12.7" y="48.26"/>
+<wire x1="12.7" y1="43.18" x2="12.7" y2="53.34" width="0.1524" layer="91"/>
+<junction x="12.7" y="43.18"/>
 <junction x="12.7" y="53.34"/>
 <pinref part="C23" gate="G$1" pin="2"/>
-<junction x="12.7" y="20.32"/>
+<junction x="12.7" y="-5.08"/>
 </segment>
 </net>
 <net name="VCC" class="1">
@@ -18766,28 +18766,28 @@ Source: http://www.niccomp.com/Catalog/nis.pdf</description>
 <pinref part="C51" gate="G$1" pin="+"/>
 <pinref part="C15" gate="G$1" pin="1"/>
 <wire x1="25.4" y1="53.34" x2="25.4" y2="48.26" width="0.1524" layer="91"/>
-<wire x1="25.4" y1="48.26" x2="22.86" y2="48.26" width="0.1524" layer="91"/>
+<wire x1="25.4" y1="48.26" x2="22.86" y2="43.18" width="0.1524" layer="91"/>
 <pinref part="C17" gate="G$1" pin="1"/>
-<wire x1="22.86" y1="48.26" x2="22.86" y2="43.18" width="0.1524" layer="91"/>
-<junction x="22.86" y="48.26"/>
-<pinref part="C18" gate="G$1" pin="1"/>
-<wire x1="22.86" y1="43.18" x2="22.86" y2="38.1" width="0.1524" layer="91"/>
+<wire x1="22.86" y1="43.18" x2="22.86" y2="27.94" width="0.1524" layer="91"/>
 <junction x="22.86" y="43.18"/>
+<pinref part="C18" gate="G$1" pin="1"/>
+<wire x1="22.86" y1="27.94" x2="22.86" y2="20.32" width="0.1524" layer="91"/>
+<junction x="22.86" y="27.94"/>
 <pinref part="C19" gate="G$1" pin="1"/>
-<wire x1="22.86" y1="38.1" x2="22.86" y2="33.02" width="0.1524" layer="91"/>
-<junction x="22.86" y="38.1"/>
+<wire x1="22.86" y1="20.32" x2="22.86" y2="12.7" width="0.1524" layer="91"/>
+<junction x="22.86" y="20.32"/>
 <pinref part="C22" gate="G$1" pin="2"/>
-<wire x1="22.86" y1="33.02" x2="22.86" y2="25.4" width="0.1524" layer="91"/>
-<junction x="22.86" y="33.02"/>
+<wire x1="22.86" y1="12.7" x2="22.86" y2="2.54" width="0.1524" layer="91"/>
+<junction x="22.86" y="12.7"/>
 <pinref part="C16" gate="G$1" pin="1"/>
-<wire x1="22.86" y1="25.4" x2="22.86" y2="20.32" width="0.1524" layer="91"/>
-<junction x="22.86" y="25.4"/>
+<wire x1="22.86" y1="2.54" x2="22.86" y2="-5.08" width="0.1524" layer="91"/>
+<junction x="22.86" y="2.54"/>
 <pinref part="P+4" gate="VCC" pin="VCC"/>
-<wire x1="22.86" y1="20.32" x2="22.86" y2="15.24" width="0.1524" layer="91"/>
+<wire x1="22.86" y1="-5.08" x2="22.86" y2="35.56" width="0.1524" layer="91"/>
 <wire x1="25.4" y1="53.34" x2="25.4" y2="68.58" width="0.1524" layer="91"/>
 <junction x="25.4" y="53.34"/>
 <pinref part="C23" gate="G$1" pin="1"/>
-<junction x="22.86" y="20.32"/>
+<junction x="22.86" y="-5.08"/>
 <pinref part="IC7" gate="SUPPLY" pin="VCC"/>
 <wire x1="25.4" y1="68.58" x2="12.7" y2="68.58" width="0.1524" layer="91"/>
 <junction x="25.4" y="68.58"/>
@@ -19511,12 +19511,12 @@ Source: http://www.niccomp.com/Catalog/nis.pdf</description>
 <instance part="P+6" gate="VCC" x="182.88" y="205.74" smashed="yes" rot="MR0">
 <attribute name="VALUE" x="185.42" y="205.74" size="1.778" layer="96" rot="MR0"/>
 </instance>
-<instance part="C32" gate="G$1" x="238.633" y="152.4" smashed="yes" rot="R270">
+<instance part="C29" gate="G$1" x="238.633" y="152.4" smashed="yes" rot="R270">
 <attribute name="NAME" x="236.728" y="146.177" size="1.778" layer="95" rot="R90"/>
 <attribute name="VALUE" x="239.268" y="144.526" size="1.778" layer="96" rot="R90"/>
 </instance>
 <instance part="GND25" gate="1" x="238.76" y="119.38"/>
-<instance part="C33" gate="G$1" x="250.19" y="145.923" smashed="yes">
+<instance part="C30" gate="G$1" x="250.19" y="145.923" smashed="yes">
 <attribute name="NAME" x="244.602" y="146.177" size="1.778" layer="95"/>
 <attribute name="VALUE" x="243.586" y="143.637" size="1.778" layer="96"/>
 </instance>
@@ -19540,7 +19540,7 @@ Source: http://www.niccomp.com/Catalog/nis.pdf</description>
 </instance>
 <instance part="X4" gate="G$1" x="230.505" y="138.43" rot="MR0"/>
 <instance part="F1" gate="G$1" x="225.425" y="158.75"/>
-<instance part="C34" gate="G$1" x="253.238" y="125.73" smashed="yes" rot="R270">
+<instance part="C31" gate="G$1" x="253.238" y="125.73" smashed="yes" rot="R270">
 <attribute name="NAME" x="251.333" y="119.507" size="1.778" layer="95" rot="R90"/>
 <attribute name="VALUE" x="253.873" y="117.856" size="1.778" layer="96" rot="R90"/>
 </instance>
@@ -19644,8 +19644,8 @@ Source: http://www.niccomp.com/Catalog/nis.pdf</description>
 <junction x="215.9" y="125.73"/>
 <junction x="238.76" y="125.73"/>
 <label x="238.76" y="130.81" size="1.778" layer="95" rot="R90"/>
-<pinref part="C32" gate="G$1" pin="2"/>
-<pinref part="C33" gate="G$1" pin="1"/>
+<pinref part="C29" gate="G$1" pin="2"/>
+<pinref part="C30" gate="G$1" pin="1"/>
 <pinref part="GND25" gate="1" pin="GND"/>
 <pinref part="X4" gate="G$1" pin="P$1"/>
 <pinref part="X4" gate="G$1" pin="P$2"/>
@@ -19663,7 +19663,7 @@ Source: http://www.niccomp.com/Catalog/nis.pdf</description>
 <segment>
 <wire x1="253.365" y1="115.57" x2="253.238" y2="120.65" width="0.1524" layer="91"/>
 <pinref part="GND28" gate="1" pin="GND"/>
-<pinref part="C34" gate="G$1" pin="2"/>
+<pinref part="C31" gate="G$1" pin="2"/>
 </segment>
 </net>
 <net name="AREF" class="0">
@@ -20079,7 +20079,7 @@ Source: http://www.niccomp.com/Catalog/nis.pdf</description>
 <pinref part="IC15" gate="G$1" pin="VCCIO"/>
 <pinref part="IC15" gate="G$1" pin="RESET#"/>
 <pinref part="IC15" gate="G$1" pin="VCC5I"/>
-<pinref part="C34" gate="G$1" pin="1"/>
+<pinref part="C31" gate="G$1" pin="1"/>
 <pinref part="P+16" gate="VCC" pin="VCC"/>
 <wire x1="238.633" y1="157.48" x2="238.76" y2="157.48" width="0.1524" layer="91"/>
 <wire x1="238.76" y1="157.48" x2="251.46" y2="157.48" width="0.1524" layer="91"/>
@@ -20091,7 +20091,7 @@ Source: http://www.niccomp.com/Catalog/nis.pdf</description>
 <junction x="238.76" y="157.48"/>
 <junction x="227.965" y="166.37"/>
 <label x="240.03" y="158.115" size="1.778" layer="95"/>
-<pinref part="C32" gate="G$1" pin="1"/>
+<pinref part="C29" gate="G$1" pin="1"/>
 <pinref part="F1" gate="G$1" pin="1"/>
 <wire x1="251.46" y1="157.48" x2="251.46" y2="151.13" width="0.1524" layer="91"/>
 <wire x1="251.46" y1="151.13" x2="266.065" y2="151.13" width="0.1524" layer="91"/>
@@ -20257,7 +20257,7 @@ Source: http://www.niccomp.com/Catalog/nis.pdf</description>
 <segment>
 <wire x1="269.875" y1="146.05" x2="255.27" y2="145.923" width="0.1524" layer="91"/>
 <label x="256.54" y="146.05" size="1.778" layer="95"/>
-<pinref part="C33" gate="G$1" pin="2"/>
+<pinref part="C30" gate="G$1" pin="2"/>
 <pinref part="IC15" gate="G$1" pin="VCC30"/>
 </segment>
 </net>
