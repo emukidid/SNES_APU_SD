@@ -343,12 +343,11 @@ UsedLibrary="C:/Program Files (x86)/EAGLE-6.5.0/lbr/xilinx-xcv.lbr"
 UsedLibrary="C:/Program Files (x86)/EAGLE-6.5.0/lbr/zetex.lbr"
 UsedLibrary="C:/Program Files (x86)/EAGLE-6.5.0/lbr/zilog.lbr"
 UsedLibrary="C:/Users/CaitSith2/Desktop/Dev Projects/SNES_APU_SD/PCB/Libraries/adafruit.lbr"
-UsedLibrary="C:/Users/CaitSith2/Desktop/Dev Projects/SNES_APU_SD/PCB/apu_pcb.lbr"
 UsedLibrary="C:/Users/CaitSith2/Desktop/Dev Projects/SNES_APU_SD/PCB/Libraries/caitsith2.lbr"
 
 [Win_1]
 Type="Control Panel"
-Loc="119 91 1391 833"
+Loc="48 135 1355 953"
 State=2
 Number=0
 
