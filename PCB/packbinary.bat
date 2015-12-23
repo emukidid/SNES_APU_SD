@@ -1,1 +1,0 @@
-7z a -tZip -y ..\apu_mega_shield_pcb.zip apu_mega_shield.boardoutline.ger apu_mega_shield.bottomlayer.ger apu_mega_shield.bottomsilkscreen.ger apu_mega_shield.bottomsoldermask.ger apu_mega_shield.drills.xln apu_mega_shield.tcream.ger apu_mega_shield.toplayer.ger apu_mega_shield.topsilkscreen.ger apu_mega_shield.topsoldermask.ger

@@ -1,0 +1,1 @@
+7z a -tZip -y ..\apu_mega_shield_pcb.zip apu_mega_shield.*.ger apu_mega_shield.drills.xln
