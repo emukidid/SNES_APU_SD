@@ -86,9 +86,26 @@ int serial_putchar(char c, FILE* f) {
     return Serial.write(c) == 1? 0 : 1;
 }
 
+/*
+ * PRESCALER of 0 = 16Mhz Clock
+ * PRESCALER of 1 = 8Mhz Clock
+ * PRESCALER of 2 = 4Mhz Clock //Couldn't operate my PC interface any slower than this.
+ * PRESCALER of 3 = 2Mhz Clock
+ * PRESCALER of 4 = 1Mhz Clock //Baud rates 230400 and 250000 no longer possible
+ * PRESCALER of 5 = 500Khz Clock //Baud rate 115200 no longer possible.
+ */
+#define PRESCALER 0
 void setup()
 {
-  Serial.begin(250000);
+  uint32_t baud_rate = 250000 << PRESCALER;  //Bacuase we are slowing the clock down
+  //250000 baud at prescaler 1 actually means 125000 baud.  We have to compensate for this.
+  
+  noInterrupts();  //Since the following writes are timing sensitve, disable interrupts.
+  CLKPR = 0x80;  //Write CLKPCE = 1 and CLKPSx = 0
+  CLKPR = PRESCALER;  //Write CLKPCE = 0 and CLKPSx with desired value
+  interrupts();
+  delay(5);
+  Serial.begin(baud_rate);  //Now we begin serial. :)
 
    // Set up stdout
   fdev_setup_stream(&serial_stdout, serial_putchar, NULL, _FDEV_SETUP_WRITE);
