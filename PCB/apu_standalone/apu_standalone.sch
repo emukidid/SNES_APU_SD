@@ -6,7 +6,7 @@
 <setting alwaysvectorfont="no"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
+<grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.025" altunitdist="inch" altunit="inch"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="no" active="no"/>
 <layer number="2" name="Route2" color="1" fill="3" visible="no" active="no"/>
@@ -17535,7 +17535,7 @@ SMD chip inductor</description>
 <attribute name="VALUE" x="274.955" y="98.425" size="1.27" layer="94"/>
 </instance>
 <instance part="X4" gate="G$1" x="230.505" y="138.43" rot="MR0"/>
-<instance part="F1" gate="G$1" x="225.425" y="158.75"/>
+<instance part="F1" gate="G$1" x="225.425" y="158.75" rot="R270"/>
 <instance part="C31" gate="G$1" x="253.238" y="125.73" smashed="yes" rot="R270">
 <attribute name="NAME" x="251.333" y="119.507" size="1.778" layer="95" rot="R90"/>
 <attribute name="VALUE" x="253.873" y="117.856" size="1.778" layer="96" rot="R90"/>
@@ -18059,7 +18059,7 @@ SMD chip inductor</description>
 <wire x1="227.965" y1="163.83" x2="227.965" y2="166.37" width="0.1524" layer="91"/>
 <wire x1="227.965" y1="166.37" x2="238.76" y2="166.37" width="0.1524" layer="91"/>
 <wire x1="227.965" y1="166.37" x2="225.425" y2="166.37" width="0.1524" layer="91"/>
-<wire x1="225.425" y1="166.37" x2="220.345" y2="158.75" width="0.1524" layer="91"/>
+<wire x1="225.425" y1="166.37" x2="225.425" y2="163.83" width="0.1524" layer="91"/>
 <junction x="238.76" y="157.48"/>
 <junction x="227.965" y="166.37"/>
 <label x="240.03" y="158.115" size="1.778" layer="95"/>
@@ -18189,7 +18189,7 @@ SMD chip inductor</description>
 <wire x1="234.315" y1="143.51" x2="234.315" y2="151.13" width="0.1524" layer="91"/>
 <wire x1="233.045" y1="143.51" x2="234.315" y2="143.51" width="0.1524" layer="91"/>
 <wire x1="227.965" y1="151.13" x2="225.425" y2="151.13" width="0.1524" layer="91"/>
-<wire x1="225.425" y1="151.13" x2="230.505" y2="158.75" width="0.1524" layer="91"/>
+<wire x1="225.425" y1="151.13" x2="225.425" y2="153.67" width="0.1524" layer="91"/>
 <junction x="227.965" y="151.13"/>
 <pinref part="F1" gate="G$1" pin="2"/>
 <pinref part="X4" gate="G$1" pin="1"/>
