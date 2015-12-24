@@ -76,3 +76,15 @@ packages/
 *ncrunch*
 *crunch*.local.xml
 /PCB/standalone_lib
+PCB/apu_mega_shield/gerbers/apu_mega_shield.zip
+apu_mega_shield_integradted_pcb.zip
+PCB/apu_mega_shield/apu_mega_shield.pro
+PCB/apu_module/apu_pcb_4layer.bin
+PCB/apu_module/apu_pcb_4layer.brd
+PCB/apu_module/apu_pcb_4layer.sch
+PCB/apu_standalone/gerbers/apu_standalone.zip
+*.eup
+*.dsn
+eagleUp
+3D
+*.scr
