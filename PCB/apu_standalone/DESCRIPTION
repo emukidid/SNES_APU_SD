@@ -1,0 +1,3 @@
+<b>Hardware SPC Player</b><p>
+
+This design makes use of components taken from either from an apu module, or from a revision 2 SNES, and this form is made to not depend on an arduino to function.  (You could still make use of the arduino bootloader and dev environment though.)
