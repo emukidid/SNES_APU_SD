@@ -296,7 +296,13 @@ unsigned char readSPC(long addr)
 // Reads raw from the SPC File
 void readSPCRegion(unsigned char *buf, long addr, unsigned short len)
 {
-  spcFile.seek(addr);
+  if(spcFile.position() != (unsigned long)(addr)) {
+    //printf("Seeking to %08X\n",(unsigned long)(addr));
+    if(!spcFile.seek((unsigned long)(addr))) {
+      printf("Seek failed at addr %08X\n",(unsigned long)(addr));
+      while(1);
+    }
+  }
   spcFile.read(buf, len);
 }
 
@@ -613,7 +619,7 @@ void LoadAndPlaySPC(unsigned short song)
           if(is_spc2)
             get_spc2_page(&spcbuf[0], song, i>>8);
           else
-            readSPCRegion(&spcbuf[0], i+0x100, 256);
+            readSPCRegion(&spcbuf[0], 0x10000UL, 256);
         }
       }
       else
@@ -641,7 +647,7 @@ void LoadAndPlaySPC(unsigned short song)
     
     // Normal data write
     WriteByteToAPUAndWaitForState(spcbuf[i&0xFF], port0state);
-    //printf("Write Norm: %04X\n", i);
+    //printf("Write Norm[%04X]: %02X\n", i, spcbuf[i&0xFF]);
   }
   printf("Upload complete!\n");
 
