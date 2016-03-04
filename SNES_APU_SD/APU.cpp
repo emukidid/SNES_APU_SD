@@ -46,7 +46,7 @@ int APU::init_mega_xmem()
   XMCRA = (1<<SRE)  //Enable Xmem Interface
         | (1 << SRL2) | (0 << SRL1) | (0 << SRL0) //Set upper sector limit
         | (0 << SRW11) | (0 << SRW10) //Set upper sector wait-states
-        | (0 << SRW01) | (0 << SRW00); //Set lower sector wait-states.
+        | (1 << SRW01) | (1 << SRW00); //Set lower sector wait-states.
   //SRE - Enable XMem Interface
   //SRL2 = 1, SRL1 = 0, SRL0 = 0 - Lower sector = 0x2200-0x7FFF, Upper sector = 0x8000-0xFFFF
   //SRWx1 = 0, SRWx0 = 0 - No wait-states

@@ -17,7 +17,14 @@ APU apu(APU_TYPE_XMEM);
 SdFat SD;
 #include "LCD.h"
 
+LiquidCrystal lcd;
+
 File spcFile;
+File root;
+int filedepth=0;
+File files[10];
+int filecounts[10];
+int filecurrent[10];
 unsigned char is_spc2;
 unsigned short spc2_total_songs;
 unsigned short songnum  __attribute__ ((section (".noinit")));
@@ -78,6 +85,59 @@ static unsigned char DSPdata[] =
   0x2F, 0xAB,       //        Bra 0FFC9h  ;Right when IPL puts AA-BB on the IO ports and waits for CC.
 };
 
+char filename[32];
+unsigned int dirSongNum;
+File printDirectory(File dir, int numTabs)
+{
+  if (!dir.isDirectory())
+    return dir;
+  while(true)
+  {
+    File entry = dir.openNextFile();
+    File result;
+    if (! entry)
+    {
+      if (numTabs == 0)
+        Serial.println("** Done **");
+      return entry;
+    }
+    for (uint8_t i = 0; i < numTabs; i++)
+      Serial.print('\t');
+    entry.getName(filename,32);
+    Serial.print(filename);
+    
+    //Serial.print(entry.getName());
+    if (entry.isDirectory())
+    {
+      Serial.println("/");
+      result = printDirectory(entry, numTabs + 1);
+      if(result)
+      {
+        dir.close();
+        return result;
+      }
+    }
+    else
+    {
+      Serial.print("\t\t");
+      Serial.println(entry.size(), DEC);
+      if(entry.size() >= 66048)
+      {
+        if(!dirSongNum)
+        {
+          Serial.println("**Opening this file**");
+          lcd.setCursor(0,0);
+          lcd.print(filename);
+          dir.close();
+          return entry;
+        }
+        dirSongNum--;
+      }
+    }
+    entry.close();
+  }
+}
+
 
 
 // Function that printf and related will use to print
@@ -94,7 +154,7 @@ int serial_putchar(char c, FILE* f) {
  * PRESCALER of 4 = 1Mhz Clock //Baud rates 230400 and 250000 no longer possible
  * PRESCALER of 5 = 500Khz Clock //Baud rate 115200 no longer possible.
  */
-#define PRESCALER 0
+#define PRESCALER 1
 void setup()
 {
   uint32_t baud_rate = 250000 << PRESCALER;  //Bacuase we are slowing the clock down
@@ -106,6 +166,8 @@ void setup()
   interrupts();
   delay(5);
   Serial.begin(baud_rate);  //Now we begin serial. :)
+
+  lcd.begin(16,2);
 
    // Set up stdout
   fdev_setup_stream(&serial_stdout, serial_putchar, NULL, _FDEV_SETUP_WRITE);
@@ -123,53 +185,153 @@ void setup()
     return;
   }
   printf("initialization done.\n");
-
-  OpenSPCFile("file.spc");
-  if(!spcFile)
-    OpenSPCFile("file.sp2");
-
-  if(spcFile)
+  //OpenSPCFile(true, false);
+  root = SD.open("dir/");
+  if(!root)
   {
-    if ((songnum+1) > spc2_total_songs)
-    {
-      songnum = 0;
-    }
-    LoadAndPlaySPC(songnum++);
+    printf("Could not open root directory.\n");
+    return;
   }
+  filedepth = 0;
+  CountFiles();
+  GetNextFile();
+  
+  
+  lcd.setCursor(0,1);
+  lcd.print("AVR Reset");
 #endif
 }
 
 #ifdef ARDUINO_MEGA
-bool OpenSPCFile(char *filename)
+
+void refreshLCD()
 {
-  if(SD.exists(filename))
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print(filename);
+  if(files[filedepth].isDirectory())
+    lcd.print("/");
+  lcd.setCursor(0,1);
+}
+
+void CountFiles()
+{
+  File dir = (filedepth == 0) ? root : files[filedepth-1];
+  filecurrent[filedepth] = -1;
+  filecounts[filedepth] = 0;
+  
+  while (true)
+  {
+    files[filedepth] = dir.openNextFile();
+    if(files[filedepth])
+    {
+      files[filedepth].getName(filename,32);
+      Serial.println(filename);
+      filecounts[filedepth]++;
+      filecurrent[filedepth]++;
+      files[filedepth].close();
+    }
+    else
+    {
+      return;
+    }
+  }
+}
+
+void GetFile()
+{
+  if(filecurrent[filedepth] < 0)
+    filecurrent[filedepth] += filecounts[filedepth];
+  if(filecurrent[filedepth] == filecounts[filedepth])
+    filecurrent[filedepth] = 0;
+    
+  File dir = (filedepth == 0) ? root : files[filedepth-1];
+  dir.rewindDirectory();
+  for(int i=0; i<=filecurrent[filedepth];i++)
+  {
+    if(files[filedepth])
+      files[filedepth].close();
+    files[filedepth] = dir.openNextFile();
+  }
+  files[filedepth].getName(filename,32);
+  Serial.println(filename);
+  refreshLCD();
+
+  if(files[filedepth].size() >= 66048)
+  {
+    spcFile = files[filedepth];
+    unsigned char tagBuffer[64];
+    clearBuffer(&tagBuffer[0], 64);
+    readSPCRegion(&tagBuffer[0], 0x2EL, 0x20);
+    printf("SPC Track Name: %s\n",&tagBuffer[0]);
+    lcd.setCursor(0,1);
+    lcd.print((char*)tagBuffer);
+  }
+
+  
+}
+
+void GetNextFile()
+{
+  Serial.println(filecurrent[filedepth]);
+  filecurrent[filedepth]++;
+  Serial.println(filecurrent[filedepth]);
+  GetFile();
+  Serial.println(filecurrent[filedepth]);
+}
+
+void GetPrevFile()
+{
+  Serial.println(filecurrent[filedepth]);
+  filecurrent[filedepth]--;
+  Serial.println(filecurrent[filedepth]);
+  
+  GetFile();
+  Serial.println(filecurrent[filedepth]);
+}
+
+void EnterDirectory()
+{
+  if(files[filedepth].isDirectory())
+  {
+    filedepth++;
+    CountFiles();
+    GetNextFile();
+  }
+}
+
+void LeaveDirectory()
+{
+  filedepth--;
+  files[filedepth].getName(filename,32);
+  refreshLCD();
+}
+
+
+bool OpenSPCFile(bool openfile, bool playfile)
+{
+  if(openfile)
   {
     if(spcFile)
-    {
-      printf("Closing previous file\n");
       spcFile.close();
-    }
-    printf("Opening %s...\n",filename);
-    spcFile = SD.open(filename,FILE_READ);
+    File dir = SD.open("dir/");
+    dirSongNum = songnum;
+    spcFile = printDirectory(dir,0);
     if(!spcFile)
     {
-      printf("Could not open %s\n",filename);
-      return false;
+      dir.rewindDirectory();
+      songnum = 0;
+      dirSongNum = songnum;
+      spcFile = printDirectory(dir,0);
     }
-    is_spc2 = 0;
-    if((readSPC(0) == 'K') && (readSPC(1) == 'S') && (readSPC(2) == 'P') && (readSPC(3) == 'C') && (readSPC(4) == 0x1A))
-    {
-      printf("%s is an spc2 file\n");
-      is_spc2 = 1;
-      spc2_total_songs = (readSPC(7) | (readSPC(8) << 8));
-    }
+  }
+  if(spcFile)
+  {
+    if(playfile)
+      LoadAndPlaySPC(0);
     return true;
   }
-  else
-  {
-    printf("%s doesn't exist.\n",filename);
-    return false;
-  }
+  return false;
 }
 #endif
 
@@ -349,6 +511,8 @@ void LoadAndPlaySPC(unsigned short song)
   clearBuffer(&tagBuffer[0], 64);
   readSPCRegion(&tagBuffer[0], is_spc2?spc2_offset+768:0x2EL, 0x20);
   printf("SPC Track Name: %s\n",&tagBuffer[0]);
+  lcd.setCursor(0,1);
+  lcd.print((char*)tagBuffer);
   clearBuffer(&tagBuffer[0], 64);
   readSPCRegion(&tagBuffer[0], is_spc2?spc2_offset+800:0x4EL, 0x20);
   printf("SPC Track Game: %s\n",&tagBuffer[0]);
@@ -501,11 +665,7 @@ void LoadAndPlaySPC(unsigned short song)
   boot_code[38] = dspdata[0x4C];      // DSP KeyON Register
   boot_code[41] = spcdata[0xF2];  // Current DSP Register Address
 
-  if(ApuSP < 6)
-    boot_code[0x44] = ApuSP + 0x100-6;  // Stack Pointer
-  else
-    boot_code[0x44] = ApuSP - 6;        // Stack Pointer
-  spcdata[0xFF] = ApuSP;
+  spcdata[0xFF] = ((ApuSP - 6) & 0xFF);
 
   // Reset the APU
   int resetAttempts = 0;
@@ -893,9 +1053,71 @@ void ProcessCommandFromSerial()
   }
 }
 
+
+
+
+
+#define LEFT 0
+#define UP 1
+#define DOWN 2
+#define RIGHT 3
+#define SELECT 4
+
+void handleButtons()
+{
+  bool buttons[5];
+  for (int i=0;i<5;i++)
+    buttons[i] = digitalRead(65+i) == LOW;
+  delay(20);
+  for (int i=0;i<5;i++)
+    buttons[i] &= digitalRead(65+i) == LOW;
+
+  
+
+  if(buttons[UP])
+  {
+    GetPrevFile();
+    //songnum++;
+    //OpenSPCFile(true,false);
+    while(digitalRead(65+UP) == LOW);
+  }
+  if(buttons[DOWN])
+  {
+    GetNextFile();
+    //songnum--;
+    //OpenSPCFile(true,false);
+    while(digitalRead(65+DOWN) == LOW);
+  }
+  if(buttons[LEFT])
+  {
+    LeaveDirectory();
+    while(digitalRead(65+LEFT) == LOW);
+  }
+  if(buttons[RIGHT])
+  {
+    EnterDirectory();
+    while(digitalRead(65+RIGHT) == LOW);
+  }
+
+  if(buttons[SELECT])
+  {
+    spcFile=files[filedepth];
+    if(spcFile)
+    {
+      if(spcFile.size() >= 66048)
+      {
+        LoadAndPlaySPC(0);
+      }
+    }
+    //OpenSPCFile(false,true);
+    while(digitalRead(65+SELECT) == LOW);
+  }
+}
+
 void loop() //The main loop.  Define various subroutines, and call them here. :)
 {
   ProcessCommandFromSerial();
+  handleButtons();  
 }
 
 
