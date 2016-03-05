@@ -163,26 +163,35 @@ int len(char *string, int maxlen)
   return maxlen;
 }
 
-int lcd_delay=10;
+int lcd_delay=125;
 int lcd_pos=0;
 void refreshLCD()
 {
+  rowlen[0]=filename[0]=rowlen[1]=line2[0]=0;
   lcd_pos=0;
-  lcd_delay=10;
-  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print(filename);
+  lcd_delay=125;
 
-  rowlen[0] = len(filename,64);
-  rowlen[1] = 0;
-  Serial.print(rowlen[0]);
-  if(files[filedepth].isDirectory())
+  if(files[filedepth])
   {
-    lcd.print("/");
-    filename[rowlen[0]++] = '/';
-    filename[rowlen[0]] = 0;
+    files[filedepth].getName(filename,64);
+    Serial.print(filename);
+    rowlen[0] = len(filename,64);
+    if(files[filedepth].isDirectory())
+    {
+      Serial.println("/");
+      filename[rowlen[0]++] = '/';
+      filename[rowlen[0]] = 0;
+    }
+    else
+    {
+      if(files[filedepth].size() < 66048) return;
+      spcFile = files[filedepth];
+      readSPCRegion((unsigned char*)line2, 0x2EL, 0x20);
+      rowlen[1] = len(line2,32);
+      printf("SPC Track Name: %s\n",line2);
+    }
   }
-  lcd.setCursor(0,1);
+  handleLCD();
 }
 
 void CountFiles()
@@ -196,8 +205,6 @@ void CountFiles()
     files[filedepth] = dir.openNextFile();
     if(files[filedepth])
     {
-      //files[filedepth].getName(filename,64);
-      //Serial.println(filename);
       filecounts[filedepth]++;
       filecurrent[filedepth]++;
       files[filedepth].close();
@@ -224,21 +231,7 @@ void GetFile()
       files[filedepth].close();
     files[filedepth] = dir.openNextFile();
   }
-  files[filedepth].getName(filename,64);
-  Serial.println(filename);
   refreshLCD();
-
-  if(files[filedepth].size() >= 66048)
-  {
-    spcFile = files[filedepth];
-    readSPCRegion((unsigned char*)line2, 0x2EL, 0x20);
-    rowlen[1] = len(line2,32);
-    printf("SPC Track Name: %s\n",line2);
-    lcd.setCursor(0,1);
-    lcd.print(line2);
-  }
-
-  
 }
 
 void GetNextFile()
@@ -499,10 +492,11 @@ void LoadAndPlaySPC(unsigned short song)
       count = sizeof(boot_code);
     }
   }
+
   
   if(freespacesearch < 2)
   {
-    for(i=255;i!=0xFFFF;i--) 
+    for(i=255;i<256;i-=255) 
     {
       count=0;
       readSPCRegion(&spcbuf[0], 0xFF00+0x100, 256);
@@ -1000,6 +994,34 @@ void ProcessCommandFromSerial()
 #define RIGHT 3
 #define SELECT 4
 
+void handleLCD()
+{
+  lcd_delay--;
+  int lcd_pos_max = (rowlen[0]>rowlen[1]?rowlen[0]:rowlen[1])+4;
+  if(!lcd_delay)
+  {
+    lcd_pos++;
+    if(lcd_pos==lcd_pos_max)
+      lcd_pos=-16;
+    lcd_delay=(lcd_pos==0?125:10);
+  }
+  lcd.clear();
+  for(int k=0; k<2; k++) 
+  {
+    if(rowlen[k] <= 16)
+    {
+      lcd.setCursor(0,k);
+      lcd.print(k==0?filename:line2);
+    }
+    else
+    {
+      int j=0-(lcd_pos<0?lcd_pos:0);
+      lcd.setCursor(j,k);
+      for(int i=(lcd_pos+j);i<rowlen[k]&&j<16;i++,j++)
+        lcd.print(k==0?filename[i]:line2[i]);
+    }
+  }
+}
 
 void handleButtons()
 {
@@ -1007,51 +1029,17 @@ void handleButtons()
   for (int i=0;i<5;i++)
     buttons[i] = digitalRead(65+i) == LOW;
   delay(20);
-  if((rowlen[0] > 16) || (rowlen[1] > 16))
-  {
-    lcd_delay--;
-    if(!lcd_delay)
-    {
-      lcd.clear();
-      lcd_pos++;
-      int lcd_pos_max = (rowlen[0]>rowlen[1]?rowlen[0]:rowlen[1])+4;
-      if(lcd_pos==lcd_pos_max)
-        lcd_pos=-16;
-      lcd_delay=(lcd_pos==0?125:10);
-      for(int k=0; k<2; k++) 
-      {
-        if(rowlen[k] <= 16)
-        {
-          lcd.setCursor(0,k);
-          lcd.print(k==0?filename:line2);
-        }
-        else
-        {
-          int j=0-(lcd_pos<0?lcd_pos:0);
-          lcd.setCursor(j,k);
-          for(int i=(lcd_pos+j);i<rowlen[k]&&j<16;i++,j++)
-            lcd.print(k==0?filename[i]:line2[i]);
-        }
-      }
-    }
-  }
   for (int i=0;i<5;i++)
     buttons[i] &= digitalRead(65+i) == LOW;
-
   
-
   if(buttons[UP])
   {
     GetPrevFile();
-    //songnum++;
-    //OpenSPCFile(true,false);
     while(digitalRead(65+UP) == LOW);
   }
   if(buttons[DOWN])
   {
     GetNextFile();
-    //songnum--;
-    //OpenSPCFile(true,false);
     while(digitalRead(65+DOWN) == LOW);
   }
   if(buttons[LEFT])
@@ -1082,7 +1070,8 @@ void handleButtons()
 void loop() //The main loop.  Define various subroutines, and call them here. :)
 {
   ProcessCommandFromSerial();
-  handleButtons();  
+  handleButtons();
+  handleLCD();
 }
 
 
