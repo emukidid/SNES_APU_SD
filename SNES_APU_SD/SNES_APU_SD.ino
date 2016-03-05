@@ -25,6 +25,7 @@ int filedepth=0;
 File files[10];
 int filecounts[10];
 int filecurrent[10];
+int rowlen[2];
 unsigned char is_spc2;
 unsigned short spc2_total_songs;
 unsigned short songnum  __attribute__ ((section (".noinit")));
@@ -85,59 +86,8 @@ static unsigned char DSPdata[] =
   0x2F, 0xAB,       //        Bra 0FFC9h  ;Right when IPL puts AA-BB on the IO ports and waits for CC.
 };
 
-char filename[32];
-unsigned int dirSongNum;
-File printDirectory(File dir, int numTabs)
-{
-  if (!dir.isDirectory())
-    return dir;
-  while(true)
-  {
-    File entry = dir.openNextFile();
-    File result;
-    if (! entry)
-    {
-      if (numTabs == 0)
-        Serial.println("** Done **");
-      return entry;
-    }
-    for (uint8_t i = 0; i < numTabs; i++)
-      Serial.print('\t');
-    entry.getName(filename,32);
-    Serial.print(filename);
-    
-    //Serial.print(entry.getName());
-    if (entry.isDirectory())
-    {
-      Serial.println("/");
-      result = printDirectory(entry, numTabs + 1);
-      if(result)
-      {
-        dir.close();
-        return result;
-      }
-    }
-    else
-    {
-      Serial.print("\t\t");
-      Serial.println(entry.size(), DEC);
-      if(entry.size() >= 66048)
-      {
-        if(!dirSongNum)
-        {
-          Serial.println("**Opening this file**");
-          lcd.setCursor(0,0);
-          lcd.print(filename);
-          dir.close();
-          return entry;
-        }
-        dirSongNum--;
-      }
-    }
-    entry.close();
-  }
-}
-
+char filename[64];
+char line2[32];
 
 
 // Function that printf and related will use to print
@@ -199,18 +149,39 @@ void setup()
   
   lcd.setCursor(0,1);
   lcd.print("AVR Reset");
+  rowlen[1]=9;
 #endif
 }
 
 #ifdef ARDUINO_MEGA
 
+int len(char *string, int maxlen)
+{
+  for(int i=0;i<maxlen;i++)
+    if(string[i]==0)
+      return i;
+  return maxlen;
+}
+
+int lcd_delay=10;
+int lcd_pos=0;
 void refreshLCD()
 {
+  lcd_pos=0;
+  lcd_delay=10;
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print(filename);
+
+  rowlen[0] = len(filename,64);
+  rowlen[1] = 0;
+  Serial.print(rowlen[0]);
   if(files[filedepth].isDirectory())
+  {
     lcd.print("/");
+    filename[rowlen[0]++] = '/';
+    filename[rowlen[0]] = 0;
+  }
   lcd.setCursor(0,1);
 }
 
@@ -225,8 +196,8 @@ void CountFiles()
     files[filedepth] = dir.openNextFile();
     if(files[filedepth])
     {
-      files[filedepth].getName(filename,32);
-      Serial.println(filename);
+      //files[filedepth].getName(filename,64);
+      //Serial.println(filename);
       filecounts[filedepth]++;
       filecurrent[filedepth]++;
       files[filedepth].close();
@@ -253,19 +224,18 @@ void GetFile()
       files[filedepth].close();
     files[filedepth] = dir.openNextFile();
   }
-  files[filedepth].getName(filename,32);
+  files[filedepth].getName(filename,64);
   Serial.println(filename);
   refreshLCD();
 
   if(files[filedepth].size() >= 66048)
   {
     spcFile = files[filedepth];
-    unsigned char tagBuffer[64];
-    clearBuffer(&tagBuffer[0], 64);
-    readSPCRegion(&tagBuffer[0], 0x2EL, 0x20);
-    printf("SPC Track Name: %s\n",&tagBuffer[0]);
+    readSPCRegion((unsigned char*)line2, 0x2EL, 0x20);
+    rowlen[1] = len(line2,32);
+    printf("SPC Track Name: %s\n",line2);
     lcd.setCursor(0,1);
-    lcd.print((char*)tagBuffer);
+    lcd.print(line2);
   }
 
   
@@ -273,21 +243,14 @@ void GetFile()
 
 void GetNextFile()
 {
-  Serial.println(filecurrent[filedepth]);
   filecurrent[filedepth]++;
-  Serial.println(filecurrent[filedepth]);
   GetFile();
-  Serial.println(filecurrent[filedepth]);
 }
 
 void GetPrevFile()
 {
-  Serial.println(filecurrent[filedepth]);
   filecurrent[filedepth]--;
-  Serial.println(filecurrent[filedepth]);
-  
   GetFile();
-  Serial.println(filecurrent[filedepth]);
 }
 
 void EnterDirectory()
@@ -303,36 +266,10 @@ void EnterDirectory()
 void LeaveDirectory()
 {
   filedepth--;
-  files[filedepth].getName(filename,32);
+  files[filedepth].getName(filename,64);
   refreshLCD();
 }
 
-
-bool OpenSPCFile(bool openfile, bool playfile)
-{
-  if(openfile)
-  {
-    if(spcFile)
-      spcFile.close();
-    File dir = SD.open("dir/");
-    dirSongNum = songnum;
-    spcFile = printDirectory(dir,0);
-    if(!spcFile)
-    {
-      dir.rewindDirectory();
-      songnum = 0;
-      dirSongNum = songnum;
-      spcFile = printDirectory(dir,0);
-    }
-  }
-  if(spcFile)
-  {
-    if(playfile)
-      LoadAndPlaySPC(0);
-    return true;
-  }
-  return false;
-}
 #endif
 
 
@@ -458,13 +395,7 @@ unsigned char readSPC(long addr)
 // Reads raw from the SPC File
 void readSPCRegion(unsigned char *buf, long addr, unsigned short len)
 {
-  if(spcFile.position() != (unsigned long)(addr)) {
-    //printf("Seeking to %08X\n",(unsigned long)(addr));
-    if(!spcFile.seek((unsigned long)(addr))) {
-      printf("Seek failed at addr %08X\n",(unsigned long)(addr));
-      while(1);
-    }
-  }
+  spcFile.seek(addr);
   spcFile.read(buf, len);
 }
 
@@ -517,8 +448,6 @@ void LoadAndPlaySPC(unsigned short song)
   clearBuffer(&tagBuffer[0], 64);
   readSPCRegion(&tagBuffer[0], is_spc2?spc2_offset+768:0x2EL, 0x20);
   printf("SPC Track Name: %s\n",&tagBuffer[0]);
-  lcd.setCursor(0,1);
-  lcd.print((char*)tagBuffer);
   clearBuffer(&tagBuffer[0], 64);
   readSPCRegion(&tagBuffer[0], is_spc2?spc2_offset+800:0x4EL, 0x20);
   printf("SPC Track Game: %s\n",&tagBuffer[0]);
@@ -717,7 +646,7 @@ void LoadAndPlaySPC(unsigned short song)
   {
     if((i % 0x100) == 0) {
       // Clear out echo region instead of copying it
-      if(((i >= echo_region) && (i <= echo_region+(echo_size-1))) && 
+      /*if(((i >= echo_region) && (i <= echo_region+(echo_size-1))) && 
           ((((dspdata[0x6C] & 0x20)==0)&&(echo_clear==0))||(echo_clear==1)))
       {
         if (echo_size == 4)
@@ -737,7 +666,7 @@ void LoadAndPlaySPC(unsigned short song)
         if(i == ((echo_region+echo_size-1) & 0xFF00))
           printf("Write echo end: %04X\n", (echo_region+echo_size-1));
       }
-      else if (i == 0x100)
+      else*/ if (i == 0x100)
       {
         // Prepare the stack
         if(is_spc2)
@@ -750,6 +679,7 @@ void LoadAndPlaySPC(unsigned short song)
         spcbuf[(ApuSP + 0xFD) & 0xFF] = Y;
         spcbuf[(ApuSP + 0xFC) & 0xFF] = X;
         spcbuf[(ApuSP + 0xFB) & 0xFF] = A;
+        printf("Stack Pointer: %02X\n", ApuSP);
         printf("Write PCH: %04X=%02X\n", i, PCH);   // Program Counter High Address
         printf("Write PCL: %04X=%02X\n", i, PCL);   // Program Counter Low Address
         printf("Write PSW: %04X=%02X\n", i, ApuSW); // Program Status Word
@@ -772,14 +702,15 @@ void LoadAndPlaySPC(unsigned short song)
             readSPCRegion(&spcbuf[0], i+0x100, 192);
             readSPCRegion(&spcbuf[0xC0],0x101C0,64);
           }
-          printf("Write spcram: FFC0-FFFF\n");
+          printf("Write spcram from Extra ram\n");
         }
         else
         {
           if(is_spc2)
             get_spc2_page(&spcbuf[0], song, i>>8);
           else
-            readSPCRegion(&spcbuf[0], 0x10000UL, 256);
+            readSPCRegion(&spcbuf[0], i+0x100, 256);
+          printf("Write spcram from page 255\n");
         }
       }
       else
@@ -807,7 +738,7 @@ void LoadAndPlaySPC(unsigned short song)
     
     // Normal data write
     WriteByteToAPUAndWaitForState(spcbuf[i&0xFF], port0state);
-    //printf("Write Norm[%04X]: %02X\n", i, spcbuf[i&0xFF]);
+    //printf("Write Norm: %04X\n", i);
   }
   printf("Upload complete!\n");
 
@@ -1069,12 +1000,41 @@ void ProcessCommandFromSerial()
 #define RIGHT 3
 #define SELECT 4
 
+
 void handleButtons()
 {
   bool buttons[5];
   for (int i=0;i<5;i++)
     buttons[i] = digitalRead(65+i) == LOW;
   delay(20);
+  if((rowlen[0] > 16) || (rowlen[1] > 16))
+  {
+    lcd_delay--;
+    if(!lcd_delay)
+    {
+      lcd.clear();
+      lcd_pos++;
+      int lcd_pos_max = (rowlen[0]>rowlen[1]?rowlen[0]:rowlen[1])+4;
+      if(lcd_pos==lcd_pos_max)
+        lcd_pos=-16;
+      lcd_delay=(lcd_pos==0?125:10);
+      for(int k=0; k<2; k++) 
+      {
+        if(rowlen[k] <= 16)
+        {
+          lcd.setCursor(0,k);
+          lcd.print(k==0?filename:line2);
+        }
+        else
+        {
+          int j=0-(lcd_pos<0?lcd_pos:0);
+          lcd.setCursor(j,k);
+          for(int i=(lcd_pos+j);i<rowlen[k]&&j<16;i++,j++)
+            lcd.print(k==0?filename[i]:line2[i]);
+        }
+      }
+    }
+  }
   for (int i=0;i<5;i++)
     buttons[i] &= digitalRead(65+i) == LOW;
 
@@ -1096,26 +1056,25 @@ void handleButtons()
   }
   if(buttons[LEFT])
   {
-    LeaveDirectory();
+    if(filedepth>0)
+      LeaveDirectory();
     while(digitalRead(65+LEFT) == LOW);
   }
   if(buttons[RIGHT])
   {
-    EnterDirectory();
+    spcFile=files[filedepth];
+    if(spcFile)
+    {
+      if(spcFile.isDirectory())
+        EnterDirectory();
+      else if(spcFile.size() >= 66048)
+        LoadAndPlaySPC(0);
+    }
     while(digitalRead(65+RIGHT) == LOW);
   }
 
   if(buttons[SELECT])
   {
-    spcFile=files[filedepth];
-    if(spcFile)
-    {
-      if(spcFile.size() >= 66048)
-      {
-        LoadAndPlaySPC(0);
-      }
-    }
-    //OpenSPCFile(false,true);
     while(digitalRead(65+SELECT) == LOW);
   }
 }
