@@ -113,15 +113,15 @@ int serial_putchar(char c, FILE* f) {
  * PRESCALER of 5 = 500Khz Clock //Baud rate 115200 no longer possible.
  */
 
-#define PRESCALER 1
+#define PRESCALER 0
 void SetupPrescaler(int prescaler)
 {
-  uint32_t baud_rate = 250000 << PRESCALER;  //Bacuase we are slowing the clock down
+  uint32_t baud_rate = 250000 << prescaler;  //Bacuase we are slowing the clock down
   //250000 baud at prescaler 1 actually means 125000 baud.  We have to compensate for this.
   
   noInterrupts();  //Since the following writes are timing sensitve, disable interrupts.
   CLKPR = 0x80;  //Write CLKPCE = 1 and CLKPSx = 0
-  CLKPR = PRESCALER;  //Write CLKPCE = 0 and CLKPSx with desired value
+  CLKPR = prescaler;  //Write CLKPCE = 0 and CLKPSx with desired value
   interrupts();
   delay(5);
   Serial.begin(baud_rate);  //Now we begin serial. :)
@@ -201,8 +201,8 @@ int lcd_pos=0;
 void refreshLCD()
 {
   rowlen[0]=filename[0]=rowlen[1]=line2[0]=0;
-  lcd_pos=-1;
-  lcd_delay=1;
+  lcd_pos=0;
+  lcd_delay=250;
 
   if(files[filedepth])
   {
@@ -647,6 +647,9 @@ void LoadAndPlaySPC(unsigned short song)
   spcdata[0xFF] = ApuSP;
   spcdata[0xFF] -= 6;
 
+  //Prescaler of 0 seems to work reliably for everthing except SPC loading.
+  //SPC loading has been found to work most reliably with a prescaler of 1 or slower.
+  SetupPrescaler(1);
   // Reset the APU
   int resetAttempts = 0;
   apu.reset();
@@ -835,6 +838,7 @@ void LoadAndPlaySPC(unsigned short song)
     apu.write(3, spcdata[0xF7]);
   }
   printf("Playing!\n");
+  SetupPrescaler(0);
 }
 #endif
 
@@ -1057,7 +1061,7 @@ void ProcessCommandFromSerial()
 
 int date_time=250;
 
-bool refreshRTC()
+bool refreshRTC(bool force_refresh=false)
 {
   if(!rtc_found) return false;
   if(rowlen[1]) return false;
@@ -1067,7 +1071,7 @@ bool refreshRTC()
   if(!date_time)
     date_time=250;
 
-  if(!(date_time%125) && !(rtc_now.unixtime()-rtc_prev.unixtime())) return false;
+  if((date_time%125) && !(rtc_now.unixtime()-rtc_prev.unixtime()) && !force_refresh) return false;
   if(rowlen[1]==0)
   {
     DateTime now=rtc_now;
@@ -1083,16 +1087,19 @@ bool refreshRTC()
 void handleLCD(bool force_refresh=false)
 {
   int lcd_pos_max = (rowlen[0]>rowlen[1]?rowlen[0]:rowlen[1])+4;
-  if(refreshRTC()||force_refresh||(((rowlen[0]>16)||(rowlen[1]>16))&&!lcd_delay))
+  lcd_delay--;
+  force_refresh|=refreshRTC(force_refresh);
+  if(lcd_delay<=0)
   {
-    lcd_delay--;
-    if(lcd_delay<=0)
-    {
-      lcd_pos++;
-      if(lcd_pos==lcd_pos_max)
-        lcd_pos=-16;
-      lcd_delay=(lcd_pos==0?125:10);
-    }
+    force_refresh|=rowlen[0]>16;
+    force_refresh|=rowlen[1]>16;
+    lcd_pos++;
+    if(lcd_pos==lcd_pos_max)
+      lcd_pos=-16;
+    lcd_delay=(lcd_pos==0?125:10);
+  }
+  if(force_refresh)
+  {
     lcd.clear();
     for(int k=0; k<2; k++) 
     {
@@ -1123,7 +1130,7 @@ void handleButtons()
   bool buttons[5];
   for (int i=0;i<5;i++)
     buttons[i] = digitalRead(65+i) == LOW;
-  delay(20);
+  delay(40);
   for (int i=0;i<5;i++)
     buttons[i] &= digitalRead(65+i) == LOW;
   
