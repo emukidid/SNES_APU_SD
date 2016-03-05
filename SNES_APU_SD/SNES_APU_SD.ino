@@ -16,8 +16,13 @@ APU apu(APU_TYPE_XMEM);
 #include <SdFat.h>
 SdFat SD;
 #include "LCD.h"
+#include <Wire.h>
+#include "RTClib.h"
+
+void handleLCD(bool force_refresh);
 
 LiquidCrystal lcd;
+RTC_DS1307 rtc;
 
 File spcFile;
 File root;
@@ -26,6 +31,9 @@ File files[10];
 int filecounts[10];
 int filecurrent[10];
 int rowlen[2];
+unsigned char rtc_found=1;
+DateTime rtc_prev;
+DateTime rtc_now;
 unsigned char is_spc2;
 unsigned short spc2_total_songs;
 unsigned short songnum  __attribute__ ((section (".noinit")));
@@ -104,8 +112,9 @@ int serial_putchar(char c, FILE* f) {
  * PRESCALER of 4 = 1Mhz Clock //Baud rates 230400 and 250000 no longer possible
  * PRESCALER of 5 = 500Khz Clock //Baud rate 115200 no longer possible.
  */
+
 #define PRESCALER 1
-void setup()
+void SetupPrescaler(int prescaler)
 {
   uint32_t baud_rate = 250000 << PRESCALER;  //Bacuase we are slowing the clock down
   //250000 baud at prescaler 1 actually means 125000 baud.  We have to compensate for this.
@@ -116,6 +125,12 @@ void setup()
   interrupts();
   delay(5);
   Serial.begin(baud_rate);  //Now we begin serial. :)
+}
+ 
+
+void setup()
+{
+  SetupPrescaler(PRESCALER);
 
   lcd.begin(16,2);
 
@@ -125,31 +140,49 @@ void setup()
   
   Serial.println("SHVC-SOUND Arduino Player v0.1");
 #ifdef ARDUINO_MEGA
+
+  Serial.print("Initializing RTC... ");
+  if (! rtc.begin()) {
+    Serial.println("Couldn't find RTC :(");
+    rtc_found=0;
+  }
+  else
+  {
+    if (! rtc.isrunning()) {
+      Serial.println("RTC is NOT running!, Setting it now.");
+      // following line sets the RTC to the date & time this sketch was compiled
+      rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+      // This line sets the RTC with an explicit date & time, for example to set
+      // January 21, 2014 at 3am you would call:
+      // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
+    }
+    else
+      Serial.println("RTC is running! :)");
+    rtc_prev = rtc.now();
+    rtc_now = rtc.now();
+  }
+
   delay(250);
   if (Serial.available()) return;
   
-  printf("Initializing SD card...\n");
+  printf("Initializing SD card... ");
 
   if (!SD.begin(53)) {
     printf("initialization failed!\n");
     return;
   }
   printf("initialization done.\n");
-  //OpenSPCFile(true, false);
+
   root = SD.open("dir/");
   if(!root)
   {
     printf("Could not open root directory.\n");
+    printf("Put all spc files/folders in directory named \"dir\"");
     return;
   }
   filedepth = 0;
   CountFiles();
   GetNextFile();
-  
-  
-  lcd.setCursor(0,1);
-  lcd.print("AVR Reset");
-  rowlen[1]=9;
 #endif
 }
 
@@ -168,8 +201,8 @@ int lcd_pos=0;
 void refreshLCD()
 {
   rowlen[0]=filename[0]=rowlen[1]=line2[0]=0;
-  lcd_pos=0;
-  lcd_delay=125;
+  lcd_pos=-1;
+  lcd_delay=1;
 
   if(files[filedepth])
   {
@@ -191,7 +224,7 @@ void refreshLCD()
       printf("SPC Track Name: %s\n",line2);
     }
   }
-  handleLCD();
+  handleLCD(true);
 }
 
 void CountFiles()
@@ -434,7 +467,7 @@ void LoadAndPlaySPC(unsigned short song)
   unsigned char Y = readSPC(is_spc2?spc2_offset+708:0x29);      // 0x29     (1 byte)
   unsigned char ApuSW = readSPC(is_spc2?spc2_offset+709:0x2A);  // 0x2A     (1 byte)
   unsigned char ApuSP = readSPC(is_spc2?spc2_offset+710:0x2B);  // 0x2B     (1 byte)
-  unsigned char echo_clear = 1;
+  unsigned char echo_clear = 0;
 
   // Read some ID tag stuff
   unsigned char tagBuffer[64];
@@ -444,6 +477,12 @@ void LoadAndPlaySPC(unsigned short song)
   clearBuffer(&tagBuffer[0], 64);
   readSPCRegion(&tagBuffer[0], is_spc2?spc2_offset+800:0x4EL, 0x20);
   printf("SPC Track Game: %s\n",&tagBuffer[0]);
+
+  digitalWrite(SRAM_PIN_0,LOW);
+  digitalWrite(SRAM_PIN_1,LOW);
+  readSPCRegion((unsigned char*)&_SFR_MEM8(0x8000),0x100,0x8000);
+  digitalWrite(SRAM_PIN_0,HIGH);
+  readSPCRegion((unsigned char*)&_SFR_MEM8(0x8000),0x8100,0x8000);
 
   // Read some stuff
   if(is_spc2)
@@ -468,6 +507,8 @@ void LoadAndPlaySPC(unsigned short song)
   unsigned short echo_size = (dspdata[0x7D] & 0x0F) * 2048;
   if(echo_size==0) 
     echo_size=4;
+
+  
 
   printf("SPC echo region is: %04X\n", echo_region);
   printf("SPC echo size is: %04X\n", echo_size);
@@ -499,14 +540,18 @@ void LoadAndPlaySPC(unsigned short song)
     for(i=255;i<256;i-=255) 
     {
       count=0;
-      readSPCRegion(&spcbuf[0], 0xFF00+0x100, 256);
+      //readSPCRegion(&spcbuf[0], 0xFF00+0x100, 256);
+      digitalWrite(SRAM_PIN_0,HIGH);
       for(j=0xFFBF;j>=0x100;j--)
       {
+        if(j==0x7FFF)
+          digitalWrite(SRAM_PIN_0,LOW);
         if((j>(echo_region+(echo_size-1)))||(j<echo_region))
         {
-          if((j&0xFF)==0xFF)
-            readSPCRegion(&spcbuf[0], (j&0xFF00)+0x100, 256);
-          if(spcbuf[j&0xFF]==(i&0xFF))
+          //if((j&0xFF)==0xFF)
+          //  readSPCRegion(&spcbuf[0], (j&0xFF00)+0x100, 256);
+          //if(spcbuf[j&0xFF]==(i&0xFF))
+          if(_SFR_MEM8(0x8000+(j&0x7FFF))==(i&0xFF))
             count++;
           else
             count=0;
@@ -522,7 +567,7 @@ void LoadAndPlaySPC(unsigned short song)
         }
       }
       if(count==sizeof(boot_code)) {
-        printf("Type 1 search found enough\n");
+        printf("Type 1 search found enough with byte 0x%.2X\n",i);
         break;
       }
     }
@@ -548,16 +593,21 @@ void LoadAndPlaySPC(unsigned short song)
   {
     if(count != sizeof(boot_code))
     {
-      readSPCRegion(&spcbuf[0], 0xFF00+0x100, 256);
+      //readSPCRegion(&spcbuf[0], 0xFF00+0x100, 256);
+      digitalWrite(SRAM_PIN_0,HIGH);
       for(j = 0xFFBF; j >= 0x100; j--)
       {
-        if((j&0xFF)==0xFF)
-            readSPCRegion(&spcbuf[0], (j&0xFF00)+0x100, 256);
-        if(((j % 64) > 31) && readSPCData(j)==0xFF) 
+        if(j==0x7FFF)
+          digitalWrite(SRAM_PIN_0,LOW);
+        //if((j&0xFF)==0xFF)
+        //    readSPCRegion(&spcbuf[0], (j&0xFF00)+0x100, 256);
+        //if(((j % 64) > 31) && readSPCData(j)==0xFF) 
+        if(((j % 64) > 31) && _SFR_MEM8(0x8000+(j&0x7FFF))==0xFF) 
         {
           count++;
         }
-        else if(((j % 64) <= 31) && readSPCData(j)==0) 
+        //else if(((j % 64) <= 31) && readSPCData(j)==0)
+        else if(((j % 64) <= 31) && _SFR_MEM8(0x8000+(j&0x7FFF))==0) 
         {
           count++;
         }
@@ -594,7 +644,8 @@ void LoadAndPlaySPC(unsigned short song)
   boot_code[38] = dspdata[0x4C];      // DSP KeyON Register
   boot_code[41] = spcdata[0xF2];  // Current DSP Register Address
 
-  spcdata[0xFF] = ((ApuSP - 6) & 0xFF);
+  spcdata[0xFF] = ApuSP;
+  spcdata[0xFF] -= 6;
 
   // Reset the APU
   int resetAttempts = 0;
@@ -636,34 +687,43 @@ void LoadAndPlaySPC(unsigned short song)
     return;
   }
   // Write out the SPC Data (echo, boot_code, etc are interleaved here into the stream)
+  digitalWrite(SRAM_PIN_0,LOW);
   for(i=0x100;i!=0;i++) // Thank you, overflow :)
   {
+    if(i==0x8000)
+      digitalWrite(SRAM_PIN_0,HIGH);
+    
     if((i % 0x100) == 0) {
       // Clear out echo region instead of copying it
-      /*if(((i >= echo_region) && (i <= echo_region+(echo_size-1))) && 
+      if(((i >= echo_region) && (i <= echo_region+(echo_size-1))) && 
           ((((dspdata[0x6C] & 0x20)==0)&&(echo_clear==0))||(echo_clear==1)))
       {
         if (echo_size == 4)
         {
-          if(is_spc2)
-            get_spc2_page(&spcbuf[0], song, i>>8);
-          else
-            readSPCRegion(&spcbuf[0], i+0x100, 256);
-          spcbuf[0]=spcbuf[1]=spcbuf[2]=spcbuf[3]=0;
+          //if(is_spc2)
+          //  get_spc2_page(&spcbuf[0], song, i>>8);
+          //else
+          //  readSPCRegion(&spcbuf[0], i+0x100, 256);
+          //spcbuf[0]=spcbuf[1]=spcbuf[2]=spcbuf[3]=0;
+          _SFR_MEM8(0x8000+(i&0x7FFF)+0)=0;
+          _SFR_MEM8(0x8000+(i&0x7FFF)+1)=0;
+          _SFR_MEM8(0x8000+(i&0x7FFF)+2)=0;
+          _SFR_MEM8(0x8000+(i&0x7FFF)+3)=0;
         }
         else
         {
-          clearBuffer(&spcbuf[0],256);
+          //clearBuffer(&spcbuf[0],256);
+          clearBuffer((unsigned char*)&_SFR_MEM8(0x8000+(i&0x7FFF)),256);
         }
         if(i == echo_region)
           printf("Write echo start: %04X\n", i);
         if(i == ((echo_region+echo_size-1) & 0xFF00))
           printf("Write echo end: %04X\n", (echo_region+echo_size-1));
       }
-      else*/ if (i == 0x100)
+      else if (i == 0x100)
       {
         // Prepare the stack
-        if(is_spc2)
+        /*if(is_spc2)
           get_spc2_page(&spcbuf[0], song, i>>8);
         else
           readSPCRegion(&spcbuf[0], i+0x100, 256);
@@ -672,7 +732,16 @@ void LoadAndPlaySPC(unsigned short song)
         spcbuf[(ApuSP + 0xFE) & 0xFF] = ApuSW;
         spcbuf[(ApuSP + 0xFD) & 0xFF] = Y;
         spcbuf[(ApuSP + 0xFC) & 0xFF] = X;
-        spcbuf[(ApuSP + 0xFB) & 0xFF] = A;
+        spcbuf[(ApuSP + 0xFB) & 0xFF] = A;*/
+
+        _SFR_MEM8(0x8000+0x100+((ApuSP+0x00) & 0xFF)) = PCH;
+        _SFR_MEM8(0x8000+0x100+((ApuSP+0xFF) & 0xFF)) = PCL;
+        _SFR_MEM8(0x8000+0x100+((ApuSP+0xFE) & 0xFF)) = ApuSW;
+        _SFR_MEM8(0x8000+0x100+((ApuSP+0xFD) & 0xFF)) = Y;
+        _SFR_MEM8(0x8000+0x100+((ApuSP+0xFC) & 0xFF)) = X;
+        _SFR_MEM8(0x8000+0x100+((ApuSP+0xFB) & 0xFF)) = A;
+        
+        
         printf("Stack Pointer: %02X\n", ApuSP);
         printf("Write PCH: %04X=%02X\n", i, PCH);   // Program Counter High Address
         printf("Write PCL: %04X=%02X\n", i, PCL);   // Program Counter Low Address
@@ -686,7 +755,8 @@ void LoadAndPlaySPC(unsigned short song)
         // Select proper SPC upper 64 RAM
         if (spcdata[0xF1] & 0x80)
         {
-          if(is_spc2)
+          readSPCRegion((unsigned char*)&_SFR_MEM8(0xFFC0),0x101C0,64);
+          /*if(is_spc2)
           {
             get_spc2_page(&spcbuf[0], song, i>>8, 192);
             readSPCRegion(&spcbuf[0xC0],spc2_offset+640,64);
@@ -695,24 +765,24 @@ void LoadAndPlaySPC(unsigned short song)
           {
             readSPCRegion(&spcbuf[0], i+0x100, 192);
             readSPCRegion(&spcbuf[0xC0],0x101C0,64);
-          }
+          }*/
           printf("Write spcram from Extra ram\n");
         }
         else
         {
-          if(is_spc2)
+          /*if(is_spc2)
             get_spc2_page(&spcbuf[0], song, i>>8);
           else
-            readSPCRegion(&spcbuf[0], i+0x100, 256);
+            readSPCRegion(&spcbuf[0], i+0x100, 256);*/
           printf("Write spcram from page 255\n");
         }
       }
       else
       { 
-        if(is_spc2)
+        /*if(is_spc2)
           get_spc2_page(&spcbuf[0], song, i>>8);
         else
-          readSPCRegion(&spcbuf[0], i+0x100, 256);
+          readSPCRegion(&spcbuf[0], i+0x100, 256);*/
       }
     }
     unsigned char port0state = i & 0xFF;
@@ -731,7 +801,8 @@ void LoadAndPlaySPC(unsigned short song)
     }
     
     // Normal data write
-    WriteByteToAPUAndWaitForState(spcbuf[i&0xFF], port0state);
+    //WriteByteToAPUAndWaitForState(spcbuf[i&0xFF], port0state);
+    WriteByteToAPUAndWaitForState(_SFR_MEM8(0x8000+(i&0x7FFF)), port0state);
     //printf("Write Norm: %04X\n", i);
   }
   printf("Upload complete!\n");
@@ -984,8 +1055,62 @@ void ProcessCommandFromSerial()
   }
 }
 
+int date_time=250;
+
+bool refreshRTC()
+{
+  if(!rtc_found) return false;
+  if(rowlen[1]) return false;
+  rtc_prev=rtc_now;
+  rtc_now=rtc.now();
+  date_time--;
+  if(!date_time)
+    date_time=250;
+
+  if(!(date_time%125) && !(rtc_now.unixtime()-rtc_prev.unixtime())) return false;
+  if(rowlen[1]==0)
+  {
+    DateTime now=rtc_now;
+    if(date_time <= 125)
+      sprintf(line2,"%d:%.2d:%.2d",now.hour(),now.minute(),now.second());
+    else
+      sprintf(line2,"%d/%.2d/%.2d",now.year(),now.month(),now.day());
+  }
+  return true;
+}
 
 
+void handleLCD(bool force_refresh=false)
+{
+  int lcd_pos_max = (rowlen[0]>rowlen[1]?rowlen[0]:rowlen[1])+4;
+  if(refreshRTC()||force_refresh||(((rowlen[0]>16)||(rowlen[1]>16))&&!lcd_delay))
+  {
+    lcd_delay--;
+    if(lcd_delay<=0)
+    {
+      lcd_pos++;
+      if(lcd_pos==lcd_pos_max)
+        lcd_pos=-16;
+      lcd_delay=(lcd_pos==0?125:10);
+    }
+    lcd.clear();
+    for(int k=0; k<2; k++) 
+    {
+      if(rowlen[k] <= 16)
+      {
+        lcd.setCursor(0,k);
+        lcd.print(k==0?filename:line2);
+      }
+      else
+      {
+        int j=0-(lcd_pos<0?lcd_pos:0);
+        lcd.setCursor(j,k);
+        for(int i=(lcd_pos+j);i<rowlen[k]&&j<16;i++,j++)
+          lcd.print(k==0?filename[i]:line2[i]);
+      }
+    }
+  }
+}
 
 
 #define LEFT 0
@@ -993,36 +1118,6 @@ void ProcessCommandFromSerial()
 #define DOWN 2
 #define RIGHT 3
 #define SELECT 4
-
-void handleLCD()
-{
-  lcd_delay--;
-  int lcd_pos_max = (rowlen[0]>rowlen[1]?rowlen[0]:rowlen[1])+4;
-  if(!lcd_delay)
-  {
-    lcd_pos++;
-    if(lcd_pos==lcd_pos_max)
-      lcd_pos=-16;
-    lcd_delay=(lcd_pos==0?125:10);
-  }
-  lcd.clear();
-  for(int k=0; k<2; k++) 
-  {
-    if(rowlen[k] <= 16)
-    {
-      lcd.setCursor(0,k);
-      lcd.print(k==0?filename:line2);
-    }
-    else
-    {
-      int j=0-(lcd_pos<0?lcd_pos:0);
-      lcd.setCursor(j,k);
-      for(int i=(lcd_pos+j);i<rowlen[k]&&j<16;i++,j++)
-        lcd.print(k==0?filename[i]:line2[i]);
-    }
-  }
-}
-
 void handleButtons()
 {
   bool buttons[5];

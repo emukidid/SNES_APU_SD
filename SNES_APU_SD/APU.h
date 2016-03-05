@@ -11,6 +11,8 @@
 #if (defined(__AVR_ATmega2560__) || defined(__AVR_ATmega1280__))
   #define RESET_PIN_0 54
   #define RESET_PIN_1 43
+  #define SRAM_PIN_0 38
+  #define SRAM_PIN_1 42
   #define ARDUINO_MEGA
 #else
   #define RESET_PIN 14
