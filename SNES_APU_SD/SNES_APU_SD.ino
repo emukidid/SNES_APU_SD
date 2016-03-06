@@ -32,8 +32,6 @@ int filecounts[10];
 int filecurrent[10];
 int rowlen[2];
 unsigned char rtc_found=1;
-DateTime rtc_prev;
-DateTime rtc_now;
 unsigned char is_spc2;
 unsigned short spc2_total_songs;
 unsigned short songnum  __attribute__ ((section (".noinit")));
@@ -159,8 +157,6 @@ void setup()
     }
     else
       Serial.println(F("RTC is running! :)"));
-    rtc_prev = rtc.now();
-    rtc_now = rtc.now();
   }
 
   delay(250);
@@ -1086,16 +1082,15 @@ bool refreshRTC(bool force_refresh=false)
 {
   if(!rtc_found) return false;
   if(rowlen[1]) return false;
-  rtc_prev=rtc_now;
-  rtc_now=rtc.now();
+  
   date_time--;
   if(!date_time)
     date_time=250;
 
-  if((date_time%125) && !(rtc_now.unixtime()-rtc_prev.unixtime()) && !force_refresh) return false;
+  if(!force_refresh&&(date_time%25)) return false;
   if(rowlen[1]==0)
   {
-    DateTime now=rtc_now;
+    DateTime now=rtc.now();
     if(date_time <= 125)
       sprintf(line2,"%d:%.2d:%.2d",now.hour(),now.minute(),now.second());
     else
