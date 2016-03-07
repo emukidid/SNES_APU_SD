@@ -199,7 +199,7 @@ void refreshLCD()
 {
   rowlen[0]=filename[0]=rowlen[1]=line2[0]=0;
   lcd_pos=0;
-  lcd_delay=250;
+  lcd_delay=125;
 
   if(files[filedepth])
   {
