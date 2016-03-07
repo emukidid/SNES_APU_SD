@@ -482,6 +482,12 @@ void get_spc2_page(unsigned char *buf, unsigned short song, unsigned char page, 
 
 void LoadAndPlaySPC(unsigned short song)
 {
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Uploading");
+  lcd.setCursor(0,1);
+  lcd.print("Reading from SD");
+  
   unsigned long spc2_offset = 16 + ((unsigned long)song * 1024);
   unsigned long spc2_page_offset = 0;
   unsigned char PCL = readSPC(is_spc2?spc2_offset+704:0x25);    // 0x25     (1 byte)
@@ -494,6 +500,7 @@ void LoadAndPlaySPC(unsigned short song)
   unsigned char echo_clear = 0;
   unsigned short i,j,bootptr,spcinportiszero = 0;
   unsigned short count;
+  
 
   // Read some ID tag stuff
   unsigned char tagBuffer[64];
@@ -536,6 +543,10 @@ void LoadAndPlaySPC(unsigned short song)
     readSPCRegion(&spcdata[0], 0x100L, 256);
     readSPCRegion(&dspdata[0], 0x10100L, 128);
   }
+
+  
+  lcd.setCursor(0,1);
+  lcd.print("Manipulating SPC");
   
   // SPC In Port Is Zero?
   spcinportiszero = (!spcdata[0xF4] && !spcdata[0xF5] && !spcdata[0xF6] && !spcdata[0xF7]);
@@ -689,6 +700,12 @@ void LoadAndPlaySPC(unsigned short song)
   spcdata[0xFF] = ApuSP;
   spcdata[0xFF] -= 6;
 
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Uploading SPC   ");
+  lcd.setCursor(0,1);
+  lcd.print("Page 0x00");
+
   //Prescaler of 0 seems to work reliably for everthing except SPC loading.
   //SPC loading has been found to work most reliably with a prescaler of 1 or slower.
   SetupPrescaler(1);
@@ -745,6 +762,11 @@ void LoadAndPlaySPC(unsigned short song)
       digitalWrite(SRAM_PIN_0,HIGH);
     
     if((i % 0x100) == 0) {
+      lcd.setCursor(0,1);
+      lcd.print("Page 0x");
+      if((i>>8) < 16) lcd.print("0");
+      lcd.print(i>>8,HEX);
+
       // Clear out echo region instead of copying it
       if(((i >= echo_region) && (i <= echo_region+(echo_size-1))) && 
           ((((dspdata[0x6C] & 0x20)==0)&&(echo_clear==0))||(echo_clear==1)))
@@ -779,12 +801,12 @@ void LoadAndPlaySPC(unsigned short song)
         _SFR_MEM8(0x8000+0x100+((ApuSP+0xFC) & 0xFF)) = X;
         _SFR_MEM8(0x8000+0x100+((ApuSP+0xFB) & 0xFF)) = A;
         Serial.print(F("Stack Pointer: ")); printf("%02X\n", ApuSP);
-        Serial.print(F("Write PCH: ")); printf("%04X=%02X\n", i, PCH);   // Program Counter High Address
-        Serial.print(F("Write PCL: ")); printf("%04X=%02X\n", i, PCL);   // Program Counter Low Address
-        Serial.print(F("Write PSW: ")); printf("%04X=%02X\n", i, ApuSW); // Program Status Word
-        Serial.print(F("Write A: ")); printf("%04X=%02X\n", i, A);       // A Register
-        Serial.print(F("Write X: ")); printf("%04X=%02X\n", i, X);       // X Register
-        Serial.print(F("Write Y: ")); printf("%04X=%02X\n", i, Y);       // Y Register
+        Serial.print(F("Write PCH: ")); printf("%04X=%02X\n", 0x100+((ApuSP+0x00) & 0xFF), PCH);   // Program Counter High Address
+        Serial.print(F("Write PCL: ")); printf("%04X=%02X\n", 0x100+((ApuSP+0xFF) & 0xFF), PCL);   // Program Counter Low Address
+        Serial.print(F("Write PSW: ")); printf("%04X=%02X\n", 0x100+((ApuSP+0xFE) & 0xFF), ApuSW); // Program Status Word
+        Serial.print(F("Write A: ")); printf("%04X=%02X\n", 0x100+((ApuSP+0xFD) & 0xFF), A);       // A Register
+        Serial.print(F("Write X: ")); printf("%04X=%02X\n", 0x100+((ApuSP+0xFC) & 0xFF), X);       // X Register
+        Serial.print(F("Write Y: ")); printf("%04X=%02X\n", 0x100+((ApuSP+0xFB) & 0xFF), Y);       // Y Register
       }
       else if (i == 0xFF00)
       {
@@ -856,6 +878,7 @@ void LoadAndPlaySPC(unsigned short song)
   }
   Serial.print(F("Playing!\n"));
   SetupPrescaler(0);
+  handleLCD(true);
 }
 #endif
 
@@ -1141,15 +1164,21 @@ void handleLCD(bool force_refresh=false)
 #define DOWN 2
 #define RIGHT 3
 #define SELECT 4
-void handleButtons()
+
+void readButtons(bool *buttons)
 {
-  bool buttons[5];
   for (int i=0;i<5;i++)
     buttons[i] = digitalRead(65+i) == LOW;
   delay(40);
   for (int i=0;i<5;i++)
     buttons[i] &= digitalRead(65+i) == LOW;
-  
+}
+
+void handleButtons()
+{
+  bool buttons[5];
+  readButtons(buttons);
+
   if(buttons[UP])
   {
     GetPrevFile();
@@ -1181,7 +1210,23 @@ void handleButtons()
 
   if(buttons[SELECT])
   {
-    while(digitalRead(65+SELECT) == LOW);
+    char line2_temp[64];
+    sprintf(line2_temp,"%s",line2);
+    rowlen[1]=0;
+    handleLCD(true);
+    do
+    {
+      for(int i=0;i<250;i++)
+      {
+        readButtons(buttons);
+        handleLCD();
+        if((buttons[UP] || buttons[DOWN] || buttons[LEFT] || buttons[RIGHT]) && !buttons[SELECT])
+          break;
+      }
+    } while(buttons[SELECT]);
+    sprintf(line2,"%s",line2_temp);
+    rowlen[1]=len(line2,64);
+    handleLCD(true);
   }
 }
 
