@@ -14,6 +14,12 @@
   #define SRAM_PIN_0 38
   #define SRAM_PIN_1 42
   #define ARDUINO_MEGA
+  
+  #define LEFT 0
+  #define UP 1
+  #define DOWN 2
+  #define RIGHT 3
+  #define SELECT 4
 #else
   #define RESET_PIN 14
 #endif

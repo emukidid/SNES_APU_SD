@@ -19,7 +19,11 @@ SdFat SD;
 #include <Wire.h>
 #include "RTClib.h"
 
-void handleLCD(bool force_refresh);
+void handleLCD(bool force_refresh=false);
+void GetFile(bool print_info=false, bool rewind_dir=true, bool update_lcd=true);
+void GetNextFile(bool print_info=false);
+void GetPrevFile(bool print_info=false);
+void LoadAndPlaySPC(unsigned short song=0, bool LoadFromRAM=false);
 
 LiquidCrystal lcd;
 RTC_DS1307 rtc;
@@ -35,6 +39,7 @@ unsigned char rtc_found=1;
 unsigned char is_spc2;
 unsigned short spc2_total_songs;
 unsigned short songnum  __attribute__ ((section (".noinit")));
+bool debug_print=false;
 
 static unsigned char boot_code[] =
 {
@@ -66,6 +71,7 @@ static unsigned char boot_code[] =
 } ;
 #endif
 
+bool dataModeText=false;
 static unsigned char spcdata[256];           // 0x100  (256 bytes (of 64kb)) (header)
 static unsigned char dspdata[128];           // 0x10100  (128 bytes)
 
@@ -90,10 +96,6 @@ static unsigned char DSPdata[] =
   
   0x2F, 0xAB,       //        Bra 0FFC9h  ;Right when IPL puts AA-BB on the IO ports and waits for CC.
 };
-
-char filename[64];
-char line2[32];
-
 
 // Function that printf and related will use to print
 int serial_putchar(char c, FILE* f) {
@@ -156,12 +158,22 @@ void setup()
       // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
     }
     else
+    {
       Serial.println(F("RTC is running! :)"));
+      readButtons();
+      if(IsButtonPressed(LEFT) && IsButtonPressed(RIGHT))
+      {
+        rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+        Serial.println(F("Forcing an RTC Adjustment!"));
+        while (IsButtonPressed(LEFT) || IsButtonPressed(RIGHT));
+      }
+    }
   }
 
   delay(250);
   if (Serial.available()) return;
-  
+
+  dataModeText=true;
   Serial.print(F("Initializing SD card... "));
 
   if (!SD.begin(53)) {
@@ -179,7 +191,9 @@ void setup()
   }
   filedepth = 0;
   CountFiles();
-  GetNextFile();
+  for(filecurrent[filedepth]=0;filecurrent[filedepth]<filecounts[filedepth];filecurrent[filedepth]++)
+    GetFile(true,!filecurrent[filedepth],false);
+  GetFile();
 #endif
 }
 
@@ -195,33 +209,35 @@ int len(char *string, int maxlen)
 
 int lcd_delay=125;
 int lcd_pos=0;
-void refreshLCD()
+char lcd_buffer[2][64];
+char file_index[5];
+void refreshLCD(bool update_lcd=true)
 {
-  rowlen[0]=filename[0]=rowlen[1]=line2[0]=0;
+  rowlen[0]=lcd_buffer[0][0]=rowlen[1]=lcd_buffer[1][0]=0;
   lcd_pos=0;
   lcd_delay=125;
 
   if(files[filedepth])
   {
-    files[filedepth].getName(filename,64);
-    Serial.print(filename);
-    rowlen[0] = len(filename,64);
+    files[filedepth].getName(lcd_buffer[0],64);
+    rowlen[0] = len(lcd_buffer[0],64);
     if(files[filedepth].isDirectory())
     {
-      Serial.println(F("/"));
-      filename[rowlen[0]++] = '/';
-      filename[rowlen[0]] = 0;
+      lcd_buffer[0][rowlen[0]++] = '/';
+      lcd_buffer[0][rowlen[0]] = 0;
     }
     else
     {
-      if(files[filedepth].size() < 66048) return;
-      spcFile = files[filedepth];
-      readSPCRegion((unsigned char*)line2, 0x2EL, 0x20);
-      rowlen[1] = len(line2,32);
-      Serial.print(F("SPC Track Name: ")); Serial.println(line2);
+      if(files[filedepth].size() >= 66048)
+      {
+        spcFile = files[filedepth];
+        readSPCRegion((unsigned char*)lcd_buffer[1], 0x2EL, 0x20);
+        rowlen[1] = len(lcd_buffer[1],32);
+      } 
     }
   }
-  handleLCD(true);
+  if(update_lcd)
+    handleLCD(true);
 }
 
 void CountFiles()
@@ -246,34 +262,61 @@ void CountFiles()
   }
 }
 
-void GetFile()
+void GetFile(bool print_info, bool rewind_dir, bool update_lcd)
 {
-  if(filecurrent[filedepth] < 0)
-    filecurrent[filedepth] += filecounts[filedepth];
-  if(filecurrent[filedepth] == filecounts[filedepth])
-    filecurrent[filedepth] = 0;
-    
   File dir = (filedepth == 0) ? root : files[filedepth-1];
-  dir.rewindDirectory();
-  for(int i=0; i<=filecurrent[filedepth];i++)
+  if(rewind_dir)
+  {
+    if(filecurrent[filedepth] < 0)
+      filecurrent[filedepth] += filecounts[filedepth];
+    if(filecurrent[filedepth] == filecounts[filedepth])
+      filecurrent[filedepth] = 0;
+      
+    dir.rewindDirectory();
+    for(int i=0; i<=filecurrent[filedepth];i++)
+    {
+      if(files[filedepth])
+        files[filedepth].close();
+      files[filedepth] = dir.openNextFile();
+    }
+  }
+  else
   {
     if(files[filedepth])
       files[filedepth].close();
     files[filedepth] = dir.openNextFile();
   }
-  refreshLCD();
+  if(filedepth == 0)
+    root = dir;
+  else
+    files[filedepth-1] = dir;
+    
+  refreshLCD(update_lcd);
+  if(print_info)
+  {
+    Serial.print('[');
+    sprintf(file_index,(filecounts[filedepth]>256?"%04X":"%02X"),filecurrent[filedepth]);
+    Serial.print(file_index);
+    Serial.print(F("] "));
+    Serial.print(lcd_buffer[0]);
+    if((!files[filedepth].isDirectory())&&(files[filedepth].size() >= 66048))
+    {
+      Serial.print(F(" - Track Name: ")); Serial.print(lcd_buffer[1]);
+    }
+    Serial.println();
+  }
 }
 
-void GetNextFile()
+void GetNextFile(bool print_info)
 {
   filecurrent[filedepth]++;
-  GetFile();
+  GetFile(print_info,filecurrent[filedepth]>=filecounts[filedepth]);
 }
 
-void GetPrevFile()
+void GetPrevFile(bool print_info)
 {
   filecurrent[filedepth]--;
-  GetFile();
+  GetFile(print_info);
 }
 
 void EnterDirectory()
@@ -289,8 +332,7 @@ void EnterDirectory()
 void LeaveDirectory()
 {
   filedepth--;
-  files[filedepth].getName(filename,64);
-  refreshLCD();
+  GetFile(true);
 }
 
 #endif
@@ -336,7 +378,7 @@ int APU_StartSPC700(unsigned char *dspdata, unsigned char *spcdata, int SD_mode=
   DSPdata[21] = spcdata[0xFA];
   DSPdata[24] = spcdata[0xFF];
 
-  if (SD_mode) Serial.println(F("Uploading DSP Register"));
+  if (SD_mode) Serial.print(F("Uploading DSP Register Loader...."));
   //Upload the DSP register, and the first page of SPC data at serial port speed.
   APU_StartWrite(0x0002,DSPdata,sizeof(DSPdata));
   apu.write(2,0x02);
@@ -347,7 +389,7 @@ int APU_StartSPC700(unsigned char *dspdata, unsigned char *spcdata, int SD_mode=
   if (SD_mode) 
   {
     Serial.println(F("Done"));
-    Serial.println(F("Uploading dspdata"));
+    Serial.print(F("Uploading dspdata...."));
   } 
   // Send dspdata[0] to dspdata[127]
   for(i=0;i<128;i++)
@@ -377,7 +419,7 @@ int APU_StartSPC700(unsigned char *dspdata, unsigned char *spcdata, int SD_mode=
   if (SD_mode) 
   {
     Serial.println(F("Done"));
-    Serial.println(F("Uploading spcdata"));
+    Serial.print(F("Uploading spcdata"));
   }
   port0state=0;
   apu.write(2,0x02);
@@ -407,7 +449,6 @@ int APU_StartSPC700(unsigned char *dspdata, unsigned char *spcdata, int SD_mode=
     }
     port0state++;
   }
-  if (SD_mode) printf("Done\n"); 
   return 0;
 }
 
@@ -480,7 +521,14 @@ void get_spc2_page(unsigned char *buf, unsigned short song, unsigned char page, 
   readSPCRegion(buf,spcram_start,count);
 }
 
-void LoadAndPlaySPC(unsigned short song)
+void spc_push(unsigned char *sp, unsigned char data, const __FlashStringHelper *ifsh)
+{
+  if(debug_print) {Serial.print(ifsh); printf("%04X=%02X\n", 0x100+sp[0], data);}
+  _SFR_MEM8(0x8000+0x100+sp[0]) = data;
+  sp[0]--;
+}
+
+void LoadAndPlaySPC(unsigned short song, bool LoadFromRAM)
 {
   lcd.clear();
   lcd.setCursor(0,0);
@@ -500,48 +548,101 @@ void LoadAndPlaySPC(unsigned short song)
   unsigned char echo_clear = 0;
   unsigned short i,j,bootptr,spcinportiszero = 0;
   unsigned short count;
-  
 
-  // Read some ID tag stuff
   unsigned char tagBuffer[64];
-  clearBuffer(&tagBuffer[0], 64);
-  readSPCRegion(&tagBuffer[0], is_spc2?spc2_offset+768:0x2EL, 0x20);
-  Serial.print(F("SPC Track Name: ")); Serial.println((char*)&tagBuffer[0]);
-  clearBuffer(&tagBuffer[0], 64);
-  readSPCRegion(&tagBuffer[0], is_spc2?spc2_offset+800:0x4EL, 0x20);
-  Serial.print(F("SPC Track Game: ")); Serial.println((char*)&tagBuffer[0]);
-  
 
-  if(is_spc2)
+  if(LoadFromRAM)
   {
+    digitalWrite(SRAM_PIN_1,HIGH);
+    digitalWrite(SRAM_PIN_0,LOW);
+    PCL = _SFR_MEM8(0x8025);
+    PCH = _SFR_MEM8(0x8026);
+    A = _SFR_MEM8(0x8027);
+    X = _SFR_MEM8(0x8028);
+    Y = _SFR_MEM8(0x8029);
+    ApuSW = _SFR_MEM8(0x802A);
+    ApuSP = _SFR_MEM8(0x802B);
+
+    clearBuffer(&tagBuffer[0], 64);
+    for(i=0;i<32;i++)
+      tagBuffer[i]=_SFR_MEM8(0x802E + i);
+    Serial.print(F("SPC Track Name: ")); Serial.println((char*)&tagBuffer[0]);
+    clearBuffer(&tagBuffer[0], 64);
+    for(i=0;i<32;i++)
+      tagBuffer[i]=_SFR_MEM8(0x804E + i);
+    Serial.print(F("SPC Track Game: ")); Serial.println((char*)&tagBuffer[0]);
+
     for(i=0;i<128;i++)
+      dspdata[i]=_SFR_MEM8(0x8100+i);
+
+    for(i=0;i<64;i++)
+      tagBuffer[i]=_SFR_MEM8(0x81C0+i);
+
+    digitalWrite(SRAM_PIN_1,LOW);
+
+    for(i=0;i<256;i++)
+      spcdata[i]=_SFR_MEM8(0x8000+i);
+      
+    // Read out 64 bytes of ram from the proper area of spc.
+    if (spcdata[0xF1] & 0x80) 
     {
-      digitalWrite(SRAM_PIN_1,LOW);
-      digitalWrite(SRAM_PIN_0,LOW);
-      get_spc2_page((unsigned char*)_SFR_MEM8(0x8000+(i<<8)), song, i);
       digitalWrite(SRAM_PIN_0,HIGH);
-      get_spc2_page((unsigned char*)_SFR_MEM8(0x8000+(i<<8)), song, i+0x80);
+      for(i=0;i<64;i++)
+        _SFR_MEM8(0xFFC0+i)=tagBuffer[i];
     }
   }
   else
   {
-    digitalWrite(SRAM_PIN_1,LOW);
+    PCL = readSPC(is_spc2?spc2_offset+704:0x25);    // 0x25     (1 byte)
+    PCH = readSPC(is_spc2?spc2_offset+705:0x26);    // 0x26     (1 byte)
+    A = readSPC(is_spc2?spc2_offset+706:0x27);      // 0x27     (1 byte)
+    X = readSPC(is_spc2?spc2_offset+707:0x28);      // 0x28     (1 byte)
+    Y = readSPC(is_spc2?spc2_offset+708:0x29);      // 0x29     (1 byte)
+    ApuSW = readSPC(is_spc2?spc2_offset+709:0x2A);  // 0x2A     (1 byte)
+    ApuSP = readSPC(is_spc2?spc2_offset+710:0x2B);  // 0x2B     (1 byte)
+    
+    // Read some ID tag stuff
+    clearBuffer(&tagBuffer[0], 64);
+    readSPCRegion(&tagBuffer[0], is_spc2?spc2_offset+768:0x2EL, 0x20);
+    Serial.print(F("SPC Track Name: ")); Serial.println((char*)&tagBuffer[0]);
+    clearBuffer(&tagBuffer[0], 64);
+    readSPCRegion(&tagBuffer[0], is_spc2?spc2_offset+800:0x4EL, 0x20);
+    Serial.print(F("SPC Track Game: ")); Serial.println((char*)&tagBuffer[0]);
+    
+  
+    if(is_spc2)
+    {
+      for(i=0;i<128;i++)
+      {
+        digitalWrite(SRAM_PIN_1,LOW);
+        digitalWrite(SRAM_PIN_0,LOW);
+        get_spc2_page((unsigned char*)_SFR_MEM8(0x8000+(i<<8)), song, i);
+        digitalWrite(SRAM_PIN_0,HIGH);
+        get_spc2_page((unsigned char*)_SFR_MEM8(0x8000+(i<<8)), song, i+0x80);
+      }
+    }
+    else
+    {
+      digitalWrite(SRAM_PIN_1,LOW);
+      digitalWrite(SRAM_PIN_0,LOW);
+      readSPCRegion((unsigned char*)&_SFR_MEM8(0x8000),0x100,0x8000);
+      digitalWrite(SRAM_PIN_0,HIGH);
+      readSPCRegion((unsigned char*)&_SFR_MEM8(0x8000),0x8100,0x8000);
+    }
+  
     digitalWrite(SRAM_PIN_0,LOW);
-    readSPCRegion((unsigned char*)&_SFR_MEM8(0x8000),0x100,0x8000);
-    digitalWrite(SRAM_PIN_0,HIGH);
-    readSPCRegion((unsigned char*)&_SFR_MEM8(0x8000),0x8100,0x8000);
-  }
+    for(i=0;i<256;i++)
+      spcdata[i]=_SFR_MEM32(0x8000+i);
 
-  // Read some stuff
-  if(is_spc2)
-  {
-    get_spc2_page(&spcdata[0], song, 0);
-    readSPCRegion(&dspdata[0], spc2_offset+512, 128);
-  }
-  else
-  {
-    readSPCRegion(&spcdata[0], 0x100L, 256);
-    readSPCRegion(&dspdata[0], 0x10100L, 128);
+    // Read out 64 bytes of ram from the proper area of spc.
+    if (spcdata[0xF1] & 0x80) 
+    {
+      digitalWrite(SRAM_PIN_0,HIGH);
+      readSPCRegion((unsigned char*)&_SFR_MEM8(0xFFC0),0x101C0,64);
+    }
+  
+    // Read dsp data
+    readSPCRegion(&dspdata[0], is_spc2?spc2_offset+512:0x10100L, 128);
   }
 
   
@@ -557,9 +658,11 @@ void LoadAndPlaySPC(unsigned short song)
   if(echo_size==0) 
     echo_size=4;
 
-  
-  Serial.print(F("SPC echo region is: ")); printf("%04X\n", echo_region);
-  Serial.print(F("SPC echo size is: ")); printf("%04X\n", echo_size);
+  if(debug_print)
+  {
+    Serial.print(F("SPC echo region is: ")); printf("%04X\n", echo_region);
+    Serial.print(F("SPC echo size is: ")); printf("%04X\n", echo_size);
+  }
   //Locate a spot to write the bootloader now.
   int freespacesearch = 0;
   unsigned short bootcode_offset = is_spc2?readSPC(spc2_offset+734)|(readSPC(spc2_offset+735)<<8):0;
@@ -617,7 +720,7 @@ void LoadAndPlaySPC(unsigned short song)
         }
       }
       if(count==sizeof(boot_code)) {
-        Serial.print(F("Type 1 search found enough\n"));
+        if(debug_print) Serial.print(F("Type 1 search found enough\n"));
         break;
       }
     }
@@ -649,7 +752,7 @@ void LoadAndPlaySPC(unsigned short song)
             count = 0;
           }
           if(count >= sizeof(boot_code)) {
-            Serial.print(F("Type 2 search found enough\n"));
+            if(debug_print) Serial.print(F("Type 2 search found enough\n"));
             count=sizeof(boot_code);
             break;
           }
@@ -670,35 +773,83 @@ void LoadAndPlaySPC(unsigned short song)
       {
         count = sizeof(boot_code);
         j = echo_region;
-        Serial.print(F("Type 3 search found enough\n"));
+        if(debug_print) Serial.print(F("Type 3 search found enough\n"));
       }
     }
   }
   
   if(count != sizeof(boot_code))
   {
-    Serial.print(F("Couldn't find good spot for bootloader!\n"));
+    Serial.print(F("Upload failed - Couldn't find good spot for bootloader!\n"));
     count = sizeof(boot_code);
     j = 0xFF00;
   }
 
   unsigned short boot_code_dest = j;
   unsigned short boot_code_size = sizeof(boot_code);
-  Serial.print(F("boot_code_dest: ")); printf("%04X\n", boot_code_dest);
-  Serial.print(F("boot_code_size: ")); printf("%04X\n", boot_code_size);
+  if(debug_print) 
+  {
+    Serial.print(F("boot_code_dest: ")); printf("%04X\n", boot_code_dest);
+    Serial.print(F("boot_code_size: ")); printf("%04X\n", boot_code_size);
+  }
 
-  // Adjust the boot code with values from this SPC
-  boot_code[ 1] = spcdata[0x00];  // SPCRam Address 0x0000
-  boot_code[ 4] = spcdata[0x01];  // SPCRam Address 0x0001
-  boot_code[16] = spcdata[0xF4] + (spcinportiszero ? 1:0);  // Inport 0
-  boot_code[22] = spcdata[0xF7];  // Inport 3
-  boot_code[26] = spcdata[0xF1] & 0xCF;  // Control Register
-  boot_code[32] = dspdata[0x6C];      // DSP Echo Control Register
-  boot_code[38] = dspdata[0x4C];      // DSP KeyON Register
-  boot_code[41] = spcdata[0xF2];  // Current DSP Register Address
+  // Boot code section
+  if(bootcode_offset != 2)
+  {
+    // Adjust the boot code with values from this SPC
+    boot_code[ 1] = spcdata[0x00];  // SPCRam Address 0x0000
+    boot_code[ 4] = spcdata[0x01];  // SPCRam Address 0x0001
+    boot_code[16] = spcdata[0xF4] + (spcinportiszero ? 1:0);  // Inport 0
+    boot_code[22] = spcdata[0xF7];  // Inport 3
+    boot_code[26] = spcdata[0xF1] & 0xCF;  // Control Register
+    boot_code[32] = dspdata[0x6C];      // DSP Echo Control Register
+    boot_code[38] = dspdata[0x4C];      // DSP KeyON Register
+    boot_code[41] = spcdata[0xF2];  // Current DSP Register Address
 
+    digitalWrite(SRAM_PIN_0,boot_code_dest<0x8000?LOW:HIGH);
+    for(i=boot_code_dest;i<(boot_code_dest+boot_code_size);i++)
+    {
+      if(i==0x8000)
+        digitalWrite(SRAM_PIN_0,HIGH);
+      _SFR_MEM8(0x8000+(i&0x7FFF)+0)=boot_code[i-boot_code_dest];
+    }
+    if(debug_print) 
+    {
+      Serial.print(F("Write bootcode start: ")); printf("%04X\n", boot_code_dest);
+      Serial.print(F("Write bootcode end: ")); printf("%04X\n", (boot_code_dest+boot_code_size-1));
+    }
+  }
+
+  //Initialize the Stack
+  digitalWrite(SRAM_PIN_0,LOW);
+  spc_push(&ApuSP, PCH, F("Write PCH: "));
+  spc_push(&ApuSP, PCL, F("Write PCL: "));
+  spc_push(&ApuSP, ApuSW, F("Write PSW: "));
+  spc_push(&ApuSP, Y, F("Write Y: "));
+  spc_push(&ApuSP, X, F("Write X: "));
+  spc_push(&ApuSP, A, F("Write A: "));
   spcdata[0xFF] = ApuSP;
-  spcdata[0xFF] -= 6;
+  if(debug_print) {Serial.print(F("Stack Pointer: ")); printf("%02X\n", ApuSP);}
+  
+
+  // Clear out echo region instead of copying it
+  if ((((dspdata[0x6C] & 0x20)==0)&&(echo_clear==0))||(echo_clear==1))
+  {
+    digitalWrite(SRAM_PIN_0,echo_region<0x8000?LOW:HIGH);
+    for(i=echo_region;i<(echo_region+echo_size);i++)
+    {
+      if(i==0x8000) digitalWrite(SRAM_PIN_0, HIGH);
+      _SFR_MEM8(0x8000+(i&0x7FFF)+0)=0;
+    }
+  }
+
+  if(debug_print)
+  {
+    Serial.print(F("Write echo start: ")); printf("%04X\n", echo_region);
+    Serial.print(F("Write echo end: ")); printf("%04X\n", (echo_region+echo_size-1));
+  }
+
+  
 
   lcd.clear();
   lcd.setCursor(0,0);
@@ -736,7 +887,6 @@ void LoadAndPlaySPC(unsigned short song)
     Serial.print(F("Upload failed in APU_StartSCP700: Result ")); printf("%d\n",i);
     return;     
   }
-  Serial.print(F("Time to upload!\n"));
 
   // Here we upload the SPC, tip-toe around regions where we can't just stream raw from file  
   // First we must set the write address to 0x100
@@ -754,92 +904,21 @@ void LoadAndPlaySPC(unsigned short song)
     return;
   }
 
-  // Write out the SPC Data (echo, boot_code, etc are interleaved here into the stream)
+  // Write out the SPC Data
   digitalWrite(SRAM_PIN_0,LOW);
   for(i=0x100;i!=0;i++) // Thank you, overflow :)
   {
-    if(i==0x8000)
-      digitalWrite(SRAM_PIN_0,HIGH);
+    unsigned char port0state = i & 0xFF;
+    if(i==0x8000) digitalWrite(SRAM_PIN_0,HIGH);
     
-    if((i % 0x100) == 0) {
-      lcd.setCursor(0,1);
-      lcd.print("Page 0x");
+    if((i % 0x400) == 0)
+    {
+      Serial.print('.');
+      lcd.setCursor(7,1);
       if((i>>8) < 16) lcd.print("0");
       lcd.print(i>>8,HEX);
-
-      // Clear out echo region instead of copying it
-      if(((i >= echo_region) && (i <= echo_region+(echo_size-1))) && 
-          ((((dspdata[0x6C] & 0x20)==0)&&(echo_clear==0))||(echo_clear==1)))
-      {
-        if (echo_size == 4)
-        {
-          _SFR_MEM8(0x8000+(i&0x7FFF)+0)=0;
-          _SFR_MEM8(0x8000+(i&0x7FFF)+1)=0;
-          _SFR_MEM8(0x8000+(i&0x7FFF)+2)=0;
-          _SFR_MEM8(0x8000+(i&0x7FFF)+3)=0;
-        }
-        else
-        {
-          clearBuffer((unsigned char*)&_SFR_MEM8(0x8000+(i&0x7FFF)),256);
-        }
-        if(i == echo_region)
-        {
-          Serial.print(F("Write echo start: ")); printf("%04X\n", i);
-        }
-        if(i == ((echo_region+echo_size-1) & 0xFF00))
-        {
-          Serial.print(F("Write echo end: ")); printf("%04X\n", (echo_region+echo_size-1));
-        }
-      }
-      else if (i == 0x100)
-      {
-        // Prepare the stack
-        _SFR_MEM8(0x8000+0x100+((ApuSP+0x00) & 0xFF)) = PCH;
-        _SFR_MEM8(0x8000+0x100+((ApuSP+0xFF) & 0xFF)) = PCL;
-        _SFR_MEM8(0x8000+0x100+((ApuSP+0xFE) & 0xFF)) = ApuSW;
-        _SFR_MEM8(0x8000+0x100+((ApuSP+0xFD) & 0xFF)) = Y;
-        _SFR_MEM8(0x8000+0x100+((ApuSP+0xFC) & 0xFF)) = X;
-        _SFR_MEM8(0x8000+0x100+((ApuSP+0xFB) & 0xFF)) = A;
-        Serial.print(F("Stack Pointer: ")); printf("%02X\n", ApuSP);
-        Serial.print(F("Write PCH: ")); printf("%04X=%02X\n", 0x100+((ApuSP+0x00) & 0xFF), PCH);   // Program Counter High Address
-        Serial.print(F("Write PCL: ")); printf("%04X=%02X\n", 0x100+((ApuSP+0xFF) & 0xFF), PCL);   // Program Counter Low Address
-        Serial.print(F("Write PSW: ")); printf("%04X=%02X\n", 0x100+((ApuSP+0xFE) & 0xFF), ApuSW); // Program Status Word
-        Serial.print(F("Write A: ")); printf("%04X=%02X\n", 0x100+((ApuSP+0xFD) & 0xFF), A);       // A Register
-        Serial.print(F("Write X: ")); printf("%04X=%02X\n", 0x100+((ApuSP+0xFC) & 0xFF), X);       // X Register
-        Serial.print(F("Write Y: ")); printf("%04X=%02X\n", 0x100+((ApuSP+0xFB) & 0xFF), Y);       // Y Register
-      }
-      else if (i == 0xFF00)
-      {
-        // Select proper SPC upper 64 RAM
-        if (spcdata[0xF1] & 0x80)
-        {
-          readSPCRegion((unsigned char*)&_SFR_MEM8(0xFFC0),0x101C0,64);
-        }
-      }
     }
-    unsigned char port0state = i & 0xFF;
 
-    // Boot code section
-    if(bootcode_offset != 2)
-    {
-      if((i >= boot_code_dest) && (i < (boot_code_dest+boot_code_size))) {
-        if(!WriteByteToAPUAndWaitForState(boot_code[i-boot_code_dest], port0state))
-        {
-          Serial.print(F("Upload failed at address 0x")); printf("%.4X:(\n",i);
-          return;     
-        }
-        if(i == boot_code_dest)
-        {
-          Serial.print(F("Write bootcode start: ")); printf("%04X\n", i);
-        }
-        if(i == (boot_code_dest+boot_code_size-1))
-        {
-          Serial.print(F("Write bootcode end: ")); printf("%04X\n", i);
-        }
-        continue;
-      }
-    }
-    
     // Normal data write
     if(!WriteByteToAPUAndWaitForState(_SFR_MEM8(0x8000+(i&0x7FFF)), port0state))
     {
@@ -847,7 +926,7 @@ void LoadAndPlaySPC(unsigned short song)
       return;     
     }
   }
-  Serial.print(F("Upload complete!\n"));
+  Serial.println(F("Done!"));
 
   apu.write(3, (unsigned char)(boot_code_dest >> 8));
   apu.write(2, boot_code_dest & 0xFF);
@@ -859,7 +938,7 @@ void LoadAndPlaySPC(unsigned short song)
   i = 0;
   if(bootcode_offset != 2)
   {
-    Serial.print(F("Wait for Play\n"));
+    Serial.print(F("Wait for Play...."));
     if(spcinportiszero) {
       apu.write(3, 1);
       apu.write(0, 1);
@@ -867,7 +946,7 @@ void LoadAndPlaySPC(unsigned short song)
     while(apu.read(0) != 0x53) {
       i++;
       if(i > 512) {
-        Serial.print(F("Error loading SPC\n"));
+        Serial.println(F("Error loading SPC"));
         break;
       }
     }
@@ -876,7 +955,7 @@ void LoadAndPlaySPC(unsigned short song)
     apu.write(2, spcdata[0xF6]);
     apu.write(3, spcdata[0xF7]);
   }
-  Serial.print(F("Playing!\n"));
+  Serial.println(F("Playing!"));
   SetupPrescaler(0);
   handleLCD(true);
 }
@@ -889,10 +968,23 @@ void LoadAndPlaySPC(unsigned short song)
  * --------------------------------------------------------
  */
 
-unsigned char ReadByteFromSerial()
+void WriteByteToSerial(unsigned char data, bool forceRawByte=false)
+{
+  if(!dataModeText || forceRawByte)
+    Serial.write(data);
+  else
+  {
+    if(data < 16)
+      Serial.print('0');
+    Serial.print(data,HEX);
+  }
+}
+
+unsigned char ReadByteFromSerial(bool forceRawByte=false)
 {
   while ((Serial.available() == 0));
-  return Serial.read();
+  if(forceRawByte) return Serial.read();
+  return (dataModeText?ReadHexFromSerial():Serial.read());
 }
 
 unsigned char ReadHexFromSerial()
@@ -934,6 +1026,45 @@ unsigned char ReadHexFromSerial()
   return data;
 }
 
+void UploadSPCFromPC()
+{
+  unsigned short i;
+    digitalWrite(SRAM_PIN_1, LOW);
+    digitalWrite(SRAM_PIN_0, LOW);
+
+    for(i=0;i<0x8000;i++)
+    {
+      if(!(i & 0x3FF))
+      {
+        Serial.write('.');
+        lcd.setCursor(7,1);
+        if((i>>8) < 16) lcd.print("0");
+        lcd.print(i>>8,HEX);
+      }
+      _SFR_MEM8(0x8000+(i&0x7FFF)) = ReadByteFromSerial(true);
+    }
+
+    digitalWrite(SRAM_PIN_0, HIGH);
+
+    for(i=0;i<0x8000;i++)
+    {
+      if(!(i & 0x3FF))
+      {
+        Serial.write('.');
+        lcd.setCursor(7,1);
+        if((i>>8) < 16) lcd.print("0");
+        lcd.print(i>>8,HEX);
+      }
+      _SFR_MEM8(0x8000+(i&0x7FFF)) = ReadByteFromSerial(true);
+    }
+
+    digitalWrite(SRAM_PIN_1, HIGH);
+    digitalWrite(SRAM_PIN_0, LOW);
+
+    for(i=0; i<0x200;i++)
+      _SFR_MEM8(0x8000+(i&0x7FFF)) = ReadByteFromSerial(true);
+}
+
 
 void ProcessCommandFromSerial()
 {
@@ -941,55 +1072,88 @@ void ProcessCommandFromSerial()
     return;
   static unsigned char port0state=0;
   uint16_t i;
-  //static uint16_t j;
+  unsigned long j;
+  char filename[256];
   static long time;
   int checksum;
   unsigned char address, data;
-  unsigned char command = ReadByteFromSerial();
+  unsigned char command = ReadByteFromSerial(true);
+  unsigned short dir_num;
+  File upload;
   switch(command)
   {
   case 'D':    //Set datamode between ascii and binary.  In ascii mode,  each data byte is transmitted
     //as ascii hexadecimal notation.  In binary mode, the byte transmitted on the serial
     //line is taken literally for what it is.
-    ReadByteFromSerial();
-    // Set datamode has been totally deprecated as of Oct 28, 2015.  It will always remain as binary
-    // mode from here on out.  This is the no operation command to use, in order to initiate PC mode.
+    dataModeText = ReadByteFromSerial(true)=='1';
+    // Scracth that deprecation.  This can still be useful when the interface is operating in standalone mode.
+    
     break;
 
 
   case 'Q':  //Read all 4 IO ports in rapid fire succession.
+    if(dataModeText) Serial.print(F("Reading All 4 APU Addresses: "));
     data=apu.read(0);
-    Serial.write(data);
+    WriteByteToSerial(data);
     data=apu.read(1);
-    Serial.write(data);
+    WriteByteToSerial(data);
     data=apu.read(2);
-    Serial.write(data);
+    WriteByteToSerial(data);
     data=apu.read(3);
-    Serial.write(data);
+    WriteByteToSerial(data);
+    if(dataModeText) Serial.println();
     break;
   case 'R':  //Read a single IO port.  Takes an address as a parameter, returns one byte.
-    address=ReadByteFromSerial()-'0';
+    if(dataModeText) Serial.println(F("Input an Address (0-3): "));
+    address=ReadByteFromSerial(true)-'0';
+    if(dataModeText)
+    {
+      Serial.print(F("Reading Address "));
+      Serial.print(address,DEC);
+      Serial.print(':');
+    }
     data=apu.read(address);
-    Serial.write(data);
+    WriteByteToSerial(data);
+    if(dataModeText) Serial.println();
     //printf("Data at port %d is 0x%.2X\n",address,data);
     break;
   case 'r':  //Read and returns 2 consecutive IO ports.
-    address=ReadByteFromSerial()-'0';
+    if(dataModeText) Serial.println(F("Input an Address (0-3): "));
+    address=ReadByteFromSerial(true)-'0';
+    if(dataModeText)
+    {
+      Serial.print(F("Reading Address "));
+      Serial.print(address,DEC);
+      Serial.print(':');
+    }
     data=apu.read(address+1);
-    Serial.write(data);
+    WriteByteToSerial(data);
     data=apu.read(address);
-    Serial.write(data);
+    WriteByteToSerial(data);
+    if(dataModeText) Serial.println();
     break; 
   case 'S':
     Serial.println(F("SPC700 DATA LOADER V1.0"));
     break;
   case 's':  //Reset the Audio Processing Unit
     apu.reset();
+    if(dataModeText)
+      Serial.println(F("APU Reset :)"));
     break;
   case 'f':  //Set the expected state of PORT 0 for the next write.
+    if(dataModeText)
+    {
+      Serial.println(F("This Command is meant for the PC interface program"));
+      break;
+    }
     port0state=ReadByteFromSerial();
     break;
   case 'F':  //Upload SPC data at serial port speed.
+    if(dataModeText)
+    {
+      Serial.println(F("This Command is meant for the PC interface program"));
+      break;
+    }
     uint16_t ram_addr;
     uint16_t data_size;
     
@@ -1020,6 +1184,11 @@ void ProcessCommandFromSerial()
     break;
 
   case 'G':  //Upload the DSP register, and the first page of SPC data at serial port speed.
+    if(dataModeText)
+    {
+      Serial.println(F("This Command is meant for the PC interface program"));
+      break;
+    }
     for(i=0;i<128;i++)
       dspdata[i]=ReadByteFromSerial();
     for(i=0;i<256;i++)
@@ -1027,8 +1196,79 @@ void ProcessCommandFromSerial()
     APU_StartSPC700(dspdata,spcdata,0);
     Serial.write('F');
     break;
+
+  case 'U': //Upload the spc to ram.
+    if(dataModeText)
+    {
+      Serial.println(F("This Command is meant for the PC interface program"));
+      break;
+    }
+    UploadSPCFromPC();
+    break;
+  case 'P':
+    LoadAndPlaySPC(0,true);
+    break;
+    
+
+  case 'u': //Upload the spc as a temp file, and play that one.
+    if(dataModeText)
+    {
+      Serial.println(F("This Command is meant for the PC interface program"));
+      break;
+    }
+    for(i=0,j=0;i<4;i++)
+    {
+      j<<=8;
+      j|=ReadByteFromSerial(true);
+    }
+    i=0;
+    do {
+      filename[i]=ReadByteFromSerial(true);
+    } while (filename[i++] && i<255);
+    filename[i]=0;
+    Serial.println(filename);
+
+    upload = SD.open(filename, FILE_WRITE);
+    if(upload)
+    {
+      Serial.write('O');
+      i=0;
+      while(j--)
+      {
+        _SFR_MEM8(0x8000+(i&0x7FFF)) = ReadByteFromSerial(true);
+        i++;
+        if(!(i&0x7FFF))
+        {
+          upload.write((unsigned char*)_SFR_MEM8(0x8000),0x8000);
+          Serial.write('A');
+        }
+      }
+      if(i&0x7FFF)
+        upload.write((unsigned char*)_SFR_MEM8(0x8000),i&0x7FFF);
+      upload.close();
+      Serial.write('F');
+      upload = spcFile;
+      spcFile = SD.open(filename);
+      if(spcFile)
+      {
+        if(spcFile.size() >= 66048)
+          LoadAndPlaySPC();
+        spcFile.close();
+      }
+      spcFile=upload;
+    }
+    else
+    {
+      Serial.write('F');
+    }
+    
+    
+    break;
+    
   case 'W':  //Write a single IO port.
-    address=ReadByteFromSerial()-'0';
+    if(dataModeText) Serial.println(F("Input an Address (0-3): "));
+    address=ReadByteFromSerial(true)-'0';
+    if(dataModeText) Serial.print(F("Input a Hex Byte (2 digits): "));
     data=ReadByteFromSerial();
     //data=ReadHexFromSerial();
     i=0;  //Must timeout any wait loops, if the respective drivers are not running.
@@ -1083,6 +1323,13 @@ void ProcessCommandFromSerial()
       case 0xFE:  //2 - 4
       case 0xFF:  //3 - 4
       default:    //Any other driver selection not put here.
+        if(dataModeText)
+        {
+          Serial.print(F("Writing "));
+          WriteByteToSerial(data);
+          Serial.print(F(" to address "));
+          Serial.println(address,DEC);
+        }
         /*
         ** Default, is just write the ports as is.
         */
@@ -1090,11 +1337,72 @@ void ProcessCommandFromSerial()
     }
     break;
   case 'w':  //Write 2 IO consecutive IO ports.
-    address=ReadByteFromSerial()-'0';
+    if(dataModeText) Serial.println(F("Input an Address (0-3): "));
+    address=ReadByteFromSerial(true)-'0';
+    if(dataModeText) Serial.print(F("Input a Hex Word (4 digits): "));
     data=ReadByteFromSerial();
+    if(dataModeText)
+    {
+      Serial.print(F("Writing "));
+      WriteByteToSerial(data);
+    }
     apu.write(address+1,data);
     data=ReadByteFromSerial();
+    if(dataModeText)
+    {
+      WriteByteToSerial(data);
+      Serial.print(F(" to address "));
+      Serial.println(address,DEC);
+    }
     apu.write(address,data);
+    break;
+  case 'e':
+    Serial.println(F("Input a directory number:"));
+    dir_num = ReadByteFromSerial();
+    if(filecounts[filedepth]>256)
+    {
+      dir_num <<= 8;
+      dir_num |= ReadByteFromSerial();
+    }
+    filecurrent[filedepth] = dir_num;
+    GetFile();
+    spcFile=files[filedepth];
+    if(spcFile)
+    {
+      if(spcFile.isDirectory())
+      {
+        EnterDirectory();
+        for(filecurrent[filedepth]=0;filecurrent[filedepth]<filecounts[filedepth];filecurrent[filedepth]++)
+          GetFile(true,!filecurrent[filedepth],false);
+        GetFile();
+      }
+      else if(spcFile.size() >= 66048)
+        LoadAndPlaySPC();
+    }
+    break;
+  case 'l':
+    if(filedepth>0) 
+    {
+      LeaveDirectory();
+      i=filecurrent[filedepth];
+      for(filecurrent[filedepth]=0;filecurrent[filedepth]<filecounts[filedepth];filecurrent[filedepth]++)
+        GetFile(true,!filecurrent[filedepth],false);
+      filecurrent[filedepth]=i;
+      GetFile();
+    }
+    break;
+  default:
+    if(dataModeText)
+    {
+      Serial.println(F("Commands to use:"));
+      Serial.println(F("\tQ - Read out all 4 APU ports at once"));
+      Serial.println(F("\tR - Takes an Address (0-3) and reads that byte."));
+      Serial.println(F("\tr - Takes an Address (0-3) and reads 2 consecutive bytes"));
+      Serial.println(F("\ts - Resets the APU"));
+      Serial.println(F("\tW - Takes an Address (0-3), and 2 hex characters, and writes it there."));
+      Serial.println(F("\t\tThere are a few driver handlers implemented."));
+      Serial.println(F("\tw - Writes 2 consecutive bytes on Addresses 0-3"));
+    }
     break;
   }
 }
@@ -1111,23 +1419,21 @@ bool refreshRTC(bool force_refresh=false)
     date_time=250;
 
   if(!force_refresh&&(date_time%25)) return false;
-  if(rowlen[1]==0)
-  {
-    DateTime now=rtc.now();
-    if(date_time <= 125)
-      sprintf(line2,"%d:%.2d:%.2d",now.hour(),now.minute(),now.second());
-    else
-      sprintf(line2,"%d/%.2d/%.2d",now.year(),now.month(),now.day());
-  }
+  DateTime now=rtc.now();
+  if(date_time <= 125)
+    sprintf(lcd_buffer[1],"%d:%.2d:%.2d",now.hour(),now.minute(),now.second());
+  else
+    sprintf(lcd_buffer[1],"%d/%.2d/%.2d",now.year(),now.month(),now.day());
   return true;
 }
 
 
-void handleLCD(bool force_refresh=false)
+void handleLCD(bool force_refresh)
 {
   int lcd_pos_max = (rowlen[0]>rowlen[1]?rowlen[0]:rowlen[1])+4;
   lcd_delay--;
-  force_refresh|=refreshRTC(force_refresh);
+
+  force_refresh |= refreshRTC(force_refresh);
   if(lcd_delay<=0)
   {
     force_refresh|=rowlen[0]>16;
@@ -1145,27 +1451,24 @@ void handleLCD(bool force_refresh=false)
       if(rowlen[k] <= 16)
       {
         lcd.setCursor(0,k);
-        lcd.print(k==0?filename:line2);
+        lcd.print(lcd_buffer[k]);
       }
       else
       {
         int j=0-(lcd_pos<0?lcd_pos:0);
         lcd.setCursor(j,k);
         for(int i=(lcd_pos+j);i<rowlen[k]&&j<16;i++,j++)
-          lcd.print(k==0?filename[i]:line2[i]);
+          lcd.print(lcd_buffer[k][i]);
       }
     }
   }
 }
 
 
-#define LEFT 0
-#define UP 1
-#define DOWN 2
-#define RIGHT 3
-#define SELECT 4
 
-void readButtons(bool *buttons)
+bool buttons[5];
+
+void readButtons()
 {
   for (int i=0;i<5;i++)
     buttons[i] = digitalRead(65+i) == LOW;
@@ -1174,26 +1477,36 @@ void readButtons(bool *buttons)
     buttons[i] &= digitalRead(65+i) == LOW;
 }
 
+bool IsButtonPressed(int button)
+{
+  return digitalRead(65+button) == LOW;
+}
+
+bool IsButtonReleased(int button)
+{
+  return !IsButtonPressed(button);
+}
+
 void handleButtons()
 {
-  bool buttons[5];
-  readButtons(buttons);
+  readButtons();
 
+handleButtons_top:
   if(buttons[UP])
   {
-    GetPrevFile();
-    while(digitalRead(65+UP) == LOW);
+    GetPrevFile(true);
+    while(IsButtonPressed(UP));
   }
   if(buttons[DOWN])
   {
-    GetNextFile();
-    while(digitalRead(65+DOWN) == LOW);
+    GetNextFile(true);
+    while(IsButtonPressed(DOWN));
   }
   if(buttons[LEFT])
   {
     if(filedepth>0)
       LeaveDirectory();
-    while(digitalRead(65+LEFT) == LOW);
+    while(IsButtonPressed(LEFT));
   }
   if(buttons[RIGHT])
   {
@@ -1201,32 +1514,37 @@ void handleButtons()
     if(spcFile)
     {
       if(spcFile.isDirectory())
+      {
         EnterDirectory();
+        GetFile(true);
+      }
       else if(spcFile.size() >= 66048)
-        LoadAndPlaySPC(0);
+        LoadAndPlaySPC();
     }
-    while(digitalRead(65+RIGHT) == LOW);
+    while(IsButtonPressed(RIGHT));
   }
 
   if(buttons[SELECT])
   {
-    char line2_temp[64];
-    sprintf(line2_temp,"%s",line2);
     rowlen[1]=0;
     handleLCD(true);
     do
     {
       for(int i=0;i<250;i++)
       {
-        readButtons(buttons);
+        readButtons();
         handleLCD();
-        if((buttons[UP] || buttons[DOWN] || buttons[LEFT] || buttons[RIGHT]) && !buttons[SELECT])
+        if((buttons[UP] || buttons[DOWN] || buttons[LEFT] || buttons[RIGHT]))
           break;
       }
     } while(buttons[SELECT]);
-    sprintf(line2,"%s",line2_temp);
-    rowlen[1]=len(line2,64);
-    handleLCD(true);
+    refreshLCD();
+    if(!buttons[SELECT])
+      goto handleButtons_top;
+    else
+    {
+      //place to handle other menu code.
+    }
   }
 }
 
