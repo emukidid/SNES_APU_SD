@@ -8,34 +8,34 @@
 </settings>
 <grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
 <layers>
-<layer number="1" name="Top" color="4" fill="1" visible="yes" active="no"/>
-<layer number="2" name="Route2" color="1" fill="3" visible="yes" active="no"/>
-<layer number="3" name="Route3" color="4" fill="3" visible="yes" active="no"/>
-<layer number="4" name="Route4" color="1" fill="4" visible="yes" active="no"/>
-<layer number="5" name="Route5" color="4" fill="4" visible="yes" active="no"/>
-<layer number="6" name="Route6" color="1" fill="8" visible="yes" active="no"/>
-<layer number="7" name="Route7" color="4" fill="8" visible="yes" active="no"/>
-<layer number="8" name="Route8" color="1" fill="2" visible="yes" active="no"/>
-<layer number="9" name="Route9" color="4" fill="2" visible="yes" active="no"/>
-<layer number="10" name="Route10" color="1" fill="7" visible="yes" active="no"/>
-<layer number="11" name="Route11" color="4" fill="7" visible="yes" active="no"/>
-<layer number="12" name="Route12" color="1" fill="5" visible="yes" active="no"/>
-<layer number="13" name="Route13" color="4" fill="5" visible="yes" active="no"/>
-<layer number="14" name="Route14" color="1" fill="6" visible="yes" active="no"/>
-<layer number="15" name="Route15" color="4" fill="6" visible="yes" active="no"/>
-<layer number="16" name="Bottom" color="1" fill="1" visible="yes" active="no"/>
-<layer number="17" name="Pads" color="2" fill="1" visible="yes" active="no"/>
-<layer number="18" name="Vias" color="22" fill="1" visible="yes" active="no"/>
-<layer number="19" name="Unrouted" color="6" fill="1" visible="yes" active="no"/>
-<layer number="20" name="Dimension" color="15" fill="1" visible="yes" active="no"/>
-<layer number="21" name="tPlace" color="7" fill="1" visible="yes" active="no"/>
-<layer number="22" name="bPlace" color="7" fill="1" visible="yes" active="no"/>
-<layer number="23" name="tOrigins" color="15" fill="1" visible="yes" active="no"/>
-<layer number="24" name="bOrigins" color="15" fill="1" visible="yes" active="no"/>
-<layer number="25" name="tNames" color="7" fill="1" visible="yes" active="no"/>
-<layer number="26" name="bNames" color="7" fill="1" visible="yes" active="no"/>
-<layer number="27" name="tValues" color="7" fill="1" visible="yes" active="no"/>
-<layer number="28" name="bValues" color="7" fill="1" visible="yes" active="no"/>
+<layer number="1" name="Top" color="4" fill="1" visible="no" active="no"/>
+<layer number="2" name="Route2" color="1" fill="3" visible="no" active="no"/>
+<layer number="3" name="Route3" color="4" fill="3" visible="no" active="no"/>
+<layer number="4" name="Route4" color="1" fill="4" visible="no" active="no"/>
+<layer number="5" name="Route5" color="4" fill="4" visible="no" active="no"/>
+<layer number="6" name="Route6" color="1" fill="8" visible="no" active="no"/>
+<layer number="7" name="Route7" color="4" fill="8" visible="no" active="no"/>
+<layer number="8" name="Route8" color="1" fill="2" visible="no" active="no"/>
+<layer number="9" name="Route9" color="4" fill="2" visible="no" active="no"/>
+<layer number="10" name="Route10" color="1" fill="7" visible="no" active="no"/>
+<layer number="11" name="Route11" color="4" fill="7" visible="no" active="no"/>
+<layer number="12" name="Route12" color="1" fill="5" visible="no" active="no"/>
+<layer number="13" name="Route13" color="4" fill="5" visible="no" active="no"/>
+<layer number="14" name="Route14" color="1" fill="6" visible="no" active="no"/>
+<layer number="15" name="Route15" color="4" fill="6" visible="no" active="no"/>
+<layer number="16" name="Bottom" color="1" fill="1" visible="no" active="no"/>
+<layer number="17" name="Pads" color="2" fill="1" visible="no" active="no"/>
+<layer number="18" name="Vias" color="22" fill="1" visible="no" active="no"/>
+<layer number="19" name="Unrouted" color="6" fill="1" visible="no" active="no"/>
+<layer number="20" name="Dimension" color="15" fill="1" visible="no" active="no"/>
+<layer number="21" name="tPlace" color="7" fill="1" visible="no" active="no"/>
+<layer number="22" name="bPlace" color="7" fill="1" visible="no" active="no"/>
+<layer number="23" name="tOrigins" color="15" fill="1" visible="no" active="no"/>
+<layer number="24" name="bOrigins" color="15" fill="1" visible="no" active="no"/>
+<layer number="25" name="tNames" color="7" fill="1" visible="no" active="no"/>
+<layer number="26" name="bNames" color="7" fill="1" visible="no" active="no"/>
+<layer number="27" name="tValues" color="7" fill="1" visible="no" active="no"/>
+<layer number="28" name="bValues" color="7" fill="1" visible="no" active="no"/>
 <layer number="29" name="tStop" color="7" fill="3" visible="no" active="no"/>
 <layer number="30" name="bStop" color="7" fill="6" visible="no" active="no"/>
 <layer number="31" name="tCream" color="7" fill="4" visible="no" active="no"/>
@@ -44,8 +44,8 @@
 <layer number="34" name="bFinish" color="6" fill="6" visible="no" active="no"/>
 <layer number="35" name="tGlue" color="7" fill="4" visible="no" active="no"/>
 <layer number="36" name="bGlue" color="7" fill="5" visible="no" active="no"/>
-<layer number="37" name="tTest" color="7" fill="1" visible="yes" active="no"/>
-<layer number="38" name="bTest" color="7" fill="1" visible="yes" active="no"/>
+<layer number="37" name="tTest" color="7" fill="1" visible="no" active="no"/>
+<layer number="38" name="bTest" color="7" fill="1" visible="no" active="no"/>
 <layer number="39" name="tKeepout" color="4" fill="11" visible="no" active="no"/>
 <layer number="40" name="bKeepout" color="1" fill="11" visible="no" active="no"/>
 <layer number="41" name="tRestrict" color="4" fill="10" visible="no" active="no"/>
@@ -53,16 +53,16 @@
 <layer number="43" name="vRestrict" color="2" fill="10" visible="no" active="no"/>
 <layer number="44" name="Drills" color="7" fill="1" visible="no" active="no"/>
 <layer number="45" name="Holes" color="7" fill="1" visible="no" active="no"/>
-<layer number="46" name="Milling" color="3" fill="1" visible="yes" active="no"/>
-<layer number="47" name="Measures" color="7" fill="1" visible="yes" active="no"/>
-<layer number="48" name="Document" color="7" fill="1" visible="yes" active="no"/>
-<layer number="49" name="Reference" color="7" fill="1" visible="yes" active="no"/>
-<layer number="50" name="dxf" color="7" fill="1" visible="yes" active="no"/>
-<layer number="51" name="tDocu" color="7" fill="1" visible="yes" active="no"/>
-<layer number="52" name="bDocu" color="7" fill="1" visible="yes" active="no"/>
-<layer number="53" name="tGND_GNDA" color="7" fill="9" visible="yes" active="no"/>
-<layer number="54" name="bGND_GNDA" color="1" fill="9" visible="yes" active="no"/>
-<layer number="56" name="wert" color="7" fill="1" visible="yes" active="no"/>
+<layer number="46" name="Milling" color="3" fill="1" visible="no" active="no"/>
+<layer number="47" name="Measures" color="7" fill="1" visible="no" active="no"/>
+<layer number="48" name="Document" color="7" fill="1" visible="no" active="no"/>
+<layer number="49" name="Reference" color="7" fill="1" visible="no" active="no"/>
+<layer number="50" name="dxf" color="7" fill="1" visible="no" active="no"/>
+<layer number="51" name="tDocu" color="7" fill="1" visible="no" active="no"/>
+<layer number="52" name="bDocu" color="7" fill="1" visible="no" active="no"/>
+<layer number="53" name="tGND_GNDA" color="7" fill="9" visible="no" active="no"/>
+<layer number="54" name="bGND_GNDA" color="1" fill="9" visible="no" active="no"/>
+<layer number="56" name="wert" color="7" fill="1" visible="no" active="no"/>
 <layer number="91" name="Nets" color="2" fill="1" visible="yes" active="yes"/>
 <layer number="92" name="Busses" color="1" fill="1" visible="yes" active="yes"/>
 <layer number="93" name="Pins" color="2" fill="1" visible="no" active="yes"/>
@@ -1078,38 +1078,6 @@ at 22/03/2012 14:29:00</description>
 </library>
 <library name="adafruit">
 <packages>
-<package name="MICROSD">
-<wire x1="13" y1="-15.14" x2="14" y2="-15.14" width="0.127" layer="21"/>
-<wire x1="14" y1="-15.14" x2="14" y2="-0.04" width="0.127" layer="21"/>
-<wire x1="14" y1="-0.04" x2="0" y2="-0.04" width="0.127" layer="21"/>
-<wire x1="0" y1="-0.04" x2="0" y2="-14.44" width="0.127" layer="21"/>
-<wire x1="0" y1="-14.44" x2="1" y2="-14.44" width="0.127" layer="21"/>
-<wire x1="1" y1="-14.44" x2="1.7" y2="-13.54" width="0.127" layer="21" curve="-90"/>
-<wire x1="1.7" y1="-13.54" x2="11.4" y2="-13.54" width="0.127" layer="21"/>
-<wire x1="11.4" y1="-13.54" x2="13" y2="-15.14" width="0.127" layer="21" curve="-90"/>
-<wire x1="0.4" y1="-14.7" x2="1.6" y2="-15.9" width="0.127" layer="21" curve="90"/>
-<wire x1="1.6" y1="-15.9" x2="10.8" y2="-15.9" width="0.127" layer="21"/>
-<wire x1="10.8" y1="-15.9" x2="12.1" y2="-14.8" width="0.127" layer="21" curve="90"/>
-<wire x1="0.4" y1="-15.6" x2="1.6" y2="-16.8" width="0.127" layer="21" curve="90"/>
-<wire x1="1.6" y1="-16.8" x2="10.8" y2="-16.8" width="0.127" layer="21"/>
-<wire x1="10.8" y1="-16.8" x2="12.1" y2="-15.7" width="0.127" layer="21" curve="90"/>
-<wire x1="0.4" y1="-19.4" x2="1.6" y2="-20.6" width="0.127" layer="21" curve="90"/>
-<wire x1="1.6" y1="-20.6" x2="10.8" y2="-20.6" width="0.127" layer="21"/>
-<wire x1="10.8" y1="-20.6" x2="12.1" y2="-19.5" width="0.127" layer="21" curve="90"/>
-<smd name="1" x="9" y="-10.64" dx="0.7" dy="1.5" layer="1"/>
-<smd name="2" x="7.9" y="-10.24" dx="0.7" dy="1.5" layer="1"/>
-<smd name="3" x="6.8" y="-10.64" dx="0.7" dy="1.5" layer="1"/>
-<smd name="4" x="5.7" y="-11.04" dx="0.7" dy="1.5" layer="1"/>
-<smd name="5" x="4.6" y="-10.64" dx="0.7" dy="1.5" layer="1"/>
-<smd name="6" x="3.5" y="-11.04" dx="0.7" dy="1.5" layer="1"/>
-<smd name="7" x="2.4" y="-10.64" dx="0.7" dy="1.5" layer="1"/>
-<smd name="8" x="1.3" y="-10.64" dx="0.7" dy="1.5" layer="1"/>
-<smd name="CD1" x="2" y="-0.44" dx="1.4" dy="1.8" layer="1" rot="R90"/>
-<smd name="CD2" x="8" y="-0.44" dx="1.4" dy="1.8" layer="1" rot="R90"/>
-<smd name="MT1" x="0.4" y="-13.54" dx="1.4" dy="1.9" layer="1"/>
-<smd name="MT2" x="13.6" y="-14.44" dx="1.4" dy="1.9" layer="1"/>
-<text x="3.7" y="-3.94" size="1.27" layer="25">&gt;NAME</text>
-</package>
 <package name="R0805">
 <description>&lt;b&gt;RESISTOR&lt;/b&gt;&lt;p&gt;
 chip</description>
@@ -1823,33 +1791,6 @@ package type OT</description>
 <smd name="5" x="-0.95" y="1.3" dx="0.55" dy="1.2" layer="1"/>
 <text x="-1.905" y="1.905" size="1.27" layer="25">&gt;NAME</text>
 <text x="-1.905" y="-3.429" size="1.27" layer="27">&gt;VALUE</text>
-</package>
-<package name="MICROSD-1">
-<smd name="1" x="8.85" y="4.175" dx="0.6" dy="1.25" layer="1"/>
-<smd name="2" x="7.75" y="4.175" dx="0.6" dy="1.25" layer="1"/>
-<smd name="3" x="6.65" y="4.175" dx="0.6" dy="1.25" layer="1"/>
-<smd name="4" x="5.55" y="4.175" dx="0.6" dy="1.25" layer="1"/>
-<smd name="5" x="4.45" y="4.175" dx="0.6" dy="1.25" layer="1"/>
-<smd name="6" x="3.35" y="4.175" dx="0.6" dy="1.25" layer="1"/>
-<smd name="7" x="2.25" y="4.175" dx="0.6" dy="1.25" layer="1"/>
-<smd name="8" x="1.15" y="4.175" dx="0.6" dy="1.25" layer="1"/>
-<smd name="9" x="0" y="1.695" dx="1.2" dy="3.79" layer="1"/>
-<smd name="10" x="10.475" y="2.45" dx="1.45" dy="1.4" layer="1"/>
-<smd name="11" x="10.7" y="1.2" dx="1" dy="0.6" layer="1"/>
-<smd name="12" x="9.775" y="0.225" dx="0.95" dy="0.85" layer="1"/>
-<wire x1="11" y1="0" x2="11" y2="0.5902875" width="0.1524" layer="21"/>
-<wire x1="11" y1="3.4616125" x2="11" y2="5.5" width="0.1524" layer="21"/>
-<wire x1="11" y1="5.5" x2="-0.3978875" y2="5.5" width="0.1524" layer="21"/>
-<wire x1="-0.3978875" y1="5.5" x2="-0.4" y2="5.5" width="0.1524" layer="21"/>
-<wire x1="-0.4" y1="5.5" x2="-0.3978875" y2="5.5" width="0.1524" layer="21"/>
-<wire x1="-0.3978875" y1="5.5" x2="-0.3978875" y2="3.904978125" width="0.1524" layer="21"/>
-<wire x1="0.89793125" y1="0" x2="8.985040625" y2="-0.00574375" width="0.1524" layer="21"/>
-<wire x1="10.54273125" y1="0" x2="11" y2="0" width="0.1524" layer="21"/>
-<wire x1="11" y1="-8.6" x2="10" y2="-9.6" width="0.1524" layer="21" curve="-90"/>
-<wire x1="10" y1="-9.6" x2="1.6" y2="-9.6" width="0.1524" layer="21"/>
-<wire x1="1.6" y1="-9.6" x2="1.4" y2="-9.6" width="0.1524" layer="21"/>
-<wire x1="0" y1="-8.6" x2="1" y2="-9.6" width="0.1524" layer="21" curve="90"/>
-<wire x1="1" y1="-9.6" x2="1.6" y2="-9.6" width="0.1524" layer="21"/>
 </package>
 <package name="0204V">
 <description>&lt;b&gt;RESISTOR&lt;/b&gt;&lt;p&gt;
@@ -7576,61 +7517,52 @@ diameter 6 mm, grid 5.08 mm</description>
 <wire x1="-2.413" y1="2.032" x2="-2.54" y2="2.032" width="0.127" layer="21"/>
 <wire x1="-2.54" y1="2.032" x2="-2.54" y2="-2.032" width="0.127" layer="21"/>
 </package>
-<package name="MICROSD-2">
-<smd name="1" x="3.105" y="-4.855" dx="0.85" dy="1.1" layer="1"/>
-<smd name="2" x="2.005" y="-4.855" dx="0.85" dy="1.1" layer="1"/>
-<smd name="3" x="0.905" y="-4.855" dx="0.85" dy="1.1" layer="1"/>
-<smd name="4" x="-0.195" y="-4.855" dx="0.85" dy="1.1" layer="1"/>
-<smd name="5" x="-1.295" y="-4.855" dx="0.85" dy="1.1" layer="1"/>
-<smd name="6" x="-2.395" y="-4.855" dx="0.85" dy="1.1" layer="1"/>
-<smd name="7" x="-3.495" y="-4.855" dx="0.85" dy="1.1" layer="1"/>
-<smd name="8" x="-4.545" y="-4.855" dx="0.75" dy="1.1" layer="1"/>
-<smd name="G1" x="5.565" y="-4.73" dx="1.55" dy="1.35" layer="1"/>
-<smd name="G2" x="-5.755" y="-4.505" dx="1.17" dy="1.8" layer="1"/>
-<smd name="CD2" x="5.74" y="1.295" dx="1.2" dy="1" layer="1"/>
-<smd name="CD1" x="5.74" y="4.995" dx="1.2" dy="1" layer="1"/>
-<smd name="G3" x="-3.75" y="5.97" dx="1.9" dy="1.35" layer="1"/>
-<smd name="G4" x="2.22" y="5.97" dx="1.9" dy="1.35" layer="1"/>
-<wire x1="-6" y1="-3.25" x2="-6" y2="6.5" width="0.127" layer="21"/>
-<wire x1="-6" y1="6.5" x2="-5" y2="6.5" width="0.127" layer="21"/>
-<wire x1="-2.5" y1="6.5" x2="1" y2="6.5" width="0.127" layer="21"/>
-<wire x1="3.5" y1="6.5" x2="6" y2="6.5" width="0.127" layer="21"/>
-<wire x1="6" y1="6.5" x2="6" y2="5.75" width="0.127" layer="21"/>
-<wire x1="6" y1="4.25" x2="6" y2="2" width="0.127" layer="21"/>
-<wire x1="6" y1="0.5" x2="6" y2="-3.75" width="0.127" layer="21"/>
-<wire x1="4.5" y1="-5.25" x2="4" y2="-4.75" width="0.127" layer="21" curve="-90"/>
-<wire x1="4" y1="-4.75" x2="4" y2="-4" width="0.127" layer="21"/>
-<wire x1="4" y1="-4" x2="3.5" y2="-3.5" width="0.127" layer="21" curve="90"/>
-<wire x1="3.5" y1="-3.5" x2="-4.25" y2="-3.5" width="0.127" layer="21"/>
-<wire x1="-4.25" y1="-3.5" x2="-4.75" y2="-4" width="0.127" layer="21" curve="90"/>
+<package name="MICROSD-3">
+<smd name="1" x="0" y="0" dx="0.8" dy="1.24" layer="1"/>
+<smd name="2" x="1.1" y="0" dx="0.8" dy="1.24" layer="1"/>
+<smd name="3" x="2.2" y="0" dx="0.8" dy="1.24" layer="1"/>
+<smd name="4" x="3.3" y="0" dx="0.8" dy="1.24" layer="1"/>
+<smd name="5" x="4.4" y="0" dx="0.8" dy="1.24" layer="1"/>
+<smd name="6" x="5.5" y="0" dx="0.8" dy="1.24" layer="1"/>
+<smd name="7" x="6.6" y="0" dx="0.8" dy="1.24" layer="1"/>
+<smd name="8" x="7.7" y="0" dx="0.8" dy="1.24" layer="1"/>
+<smd name="G1" x="-4.345" y="-0.63" dx="0.95" dy="2.5" layer="1"/>
+<smd name="G2" x="10.045" y="-0.48" dx="1.15" dy="2.2" layer="1"/>
+<smd name="G3" x="-4.245" y="-12.08" dx="1.15" dy="2.2" layer="1"/>
+<polygon width="0.127" layer="41">
+<vertex x="-0.6" y="-5.6"/>
+<vertex x="8.6" y="-5.6"/>
+<vertex x="8.6" y="-9"/>
+<vertex x="-0.6" y="-9"/>
+</polygon>
+<smd name="G4" x="0.06" y="-12.755" dx="1.5" dy="1.15" layer="1"/>
+<smd name="G5" x="7.84" y="-12.755" dx="1.5" dy="1.15" layer="1"/>
+<smd name="CD_SWITCH" x="9.64" y="-2.62" dx="1.16" dy="1.25" layer="1"/>
+<smd name="CD_GND" x="9.64" y="-11.62" dx="1.16" dy="1.2" layer="1"/>
+<wire x1="-4.25" y1="0.75" x2="-4.25" y2="2" width="0.127" layer="21"/>
+<wire x1="-4.25" y1="2" x2="-2" y2="2" width="0.127" layer="21"/>
+<wire x1="-2" y1="2" x2="-2" y2="1" width="0.127" layer="21"/>
+<wire x1="-2" y1="1" x2="-0.5" y2="0.75" width="0.127" layer="21"/>
+<wire x1="-0.5" y1="0.75" x2="-0.5" y2="-1.25" width="0.127" layer="21"/>
+<wire x1="-0.5" y1="-1.25" x2="8.25" y2="-1.25" width="0.127" layer="21" curve="28.072487"/>
+<wire x1="8.25" y1="-1.25" x2="8.25" y2="2" width="0.127" layer="21"/>
+<wire x1="8.25" y1="2" x2="10" y2="2" width="0.127" layer="21"/>
+<wire x1="10" y1="2" x2="10" y2="0.75" width="0.127" layer="21"/>
+<wire x1="10" y1="-3.5" x2="10" y2="-10.75" width="0.127" layer="21"/>
+<wire x1="10" y1="-12.5" x2="10" y2="-13.25" width="0.127" layer="21"/>
+<wire x1="10" y1="-13.25" x2="8.75" y2="-13.25" width="0.127" layer="21"/>
+<wire x1="7" y1="-12.5" x2="1" y2="-12.5" width="0.127" layer="21"/>
+<wire x1="-1" y1="-13.25" x2="-3.5" y2="-13.25" width="0.127" layer="21"/>
+<wire x1="-4.25" y1="-2" x2="-4.25" y2="-10.75" width="0.127" layer="21"/>
+<polygon width="0.127" layer="39">
+<vertex x="10.2" y="-10.8"/>
+<vertex x="10.2" y="-7.8"/>
+<vertex x="11" y="-7.8"/>
+<vertex x="11" y="-10.8"/>
+</polygon>
 </package>
 </packages>
 <symbols>
-<symbol name="TRANSFLASH">
-<wire x1="-15.24" y1="20.32" x2="-15.24" y2="-22.86" width="0.254" layer="94"/>
-<wire x1="10.16" y1="-25.4" x2="10.16" y2="20.32" width="0.254" layer="94"/>
-<wire x1="10.16" y1="20.32" x2="-15.24" y2="20.32" width="0.254" layer="94"/>
-<wire x1="-15.24" y1="-22.86" x2="-5.08" y2="-22.86" width="0.254" layer="94"/>
-<wire x1="-5.08" y1="-22.86" x2="-2.54" y2="-25.4" width="0.254" layer="94"/>
-<wire x1="-2.54" y1="-25.4" x2="0" y2="-25.4" width="0.254" layer="94"/>
-<wire x1="0" y1="-25.4" x2="0" y2="-22.86" width="0.254" layer="94"/>
-<wire x1="0" y1="-22.86" x2="2.54" y2="-22.86" width="0.254" layer="94"/>
-<wire x1="2.54" y1="-22.86" x2="2.54" y2="-25.4" width="0.254" layer="94"/>
-<wire x1="2.54" y1="-25.4" x2="10.16" y2="-25.4" width="0.254" layer="94"/>
-<pin name="CARD_DETECT" x="-17.78" y="17.78" length="short" direction="pas"/>
-<pin name="CARD_DETECT1" x="-17.78" y="15.24" length="short" direction="pas"/>
-<pin name="CS" x="-17.78" y="0" length="short" direction="in"/>
-<pin name="DAT1" x="-17.78" y="-2.54" length="short"/>
-<pin name="DAT2" x="-17.78" y="-5.08" length="short"/>
-<pin name="DATA_IN" x="-17.78" y="5.08" length="short" direction="in"/>
-<pin name="DATA_OUT" x="-17.78" y="7.62" length="short" direction="out"/>
-<pin name="GND" x="-17.78" y="-20.32" length="short" direction="sup"/>
-<pin name="GND1" x="-17.78" y="-17.78" length="short" direction="sup"/>
-<pin name="SCLK" x="-17.78" y="2.54" length="short" direction="in"/>
-<pin name="VDD" x="-17.78" y="-10.16" length="short" direction="sup"/>
-<pin name="VSS" x="-17.78" y="-12.7" length="short" direction="sup"/>
-<text x="-7.62" y="-10.16" size="2.1844" layer="94">SD &amp; MMC</text>
-</symbol>
 <symbol name="R-US">
 <wire x1="-2.54" y1="0" x2="-2.159" y2="1.016" width="0.2032" layer="94"/>
 <wire x1="-2.159" y1="1.016" x2="-1.524" y2="-1.016" width="0.2032" layer="94"/>
@@ -7725,76 +7657,32 @@ diameter 6 mm, grid 5.08 mm</description>
 <text x="-12.7" y="-5.08" size="1.778" layer="95" rot="R90">&gt;NAME</text>
 <text x="12.7" y="-5.08" size="1.778" layer="96" rot="R90">LP298X</text>
 </symbol>
+<symbol name="MICROSD-2">
+<wire x1="-12.7" y1="22.86" x2="-12.7" y2="-20.32" width="0.254" layer="94"/>
+<wire x1="12.7" y1="-22.86" x2="12.7" y2="22.86" width="0.254" layer="94"/>
+<wire x1="12.7" y1="22.86" x2="-12.7" y2="22.86" width="0.254" layer="94"/>
+<wire x1="-12.7" y1="-20.32" x2="-2.54" y2="-20.32" width="0.254" layer="94"/>
+<wire x1="-2.54" y1="-20.32" x2="0" y2="-22.86" width="0.254" layer="94"/>
+<wire x1="0" y1="-22.86" x2="2.54" y2="-22.86" width="0.254" layer="94"/>
+<wire x1="2.54" y1="-22.86" x2="2.54" y2="-20.32" width="0.254" layer="94"/>
+<wire x1="2.54" y1="-20.32" x2="5.08" y2="-20.32" width="0.254" layer="94"/>
+<wire x1="5.08" y1="-20.32" x2="5.08" y2="-22.86" width="0.254" layer="94"/>
+<wire x1="5.08" y1="-22.86" x2="12.7" y2="-22.86" width="0.254" layer="94"/>
+<pin name="CARD_DETECT" x="-15.24" y="20.32" length="short" direction="pas"/>
+<pin name="CARD_DETECT_GND" x="-15.24" y="17.78" length="short" direction="pas"/>
+<pin name="CS__CD.DAT3" x="-15.24" y="2.54" length="short" direction="in"/>
+<pin name="X__DAT1" x="-15.24" y="0" length="short"/>
+<pin name="X__DAT2" x="-15.24" y="-2.54" length="short"/>
+<pin name="DATA_IN__CMD" x="-15.24" y="7.62" length="short" direction="in"/>
+<pin name="DATA_OUT__DAT0" x="-15.24" y="10.16" length="short" direction="out"/>
+<pin name="GND" x="-15.24" y="-17.78" length="short" direction="sup"/>
+<pin name="SCLK__CLK" x="-15.24" y="5.08" length="short" direction="in"/>
+<pin name="VDD" x="-15.24" y="-7.62" length="short" direction="sup"/>
+<pin name="VSS" x="-15.24" y="-10.16" length="short" direction="sup"/>
+<text x="-5.08" y="-7.62" size="2.1844" layer="94">SD &amp; MMC</text>
+</symbol>
 </symbols>
 <devicesets>
-<deviceset name="MICROSD">
-<description>&lt;b&gt;Micro-SD / Transflash card holder with SPI pinout&lt;/b&gt;
-&lt;p&gt;
-For the 3M # 2908-05WB-MG and/or 4UCON #19656&lt;br&gt;
-push-push type</description>
-<gates>
-<gate name="G$1" symbol="TRANSFLASH" x="5.08" y="10.16"/>
-</gates>
-<devices>
-<device name="" package="MICROSD">
-<connects>
-<connect gate="G$1" pin="CARD_DETECT" pad="CD1"/>
-<connect gate="G$1" pin="CARD_DETECT1" pad="CD2"/>
-<connect gate="G$1" pin="CS" pad="2"/>
-<connect gate="G$1" pin="DAT1" pad="8"/>
-<connect gate="G$1" pin="DAT2" pad="1"/>
-<connect gate="G$1" pin="DATA_IN" pad="3"/>
-<connect gate="G$1" pin="DATA_OUT" pad="7"/>
-<connect gate="G$1" pin="GND" pad="MT1"/>
-<connect gate="G$1" pin="GND1" pad="MT2"/>
-<connect gate="G$1" pin="SCLK" pad="5"/>
-<connect gate="G$1" pin="VDD" pad="4"/>
-<connect gate="G$1" pin="VSS" pad="6"/>
-</connects>
-<technologies>
-<technology name=""/>
-</technologies>
-</device>
-<device name="MOLEX" package="MICROSD-1">
-<connects>
-<connect gate="G$1" pin="CARD_DETECT" pad="11"/>
-<connect gate="G$1" pin="CARD_DETECT1" pad="10"/>
-<connect gate="G$1" pin="CS" pad="2"/>
-<connect gate="G$1" pin="DAT1" pad="8"/>
-<connect gate="G$1" pin="DAT2" pad="1"/>
-<connect gate="G$1" pin="DATA_IN" pad="3"/>
-<connect gate="G$1" pin="DATA_OUT" pad="7"/>
-<connect gate="G$1" pin="GND" pad="12"/>
-<connect gate="G$1" pin="GND1" pad="9"/>
-<connect gate="G$1" pin="SCLK" pad="5"/>
-<connect gate="G$1" pin="VDD" pad="4"/>
-<connect gate="G$1" pin="VSS" pad="6"/>
-</connects>
-<technologies>
-<technology name=""/>
-</technologies>
-</device>
-<device name="MOLEX-2" package="MICROSD-2">
-<connects>
-<connect gate="G$1" pin="CARD_DETECT" pad="CD1"/>
-<connect gate="G$1" pin="CARD_DETECT1" pad="G4"/>
-<connect gate="G$1" pin="CS" pad="2"/>
-<connect gate="G$1" pin="DAT1" pad="8"/>
-<connect gate="G$1" pin="DAT2" pad="1"/>
-<connect gate="G$1" pin="DATA_IN" pad="3"/>
-<connect gate="G$1" pin="DATA_OUT" pad="7"/>
-<connect gate="G$1" pin="GND" pad="G1 G2 G3" route="any"/>
-<connect gate="G$1" pin="GND1" pad="CD2"/>
-<connect gate="G$1" pin="SCLK" pad="5"/>
-<connect gate="G$1" pin="VDD" pad="4"/>
-<connect gate="G$1" pin="VSS" pad="6"/>
-</connects>
-<technologies>
-<technology name=""/>
-</technologies>
-</device>
-</devices>
-</deviceset>
 <deviceset name="R-US_" prefix="R" uservalue="yes">
 <description>&lt;B&gt;RESISTOR&lt;/B&gt;, American symbol</description>
 <gates>
@@ -10023,6 +9911,31 @@ Real time clock (RTC) with battery backup ability. Talk to it via i2c</descripti
 <connect gate="G$1" pin="GND" pad="2"/>
 <connect gate="G$1" pin="VIN" pad="1"/>
 <connect gate="G$1" pin="VOUT" pad="5"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
+<deviceset name="MICROSD-2">
+<gates>
+<gate name="G$1" symbol="MICROSD-2" x="10.16" y="-10.16"/>
+</gates>
+<devices>
+<device name="" package="MICROSD-3">
+<connects>
+<connect gate="G$1" pin="CARD_DETECT" pad="CD_SWITCH"/>
+<connect gate="G$1" pin="CARD_DETECT_GND" pad="CD_GND"/>
+<connect gate="G$1" pin="CS__CD.DAT3" pad="2"/>
+<connect gate="G$1" pin="DATA_IN__CMD" pad="3"/>
+<connect gate="G$1" pin="DATA_OUT__DAT0" pad="7"/>
+<connect gate="G$1" pin="GND" pad="G1 G2 G3 G4 G5" route="any"/>
+<connect gate="G$1" pin="SCLK__CLK" pad="5"/>
+<connect gate="G$1" pin="VDD" pad="4"/>
+<connect gate="G$1" pin="VSS" pad="6"/>
+<connect gate="G$1" pin="X__DAT1" pad="8"/>
+<connect gate="G$1" pin="X__DAT2" pad="1"/>
 </connects>
 <technologies>
 <technology name=""/>
@@ -15805,10 +15718,8 @@ SMD chip inductor</description>
 <part name="IC1" library="74xx-eu" deviceset="74*573" device="D" technology="HCT" value="74AHC573"/>
 <part name="IC11" library="ISSI_By_element14_Batch_1" deviceset="IS62C1024AL-35QLI" device="" value="IS62C1024AL"/>
 <part name="IC2" library="40xx" deviceset="4050" device="D"/>
-<part name="+3V2" library="supply1" deviceset="+3V3" device=""/>
 <part name="ACT" library="adafruit" deviceset="LED" device="CHIP-LED0805" value="RED"/>
 <part name="R6" library="adafruit" deviceset="R-US_" device="R0805" value="1K"/>
-<part name="GND1" library="supply1" deviceset="GND" device=""/>
 <part name="JP1" library="pinhead" deviceset="PINHD-1X16" device="" value="LCD"/>
 <part name="UP" library="switch-omron" deviceset="10-XX" device="" value="UP"/>
 <part name="DOWN" library="switch-omron" deviceset="10-XX" device="" value="DOWN"/>
@@ -15836,7 +15747,6 @@ SMD chip inductor</description>
 <part name="SUPPLY5" library="supply2" deviceset="GND" device=""/>
 <part name="P+1" library="supply1" deviceset="VCC" device=""/>
 <part name="SUPPLY2" library="supply2" deviceset="GND" device=""/>
-<part name="X1" library="adafruit" deviceset="MICROSD" device="MOLEX-2" value="MICROSDMOLEX-2"/>
 <part name="R2" library="adafruit" deviceset="R-US_" device="R0805" value="10K"/>
 <part name="R3" library="adafruit" deviceset="R-US_" device="R0805" value="10K"/>
 <part name="R7" library="adafruit" deviceset="R-US_" device="R0805" value="10K"/>
@@ -15917,6 +15827,10 @@ SMD chip inductor</description>
 <part name="RESET-EN" library="jumper" deviceset="SJ" device=""/>
 <part name="P+16" library="supply1" deviceset="VCC" device=""/>
 <part name="P+17" library="supply1" deviceset="VCC" device=""/>
+<part name="U$1" library="adafruit" deviceset="MICROSD-2" device=""/>
+<part name="GND4" library="supply1" deviceset="GND" device=""/>
+<part name="GND14" library="supply1" deviceset="GND" device=""/>
+<part name="+3V1" library="supply1" deviceset="+3V3" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -18390,10 +18304,8 @@ SMD chip inductor</description>
 <instance part="IC2" gate="E" x="35.56" y="53.34"/>
 <instance part="IC2" gate="F" x="35.56" y="33.02"/>
 <instance part="IC2" gate="A" x="78.74" y="83.82"/>
-<instance part="+3V2" gate="G$1" x="53.34" y="40.64"/>
 <instance part="ACT" gate="G$1" x="93.98" y="63.5"/>
 <instance part="R6" gate="G$1" x="93.98" y="45.72" rot="R90"/>
-<instance part="GND1" gate="1" x="58.42" y="20.32" rot="MR0"/>
 <instance part="IC2" gate="P" x="53.34" y="30.48"/>
 <instance part="IC2" gate="B" x="35.56" y="25.4" rot="R180"/>
 <instance part="IC2" gate="C" x="35.56" y="15.24" rot="R180"/>
@@ -18407,7 +18319,10 @@ SMD chip inductor</description>
 <instance part="SUPPLY5" gate="GND" x="104.14" y="40.64"/>
 <instance part="P+1" gate="VCC" x="106.68" y="30.48"/>
 <instance part="SUPPLY2" gate="GND" x="106.68" y="17.78"/>
-<instance part="X1" gate="G$1" x="76.2" y="48.26"/>
+<instance part="U$1" gate="G$1" x="73.66" y="45.72"/>
+<instance part="GND4" gate="1" x="50.8" y="60.96" rot="MR0"/>
+<instance part="GND14" gate="1" x="53.34" y="20.32" rot="MR0"/>
+<instance part="+3V1" gate="G$1" x="53.34" y="40.64"/>
 </instances>
 <busses>
 <bus name="D[0..7],A[0..18],VCC,GND,!RD,!WR,LE,CD,DO,DI,CLK,CS">
@@ -18420,27 +18335,6 @@ SMD chip inductor</description>
 <nets>
 <net name="GND" class="1">
 <segment>
-<wire x1="58.42" y1="35.56" x2="58.42" y2="30.48" width="0.1524" layer="91"/>
-<wire x1="58.42" y1="30.48" x2="58.42" y2="27.94" width="0.1524" layer="91"/>
-<wire x1="58.42" y1="27.94" x2="58.42" y2="22.86" width="0.1524" layer="91"/>
-<junction x="58.42" y="30.48"/>
-<junction x="58.42" y="27.94"/>
-<pinref part="GND1" gate="1" pin="GND"/>
-<pinref part="IC2" gate="P" pin="VSS"/>
-<wire x1="58.42" y1="22.86" x2="53.34" y2="22.86" width="0.1524" layer="91"/>
-<junction x="58.42" y="22.86"/>
-<pinref part="IC2" gate="B" pin="I"/>
-<wire x1="53.34" y1="22.86" x2="45.72" y2="22.86" width="0.1524" layer="91"/>
-<wire x1="45.72" y1="22.86" x2="45.72" y2="25.4" width="0.1524" layer="91"/>
-<junction x="53.34" y="22.86"/>
-<pinref part="IC2" gate="C" pin="I"/>
-<wire x1="45.72" y1="22.86" x2="45.72" y2="15.24" width="0.1524" layer="91"/>
-<junction x="45.72" y="22.86"/>
-<pinref part="X1" gate="G$1" pin="GND"/>
-<pinref part="X1" gate="G$1" pin="GND1"/>
-<pinref part="X1" gate="G$1" pin="VSS"/>
-</segment>
-<segment>
 <pinref part="IC4" gate="G$1" pin="GND"/>
 <pinref part="SUPPLY1" gate="GND" pin="GND"/>
 </segment>
@@ -18452,6 +18346,28 @@ SMD chip inductor</description>
 <pinref part="C1" gate="G$1" pin="2"/>
 <pinref part="SUPPLY2" gate="GND" pin="GND"/>
 <wire x1="106.68" y1="20.32" x2="106.68" y2="17.78" width="0.1524" layer="91"/>
+</segment>
+<segment>
+<pinref part="U$1" gate="G$1" pin="CARD_DETECT_GND"/>
+<pinref part="GND4" gate="1" pin="GND"/>
+<wire x1="50.8" y1="63.5" x2="58.42" y2="63.5" width="0.1524" layer="91"/>
+</segment>
+<segment>
+<wire x1="58.42" y1="35.56" x2="58.42" y2="27.94" width="0.1524" layer="91"/>
+<wire x1="58.42" y1="27.94" x2="58.42" y2="22.86" width="0.1524" layer="91"/>
+<junction x="58.42" y="27.94"/>
+<pinref part="IC2" gate="P" pin="VSS"/>
+<wire x1="58.42" y1="22.86" x2="53.34" y2="22.86" width="0.1524" layer="91"/>
+<pinref part="IC2" gate="B" pin="I"/>
+<wire x1="53.34" y1="22.86" x2="45.72" y2="22.86" width="0.1524" layer="91"/>
+<wire x1="45.72" y1="22.86" x2="45.72" y2="25.4" width="0.1524" layer="91"/>
+<junction x="53.34" y="22.86"/>
+<pinref part="IC2" gate="C" pin="I"/>
+<wire x1="45.72" y1="22.86" x2="45.72" y2="15.24" width="0.1524" layer="91"/>
+<junction x="45.72" y="22.86"/>
+<pinref part="U$1" gate="G$1" pin="GND"/>
+<pinref part="U$1" gate="G$1" pin="VSS"/>
+<pinref part="GND14" gate="1" pin="GND"/>
 </segment>
 </net>
 <net name="VCC" class="1">
@@ -18482,7 +18398,7 @@ SMD chip inductor</description>
 <wire x1="45.72" y1="43.18" x2="45.72" y2="50.8" width="0.1524" layer="91"/>
 <wire x1="45.72" y1="50.8" x2="58.42" y2="50.8" width="0.1524" layer="91"/>
 <pinref part="IC2" gate="D" pin="O"/>
-<pinref part="X1" gate="G$1" pin="SCLK"/>
+<pinref part="U$1" gate="G$1" pin="SCLK__CLK"/>
 </segment>
 </net>
 <net name="BUF_CS" class="0">
@@ -18496,17 +18412,10 @@ SMD chip inductor</description>
 <junction x="48.26" y="33.02"/>
 <pinref part="IC2" gate="F" pin="O"/>
 <pinref part="R6" gate="G$1" pin="1"/>
-<pinref part="X1" gate="G$1" pin="CS"/>
+<pinref part="U$1" gate="G$1" pin="CS__CD.DAT3"/>
 </segment>
 </net>
 <net name="+3V3" class="1">
-<segment>
-<wire x1="53.34" y1="38.1" x2="58.42" y2="38.1" width="0.1524" layer="91"/>
-<pinref part="+3V2" gate="G$1" pin="+3V3"/>
-<pinref part="IC2" gate="P" pin="VDD"/>
-<junction x="53.34" y="38.1"/>
-<pinref part="X1" gate="G$1" pin="VDD"/>
-</segment>
 <segment>
 <wire x1="149.86" y1="50.8" x2="149.86" y2="43.18" width="0.1524" layer="91"/>
 <pinref part="IC4" gate="G$1" pin="VOUT"/>
@@ -18516,25 +18425,31 @@ SMD chip inductor</description>
 <pinref part="C8" gate="G$1" pin="+"/>
 <pinref part="+3V4" gate="G$1" pin="+3V3"/>
 </segment>
+<segment>
+<wire x1="53.34" y1="38.1" x2="58.42" y2="38.1" width="0.1524" layer="91"/>
+<pinref part="IC2" gate="P" pin="VDD"/>
+<pinref part="U$1" gate="G$1" pin="VDD"/>
+<junction x="58.42" y="38.1"/>
+<pinref part="+3V1" gate="G$1" pin="+3V3"/>
+<junction x="53.34" y="38.1"/>
+</segment>
 </net>
 <net name="CD" class="0">
 <segment>
 <wire x1="58.42" y1="66.04" x2="48.26" y2="66.04" width="0.1524" layer="91"/>
 <wire x1="48.26" y1="66.04" x2="48.26" y2="71.12" width="0.1524" layer="91"/>
-<wire x1="48.26" y1="71.12" x2="15.24" y2="71.12" width="0.1524" layer="91"/>
+<wire x1="48.26" y1="71.12" x2="7.62" y2="71.12" width="0.1524" layer="91"/>
 <label x="15.24" y="71.12" size="1.778" layer="95"/>
-<wire x1="15.24" y1="71.12" x2="7.62" y2="71.12" width="0.1524" layer="91"/>
-<pinref part="X1" gate="G$1" pin="CARD_DETECT"/>
+<pinref part="U$1" gate="G$1" pin="CARD_DETECT"/>
 </segment>
 </net>
 <net name="DO" class="0">
 <segment>
 <wire x1="58.42" y1="55.88" x2="45.72" y2="55.88" width="0.1524" layer="91"/>
 <wire x1="45.72" y1="55.88" x2="45.72" y2="63.5" width="0.1524" layer="91"/>
-<wire x1="15.24" y1="63.5" x2="45.72" y2="63.5" width="0.1524" layer="91"/>
+<wire x1="7.62" y1="63.5" x2="45.72" y2="63.5" width="0.1524" layer="91"/>
 <label x="15.24" y="63.5" size="1.778" layer="95"/>
-<wire x1="15.24" y1="63.5" x2="7.62" y2="63.5" width="0.1524" layer="91"/>
-<pinref part="X1" gate="G$1" pin="DATA_OUT"/>
+<pinref part="U$1" gate="G$1" pin="DATA_OUT__DAT0"/>
 </segment>
 </net>
 <net name="DI" class="0">
@@ -18579,7 +18494,7 @@ SMD chip inductor</description>
 <segment>
 <wire x1="45.72" y1="53.34" x2="58.42" y2="53.34" width="0.1524" layer="91"/>
 <pinref part="IC2" gate="E" pin="O"/>
-<pinref part="X1" gate="G$1" pin="DATA_IN"/>
+<pinref part="U$1" gate="G$1" pin="DATA_IN__CMD"/>
 </segment>
 </net>
 </nets>
