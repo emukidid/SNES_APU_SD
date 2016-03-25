@@ -1943,6 +1943,8 @@ void loop() //The main loop.  Define various subroutines, and call them here. :)
       if((files[filedepth].isDirectory())||(files[filedepth].size() < 66048))
       {
         auto_play = false;
+        apu.reset();
+        Serial.print(F("Last SPC file in current directory finished playing"));
         return;
       }
         
