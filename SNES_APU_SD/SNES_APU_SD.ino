@@ -18,12 +18,12 @@ SdFat SD;
 #include "LCD.h"
 #include <Wire.h>
 #include "RTClib.h"
+#include "spc_struct.h"
 
 void handleLCD(bool force_refresh=false);
 void GetFile(bool print_info=false, bool rewind_dir=true, bool update_lcd=true);
 void GetNextFile(bool print_info=false);
 void GetPrevFile(bool print_info=false);
-void LoadAndPlaySPC(unsigned short song=0, bool LoadFromRAM=false);
 
 LiquidCrystal lcd;
 RTC_DS1307 rtc;
@@ -40,6 +40,9 @@ unsigned char is_spc2;
 unsigned short spc2_total_songs;
 unsigned short songnum  __attribute__ ((section (".noinit")));
 bool debug_print=false;
+spc_idx6_table tags  __attribute__ ((section (".noinit")));
+bool auto_play;
+u32 play_time;
 
 static unsigned char boot_code[] =
 {
@@ -72,8 +75,6 @@ static unsigned char boot_code[] =
 #endif
 
 bool dataModeText=false;
-static unsigned char spcdata[256];           // 0x100  (256 bytes (of 64kb)) (header)
-static unsigned char dspdata[128];           // 0x10100  (128 bytes)
 
 FILE serial_stdout;
 
@@ -115,7 +116,10 @@ int serial_putchar(char c, FILE* f) {
 #define PRESCALER 0
 void SetupPrescaler(int prescaler)
 {
-  Serial.flush();
+  Serial.flush(); //Any and all serial output currently in the buffer will be garbage, from
+    //the time it takes to change the prescaler till the time serial begins again.
+    //As such, we Have to wait till ALL serial has been output before we change the pre-scaler.
+    
   uint32_t baud_rate = 250000 << prescaler;  //Bacuase we are slowing the clock down
   //250000 baud at prescaler 1 actually means 125000 baud.  We have to compensate for this.
   
@@ -521,6 +525,119 @@ void get_spc2_page(unsigned char *buf, unsigned short song, unsigned char page, 
   readSPCRegion(buf,spcram_start,count);
 }
 
+unsigned short bootcode_offset;
+void ReadSPCFromSD()
+{
+  bootcode_offset = 0;
+  digitalWrite(SRAM_PIN_1, LOW);
+  digitalWrite(SRAM_PIN_0, LOW);
+  readSPCRegion((unsigned char*)&_SFR_MEM8(0x8000),0x100,0x8000);
+  digitalWrite(SRAM_PIN_0,HIGH);
+  readSPCRegion((unsigned char*)&_SFR_MEM8(0x8000),0x8100,0x8000);
+  digitalWrite(SRAM_PIN_1, HIGH);
+  digitalWrite(SRAM_PIN_0, LOW);
+  readSPCRegion((unsigned char*)&_SFR_MEM8(0x8000),0x000,0x100);
+  readSPCRegion((unsigned char*)&_SFR_MEM8(0x8100),0x10100,0x7F00);
+  ProcessSPCTags();
+}
+
+void ReadSPC2FromSD(unsigned short song)
+{
+  unsigned long spc2_offset = 16 + ((unsigned long)song * 1024);
+  unsigned long spc2_page_offset = 0;
+  unsigned short i,j;
+
+  digitalWrite(SRAM_PIN_1, HIGH);
+  digitalWrite(SRAM_PIN_0, LOW);
+
+  //Read the registers.
+  for(i=0;i<7;i++)
+    _SFR_MEM8(0x8025+i) = readSPC(spc2_offset+704+i);
+
+  //Read DSP registers
+  readSPCRegion((unsigned char*)&_SFR_MEM8(0x8100), spc2_offset+512, 128);
+
+  //Read IPL region
+  readSPCRegion((unsigned char*)&_SFR_MEM8(0x81C0), spc2_offset+640, 64);
+
+  //Read SPC Ram
+  digitalWrite(SRAM_PIN_1, LOW);
+  for(i=0;i<128;i++)
+    get_spc2_page((unsigned char*)_SFR_MEM8(0x8000+(i<<8)), song, i);
+
+  digitalWrite(SRAM_PIN_0,HIGH);
+  for(i=0;i<128;i++)
+    get_spc2_page((unsigned char*)_SFR_MEM8(0x8000+(i<<8)), song, i+0x80);
+  
+  bootcode_offset = readSPC(spc2_offset+734)|(readSPC(spc2_offset+735)<<8);
+
+  //Process tags
+  readSPCRegion((u8*)&tags.date, spc2_offset+712, 4);
+  readSPCRegion((u8*)&tags.intro_len, spc2_offset+716, 32);
+  readSPCRegion((u8*)&tags.fade_len, spc2_offset+720, 32);
+  readSPCRegion((u8*)&tags.emulator, spc2_offset+728, 32);
+  readSPCRegion((u8*)&tags.ost_disc, spc2_offset+729, 32);
+  readSPCRegion((u8*)&tags.ost_track, spc2_offset+730, 32);
+  readSPCRegion((u8*)&tags.copyright, spc2_offset+732, 32);
+  readSPCRegion((u8*)&tags.boot_code, spc2_offset+734, 32);
+  readSPCRegion((u8*)&tags.song_title, spc2_offset+768, 32);
+  readSPCRegion((u8*)&tags.game_title, spc2_offset+800, 32);
+  readSPCRegion((u8*)&tags.song_artist, spc2_offset+832, 32);
+  readSPCRegion((u8*)&tags.dumper_name, spc2_offset+864, 32);
+  readSPCRegion((u8*)&tags.comments, spc2_offset+896, 32);
+  readSPCRegion((u8*)&tags.ost_title, spc2_offset+928, 32);
+  readSPCRegion((u8*)&tags.pub_name, spc2_offset+960, 32);
+  readSPCRegion((u8*)&tags.spc_filename, spc2_offset+992, 28);
+  unsigned long extended;
+  readSPCRegion((u8*)&extended,spc2_offset+1020,4);
+  if(extended)
+  {
+    u8 buf[257];
+    bool seen[10] = {false,false,false,false,false,false,false,false,false,false};
+    
+    do
+    {
+      readSPCRegion(buf,extended,257);
+      extended += 2;
+      extended += buf[1];
+      if(buf[0] > 9) break; //Invalid tag data, as per spc2 file specificaiton v1.3.
+      if(!seen[buf[0]])
+      {
+        switch(buf[0])
+        {
+          case 1:
+            memcpy((u8*)&tags.song_title[32], &buf[2], 224);
+            break;
+          case 2:
+            memcpy((u8*)&tags.game_title[32], &buf[2], 224);
+            break;
+          case 3:
+            memcpy((u8*)&tags.song_artist[32], &buf[2], 224);
+            break;
+          case 4:
+            memcpy((u8*)&tags.dumper_name[32], &buf[2], 224);
+            break;
+          case 5:
+            memcpy((u8*)&tags.comments[32], &buf[2], 224);
+            break;
+          case 6:
+            memcpy((u8*)&tags.ost_title[32], &buf[2], 224);
+            break;
+          case 7:
+            memcpy((u8*)&tags.pub_name[32], &buf[2], 224);
+            break;
+          case 8:
+            memcpy((u8*)&tags.spc_filename[28], &buf[2], 228);
+            break;
+        }
+        seen[buf[0]] = true;
+      }
+    } while (buf[0]);
+  }
+  
+}
+
+
 void spc_push(unsigned char *sp, unsigned char data, const __FlashStringHelper *ifsh)
 {
   if(debug_print) {Serial.print(ifsh); printf("%04X=%02X\n", 0x100+sp[0], data);}
@@ -528,126 +645,60 @@ void spc_push(unsigned char *sp, unsigned char data, const __FlashStringHelper *
   sp[0]--;
 }
 
-void LoadAndPlaySPC(unsigned short song, bool LoadFromRAM)
+void LoadAndPlaySPC()
 {
   lcd.clear();
   lcd.setCursor(0,0);
-  lcd.print("Uploading");
+  lcd.print(F("Uploading"));
   lcd.setCursor(0,1);
-  lcd.print("Reading from SD");
-  
-  unsigned long spc2_offset = 16 + ((unsigned long)song * 1024);
-  unsigned long spc2_page_offset = 0;
-  unsigned char PCL = readSPC(is_spc2?spc2_offset+704:0x25);    // 0x25     (1 byte)
-  unsigned char PCH = readSPC(is_spc2?spc2_offset+705:0x26);    // 0x26     (1 byte)
-  unsigned char A = readSPC(is_spc2?spc2_offset+706:0x27);      // 0x27     (1 byte)
-  unsigned char X = readSPC(is_spc2?spc2_offset+707:0x28);      // 0x28     (1 byte)
-  unsigned char Y = readSPC(is_spc2?spc2_offset+708:0x29);      // 0x29     (1 byte)
-  unsigned char ApuSW = readSPC(is_spc2?spc2_offset+709:0x2A);  // 0x2A     (1 byte)
-  unsigned char ApuSP = readSPC(is_spc2?spc2_offset+710:0x2B);  // 0x2B     (1 byte)
+  lcd.print(F("Reading from SD"));
+
+  unsigned char PCL;    // 0x25     (1 byte)
+  unsigned char PCH;    // 0x26     (1 byte)
+  unsigned char A;      // 0x27     (1 byte)
+  unsigned char X;      // 0x28     (1 byte)
+  unsigned char Y;      // 0x29     (1 byte)
+  unsigned char ApuSW;  // 0x2A     (1 byte)
+  unsigned char ApuSP;  // 0x2B     (1 byte)
   unsigned char echo_clear = 0;
   unsigned short i,j,bootptr,spcinportiszero = 0;
   unsigned short count;
+  unsigned char spcdata[256];           // 0x100  (256 bytes (of 64kb)) (header)
+  unsigned char dspdata[128];           // 0x10100  (128 bytes)
+  unsigned char ipl_buffer[64];
 
-  unsigned char tagBuffer[64];
+  digitalWrite(SRAM_PIN_1,HIGH);
+  digitalWrite(SRAM_PIN_0,LOW);
+  PCL = _SFR_MEM8(0x8025);
+  PCH = _SFR_MEM8(0x8026);
+  A = _SFR_MEM8(0x8027);
+  X = _SFR_MEM8(0x8028);
+  Y = _SFR_MEM8(0x8029);
+  ApuSW = _SFR_MEM8(0x802A);
+  ApuSP = _SFR_MEM8(0x802B);
 
-  if(LoadFromRAM)
-  {
-    digitalWrite(SRAM_PIN_1,HIGH);
-    digitalWrite(SRAM_PIN_0,LOW);
-    PCL = _SFR_MEM8(0x8025);
-    PCH = _SFR_MEM8(0x8026);
-    A = _SFR_MEM8(0x8027);
-    X = _SFR_MEM8(0x8028);
-    Y = _SFR_MEM8(0x8029);
-    ApuSW = _SFR_MEM8(0x802A);
-    ApuSP = _SFR_MEM8(0x802B);
+  for(i=0;i<128;i++)
+    dspdata[i]=_SFR_MEM8(0x8100+i);
 
-    clearBuffer(&tagBuffer[0], 64);
-    for(i=0;i<32;i++)
-      tagBuffer[i]=_SFR_MEM8(0x802E + i);
-    Serial.print(F("SPC Track Name: ")); Serial.println((char*)&tagBuffer[0]);
-    clearBuffer(&tagBuffer[0], 64);
-    for(i=0;i<32;i++)
-      tagBuffer[i]=_SFR_MEM8(0x804E + i);
-    Serial.print(F("SPC Track Game: ")); Serial.println((char*)&tagBuffer[0]);
+  for(i=0;i<64;i++)
+    ipl_buffer[i]=_SFR_MEM8(0x81C0+i);
 
-    for(i=0;i<128;i++)
-      dspdata[i]=_SFR_MEM8(0x8100+i);
+  digitalWrite(SRAM_PIN_1,LOW);
 
-    for(i=0;i<64;i++)
-      tagBuffer[i]=_SFR_MEM8(0x81C0+i);
-
-    digitalWrite(SRAM_PIN_1,LOW);
-
-    for(i=0;i<256;i++)
-      spcdata[i]=_SFR_MEM8(0x8000+i);
+  for(i=0;i<256;i++)
+    spcdata[i]=_SFR_MEM8(0x8000+i);
       
-    // Read out 64 bytes of ram from the proper area of spc.
-    if (spcdata[0xF1] & 0x80) 
-    {
-      digitalWrite(SRAM_PIN_0,HIGH);
-      for(i=0;i<64;i++)
-        _SFR_MEM8(0xFFC0+i)=tagBuffer[i];
-    }
-  }
-  else
+  // Read out 64 bytes of ram from the proper area of spc.
+  if (spcdata[0xF1] & 0x80) 
   {
-    PCL = readSPC(is_spc2?spc2_offset+704:0x25);    // 0x25     (1 byte)
-    PCH = readSPC(is_spc2?spc2_offset+705:0x26);    // 0x26     (1 byte)
-    A = readSPC(is_spc2?spc2_offset+706:0x27);      // 0x27     (1 byte)
-    X = readSPC(is_spc2?spc2_offset+707:0x28);      // 0x28     (1 byte)
-    Y = readSPC(is_spc2?spc2_offset+708:0x29);      // 0x29     (1 byte)
-    ApuSW = readSPC(is_spc2?spc2_offset+709:0x2A);  // 0x2A     (1 byte)
-    ApuSP = readSPC(is_spc2?spc2_offset+710:0x2B);  // 0x2B     (1 byte)
-    
-    // Read some ID tag stuff
-    clearBuffer(&tagBuffer[0], 64);
-    readSPCRegion(&tagBuffer[0], is_spc2?spc2_offset+768:0x2EL, 0x20);
-    Serial.print(F("SPC Track Name: ")); Serial.println((char*)&tagBuffer[0]);
-    clearBuffer(&tagBuffer[0], 64);
-    readSPCRegion(&tagBuffer[0], is_spc2?spc2_offset+800:0x4EL, 0x20);
-    Serial.print(F("SPC Track Game: ")); Serial.println((char*)&tagBuffer[0]);
-    
-  
-    if(is_spc2)
-    {
-      for(i=0;i<128;i++)
-      {
-        digitalWrite(SRAM_PIN_1,LOW);
-        digitalWrite(SRAM_PIN_0,LOW);
-        get_spc2_page((unsigned char*)_SFR_MEM8(0x8000+(i<<8)), song, i);
-        digitalWrite(SRAM_PIN_0,HIGH);
-        get_spc2_page((unsigned char*)_SFR_MEM8(0x8000+(i<<8)), song, i+0x80);
-      }
-    }
-    else
-    {
-      digitalWrite(SRAM_PIN_1,LOW);
-      digitalWrite(SRAM_PIN_0,LOW);
-      readSPCRegion((unsigned char*)&_SFR_MEM8(0x8000),0x100,0x8000);
-      digitalWrite(SRAM_PIN_0,HIGH);
-      readSPCRegion((unsigned char*)&_SFR_MEM8(0x8000),0x8100,0x8000);
-    }
-  
-    digitalWrite(SRAM_PIN_0,LOW);
-    for(i=0;i<256;i++)
-      spcdata[i]=_SFR_MEM32(0x8000+i);
-
-    // Read out 64 bytes of ram from the proper area of spc.
-    if (spcdata[0xF1] & 0x80) 
-    {
-      digitalWrite(SRAM_PIN_0,HIGH);
-      readSPCRegion((unsigned char*)&_SFR_MEM8(0xFFC0),0x101C0,64);
-    }
-  
-    // Read dsp data
-    readSPCRegion(&dspdata[0], is_spc2?spc2_offset+512:0x10100L, 128);
+    digitalWrite(SRAM_PIN_0,HIGH);
+    for(i=0;i<64;i++)
+      _SFR_MEM8(0xFFC0+i)=ipl_buffer[i];
   }
 
   
   lcd.setCursor(0,1);
-  lcd.print("Manipulating SPC");
+  lcd.print(F("Manipulating SPC"));
   
   // SPC In Port Is Zero?
   spcinportiszero = (!spcdata[0xF4] && !spcdata[0xF5] && !spcdata[0xF6] && !spcdata[0xF7]);
@@ -665,7 +716,7 @@ void LoadAndPlaySPC(unsigned short song, bool LoadFromRAM)
   }
   //Locate a spot to write the bootloader now.
   int freespacesearch = 0;
-  unsigned short bootcode_offset = is_spc2?readSPC(spc2_offset+734)|(readSPC(spc2_offset+735)<<8):0;
+  
   if(bootcode_offset > 0)
   {
     freespacesearch = 4;  //No need to search for space, spc2 already tells us where to put it. :)
@@ -853,9 +904,9 @@ void LoadAndPlaySPC(unsigned short song, bool LoadFromRAM)
 
   lcd.clear();
   lcd.setCursor(0,0);
-  lcd.print("Uploading SPC   ");
+  lcd.print(F("Uploading SPC   "));
   lcd.setCursor(0,1);
-  lcd.print("Page 0x00");
+  lcd.print(F("Page 0x00"));
 
   //Prescaler of 0 seems to work reliably for everthing except SPC loading.
   //SPC loading has been found to work most reliably with a prescaler of 1 or slower.
@@ -915,7 +966,7 @@ void LoadAndPlaySPC(unsigned short song, bool LoadFromRAM)
     {
       Serial.print('.');
       lcd.setCursor(7,1);
-      if((i>>8) < 16) lcd.print("0");
+      if((i>>8) < 16) lcd.print('0');
       lcd.print(i>>8,HEX);
     }
 
@@ -958,6 +1009,21 @@ void LoadAndPlaySPC(unsigned short song, bool LoadFromRAM)
   Serial.println(F("Playing!"));
   SetupPrescaler(0);
   handleLCD(true);
+  Serial.println();
+  Serial.print(F("SPC File name: ")); Serial.println(tags.spc_filename);
+  Serial.print(F("Song Name: ")); Serial.println(tags.song_title);
+  Serial.print(F("Game: ")); Serial.println(tags.game_title);
+  Serial.print(F("Artists: ")); Serial.println(tags.song_artist);
+  Serial.print(F("Dumper: ")); Serial.println(tags.dumper_name);
+  Serial.print(F("Comments: ")); Serial.println(tags.comments);
+  Serial.print(F("Original Soundtrack Title: ")); Serial.println(tags.ost_title);
+  Serial.print(F("Publisher name: ")); Serial.println(tags.pub_name);
+  Serial.print(F("Copyright Year: ")); Serial.println(tags.copyright);
+  Serial.print(F("Play Time: ")); Serial.println(tags.intro_len / 64000);
+  Serial.print(F("Fadeout Time: ")); Serial.println(tags.fade_len / 64000);
+  Serial.println();
+  
+  
 }
 #endif
 
@@ -1028,6 +1094,11 @@ unsigned char ReadHexFromSerial()
 
 void UploadSPCFromPC()
 {
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print(F("Loading SRAM"));
+  lcd.setCursor(0,1);
+  lcd.print(F("Page 0x00"));
   unsigned short i;
     digitalWrite(SRAM_PIN_1, LOW);
     digitalWrite(SRAM_PIN_0, LOW);
@@ -1038,7 +1109,7 @@ void UploadSPCFromPC()
       {
         Serial.write('.');
         lcd.setCursor(7,1);
-        if((i>>8) < 16) lcd.print("0");
+        if((i>>8) < 16) lcd.print('0');
         lcd.print(i>>8,HEX);
       }
       _SFR_MEM8(0x8000+(i&0x7FFF)) = ReadByteFromSerial(true);
@@ -1052,8 +1123,7 @@ void UploadSPCFromPC()
       {
         Serial.write('.');
         lcd.setCursor(7,1);
-        if((i>>8) < 16) lcd.print("0");
-        lcd.print(i>>8,HEX);
+        lcd.print((i>>8) + 0x80,HEX);
       }
       _SFR_MEM8(0x8000+(i&0x7FFF)) = ReadByteFromSerial(true);
     }
@@ -1063,8 +1133,26 @@ void UploadSPCFromPC()
 
     for(i=0; i<0x200;i++)
       _SFR_MEM8(0x8000+(i&0x7FFF)) = ReadByteFromSerial(true);
+  lcd.clear();
+  lcd.setCursor(6,0);
+  lcd.print(F("Done"));
 }
 
+bool AbortOnDataModeText(unsigned char command)
+{
+  if(!dataModeText) return false;
+  switch(command)
+  {
+    case 'f':
+    case 'F':
+    case 'G':
+    case 'u':
+    case 'U':
+      Serial.println(F("This Command is meant for the PC interface program"));
+      return true;
+  }
+  return false; 
+}
 
 void ProcessCommandFromSerial()
 {
@@ -1074,12 +1162,15 @@ void ProcessCommandFromSerial()
   uint16_t i;
   unsigned long j;
   char filename[256];
+  unsigned char spcdata[256];
+  unsigned char dspdata[128];
   static long time;
   int checksum;
   unsigned char address, data;
   unsigned char command = ReadByteFromSerial(true);
   unsigned short dir_num;
   File upload;
+  if(AbortOnDataModeText(command)) return;
   switch(command)
   {
   case 'D':    //Set datamode between ascii and binary.  In ascii mode,  each data byte is transmitted
@@ -1141,19 +1232,9 @@ void ProcessCommandFromSerial()
       Serial.println(F("APU Reset :)"));
     break;
   case 'f':  //Set the expected state of PORT 0 for the next write.
-    if(dataModeText)
-    {
-      Serial.println(F("This Command is meant for the PC interface program"));
-      break;
-    }
     port0state=ReadByteFromSerial();
     break;
   case 'F':  //Upload SPC data at serial port speed.
-    if(dataModeText)
-    {
-      Serial.println(F("This Command is meant for the PC interface program"));
-      break;
-    }
     uint16_t ram_addr;
     uint16_t data_size;
     
@@ -1184,11 +1265,6 @@ void ProcessCommandFromSerial()
     break;
 
   case 'G':  //Upload the DSP register, and the first page of SPC data at serial port speed.
-    if(dataModeText)
-    {
-      Serial.println(F("This Command is meant for the PC interface program"));
-      break;
-    }
     for(i=0;i<128;i++)
       dspdata[i]=ReadByteFromSerial();
     for(i=0;i<256;i++)
@@ -1198,24 +1274,14 @@ void ProcessCommandFromSerial()
     break;
 
   case 'U': //Upload the spc to ram.
-    if(dataModeText)
-    {
-      Serial.println(F("This Command is meant for the PC interface program"));
-      break;
-    }
     UploadSPCFromPC();
     break;
   case 'P':
-    LoadAndPlaySPC(0,true);
+    LoadAndPlaySPC();
     break;
     
 
   case 'u': //Upload the spc as a temp file, and play that one.
-    if(dataModeText)
-    {
-      Serial.println(F("This Command is meant for the PC interface program"));
-      break;
-    }
     for(i=0,j=0;i<4;i++)
     {
       j<<=8;
@@ -1252,7 +1318,10 @@ void ProcessCommandFromSerial()
       if(spcFile)
       {
         if(spcFile.size() >= 66048)
+        {
+          ReadSPCFromSD();
           LoadAndPlaySPC();
+        }
         spcFile.close();
       }
       spcFile=upload;
@@ -1356,6 +1425,7 @@ void ProcessCommandFromSerial()
     }
     apu.write(address,data);
     break;
+  case 'E':
   case 'e':
     Serial.println(F("Input a directory number:"));
     dir_num = ReadByteFromSerial();
@@ -1377,10 +1447,18 @@ void ProcessCommandFromSerial()
         GetFile();
       }
       else if(spcFile.size() >= 66048)
+      {
+        ReadSPCFromSD();
         LoadAndPlaySPC();
+        play_time = tags.intro_len;
+        play_time += tags.fade_len;
+        play_time /= 64;
+        auto_play = (command == 'E');
+      }
     }
     break;
   case 'l':
+    auto_play = false;
     if(filedepth>0) 
     {
       LeaveDirectory();
@@ -1390,6 +1468,9 @@ void ProcessCommandFromSerial()
       filecurrent[filedepth]=i;
       GetFile();
     }
+    break;
+  case 'T':
+    ProcessSPCTags();
     break;
   default:
     if(dataModeText)
@@ -1406,6 +1487,295 @@ void ProcessCommandFromSerial()
     break;
   }
 }
+
+int IsNumeric(char *str, u32 length)
+{
+  u32 c = 0;
+  while (c<length && isdigit(str[c])) c++;
+  if(c==length || str[c]==0)
+    return c;
+  else
+    return -1;
+}
+
+int CountNumbers(char *str, u32 length)
+{
+  u32 c = 0;
+  while (c<length && isdigit(str[c])) c++;
+  return c;
+}
+
+int IsDate(char *str, u32 length)
+{
+  u32 c = 0;
+  while (c<length && (isdigit(str[c]) || str[c]=='/' || str[c]=='-')) c++;
+  if(c==length || str[c]==0)
+    return c;
+  else
+    return -1;
+}
+
+
+void smemcpy(u8 *dst, u8 *src, u32 len)
+{
+  u32 len_left = len;
+  u8 buf[512];
+  while(len_left)
+  {
+    digitalWrite(SRAM_PIN_0, LOW);
+    memcpy(buf,src,len_left < 512 ? len_left : 512);
+    digitalWrite(SRAM_PIN_0, HIGH);
+    memcpy(dst,buf,len_left < 512 ? len_left : 512);
+    len_left -= (len_left < 512) ? len_left : 512;
+  }
+  digitalWrite(SRAM_PIN_0, LOW);
+}
+
+void ProcessSPCTags()
+{ 
+  spc_sram_struct *s = (spc_sram_struct*)&_SFR_MEM8(0x8000);
+  
+  spc_header *h = &s->header;
+  spc_id666_text *it = &s->tag_text;
+  spc_id666_bin *ib = &s->tag_binary;
+
+  spc_idx6_header *idx6h = &s->idx6;
+  spc_idx6_sub_header *idx6sh;
+
+  digitalWrite(SRAM_PIN_1, HIGH);
+  digitalWrite(SRAM_PIN_0, LOW);
+
+  clearBuffer((u8*)&tags,sizeof(spc_idx6_table));
+
+  int tag_format = SPC_TAG_PREFER_BINARY;
+  int i,j,k,l;
+  int y,m,d;
+
+  i = IsNumeric(it->song_length_secs,3);
+  j = IsNumeric(it->fade_length_ms,5);
+  k = IsDate(&it->date_dumped[0],11);
+
+  if(!(i | j | k))
+  {
+    if (it->channel_disable == 1 && it->emulator == 0)
+      tag_format = SPC_TAG_BINARY;
+  }
+  else
+  {
+    if (i != -1 && j != -1)
+    {
+      if (k > 0)
+        tag_format = SPC_TAG_TEXT;
+      else
+      {
+        if (k == -1)
+        {
+          if (!((u32*)&it->date_dumped)[1])
+            tag_format = SPC_TAG_BINARY;
+          else
+            tag_format = SPC_TAG_TEXT;
+        }
+        else
+        {
+          if((it->fade_length_ms[4] == 0) && (isascii(it->song_artist[0]) && (it->song_artist[0] != 0)))
+            tag_format = SPC_TAG_TEXT; //Conclusively text.
+          if((i == 3) || (j == 5))
+            tag_format = SPC_TAG_TEXT;
+        }
+      }
+    }
+  }
+
+  if(tag_format == SPC_TAG_TEXT)
+  {
+    //printf("tag format : text\n");
+    i = CountNumbers(&it->date_dumped[0],11);
+    j = CountNumbers(&it->date_dumped[i+1],11-i-1);
+    k = CountNumbers(&it->date_dumped[i+1+j+1],11-j-1);
+
+    if((i==4 && j>0 && j<=2 && k>0 && k<=2) || (i>0 && i<=2 && j>0 && j<=2 && k==4))
+    {
+
+      if(i==4)  //YYYY.MM.DD format.
+      {
+        for(l=0,y=0;l<i;l++)
+        {
+          y*=10;
+          y+=(it->date_dumped[l]-48);
+        }
+        for(l=(i+1),m=0;l<(i+1+j);l++)
+        {
+          m*=10;
+          m+=(it->date_dumped[l]-48);
+        }
+        for(l=(i+1+j+1),d=0;l<(i+1+j+1+k);l++)
+        {
+          d*=10;
+          d+=(it->date_dumped[l]-48);
+        }
+      }
+      else
+      {
+        for(l=0,m=0;l<i;l++)
+        {
+          m*=10;
+          m+=(it->date_dumped[l]-48);
+        }
+        for(l=(i+1),d=0;l<(i+1+j);l++)
+        {
+          d*=10;
+          d+=(it->date_dumped[l]-48);
+        }
+        for(l=(i+1+j+1),y=0;l<(i+1+j+1+k);l++)
+        {
+          y*=10;
+          y+=(it->date_dumped[l]-48);
+        }
+      }
+      if(m > 12)
+      {
+        i = m;
+        m = d;
+        d = i;
+      }
+
+      digitalWrite(SRAM_PIN_0, HIGH);
+      if ((m == 0) || (m > 12) || (d == 0) || (d > 31) || (y < 1900) || (y > 2999))
+        tags.date = 0;
+      else
+        tags.date = ((m / 10) << 28) |
+            ((m % 10) << 24) |
+            ((d / 10) << 20) |
+            ((d % 10) << 16) |
+            (((y / 100) / 10) << 12) |
+            (((y / 100) % 10) << 8) |
+            (((y % 100) / 10) << 4) |
+            (((y % 100) % 10) << 0);
+    }
+    else
+    {
+      digitalWrite(SRAM_PIN_0, HIGH);
+      tags.date = 0;  //Impossible or zero.
+    }
+    
+    // impossible, or zero
+    if(tags.date > 0x99999999) tags.date = 0;
+    //printf("date: %08x\n", s->date);
+
+    u8 buf[8];
+
+    digitalWrite(SRAM_PIN_0,LOW);
+    memcpy(buf, &it->song_length_secs, 3); buf[4] = 0;
+    digitalWrite(SRAM_PIN_0,HIGH);
+    tags.intro_len = atoi((char*)buf)*64000;
+    digitalWrite(SRAM_PIN_0,LOW);
+    memcpy(buf, &it->fade_length_ms, 5); buf[6] = 0;
+    digitalWrite(SRAM_PIN_0,HIGH);
+    tags.fade_len = atoi((char*)buf)*64;
+
+    smemcpy((u8*)&tags.song_title, (u8*)&it->song_title, 32);
+    smemcpy((u8*)&tags.game_title, (u8*)&it->game_title, 32);
+    smemcpy((u8*)&tags.dumper_name, (u8*)&it->dumper_name, 16);
+    smemcpy((u8*)&tags.comments, (u8*)&it->comments, 32);
+    smemcpy((u8*)&tags.song_artist, (u8*)&it->song_artist, 32);
+  }
+  else
+  {
+    // binary
+    //printf("tag format : binary\n");
+
+    y = (ib->date_dumped >> 16) & 0xffff;
+    m = (ib->date_dumped >> 8) & 0xff;
+    d = (ib->date_dumped >> 0) & 0xff;
+
+    if(m > 12)
+    {
+      i = m;
+      m = d;
+      d = i;
+    }
+
+    digitalWrite(SRAM_PIN_0, HIGH);
+    if ((m == 0) || (m > 12) || (d == 0) || (d > 31) || (y < 1900) || (y > 2999))
+      tags.date = 0;
+    else
+      tags.date = ((m / 10) << 28) |
+          ((m % 10) << 24) |
+          ((d / 10) << 20) |
+          ((d % 10) << 16) |
+          (((y / 100) / 10) << 12) |
+          (((y / 100) % 10) << 8) |
+          (((y % 100) / 10) << 4) |
+          (((y % 100) % 10) << 0);
+
+    //printf("date: %08x\n", s->date);
+
+    smemcpy((u8*)&tags.intro_len, (u8*)&ib->song_length_secs, 4);
+    tags.intro_len &= 0x00FFFFFF;
+    tags.intro_len *= 64000;
+    smemcpy((u8*)&tags.fade_len, (u8*)&ib->fade_length_ms, 4);
+    tags.fade_len *= 64;
+    smemcpy((u8*)&tags.song_title, (u8*)&ib->song_title, 32);
+    smemcpy((u8*)&tags.game_title, (u8*)&ib->game_title, 32);
+    smemcpy((u8*)&tags.dumper_name, (u8*)&ib->dumper_name, 16);
+    smemcpy((u8*)&tags.comments, (u8*)&ib->comments, 32);
+    smemcpy((u8*)&tags.song_artist, (u8*)&ib->song_artist, 32);
+  }
+  
+  
+  if(strncmp((char*)&idx6h->header, "xid6", 4) == 0){
+    unsigned short offset = 0;
+    while((offset<idx6h->size) && (offset < 32256))
+    {
+      digitalWrite(SRAM_PIN_0, LOW);
+      idx6sh = (spc_idx6_sub_header*)&idx6h->data[offset];
+      switch(idx6sh->ID)
+      {
+      case IDX6_SONGNAME:
+        smemcpy((u8*)&tags.song_title, ((idx6sh->Type)?idx6sh->data:(u8*)&idx6sh->Length), ((idx6sh->Type)?idx6sh->Length:2));
+        break;
+      case IDX6_ARTISTNAME:
+        smemcpy((u8*)&tags.song_artist, ((idx6sh->Type)?idx6sh->data:(u8*)&idx6sh->Length), ((idx6sh->Type)?idx6sh->Length:2));
+        break;
+      case IDX6_COMMENTS:
+        smemcpy((u8*)&tags.comments, ((idx6sh->Type)?idx6sh->data:(u8*)&idx6sh->Length), ((idx6sh->Type)?idx6sh->Length:2));
+        break;
+      case IDX6_DUMPERNAME:
+        smemcpy((u8*)&tags.dumper_name, ((idx6sh->Type)?idx6sh->data:(u8*)&idx6sh->Length), ((idx6sh->Type)?idx6sh->Length:2));
+        break;
+      case IDX6_PUBNAME:
+        smemcpy((u8*)&tags.pub_name, ((idx6sh->Type)?idx6sh->data:(u8*)&idx6sh->Length), ((idx6sh->Type)?idx6sh->Length:2));
+        break;
+      case IDX6_GAMENAME:
+        smemcpy((u8*)&tags.game_title, ((idx6sh->Type)?idx6sh->data:(u8*)&idx6sh->Length), ((idx6sh->Type)?idx6sh->Length:2));
+        break;
+      case IDX6_OSTTITLE:
+        smemcpy((u8*)&tags.ost_title, ((idx6sh->Type)?idx6sh->data:(u8*)&idx6sh->Length), ((idx6sh->Type)?idx6sh->Length:2));
+        break;
+      case IDX6_OSTDISC:
+        smemcpy((u8*)&tags.ost_disc, ((idx6sh->Type)?idx6sh->data:(u8*)&idx6sh->Length), 1);
+        break;
+      case IDX6_OSTTRACK:
+        smemcpy((u8*)&tags.ost_track, ((idx6sh->Type)?idx6sh->data:(u8*)&idx6sh->Length), 2);
+        break;
+      case IDX6_COPYRIGHT:
+        smemcpy((u8*)&tags.copyright, ((idx6sh->Type)?idx6sh->data:(u8*)&idx6sh->Length), 2);
+        break;
+      case IDX6_INTROLEN:
+        smemcpy((u8*)&tags.intro_len, ((idx6sh->Type)?idx6sh->data:(u8*)&idx6sh->Length), ((idx6sh->Type)?idx6sh->Length:2));
+        break;
+      case IDX6_FADELEN:
+        smemcpy((u8*)&tags.fade_len, ((idx6sh->Type)?idx6sh->data:(u8*)&idx6sh->Length), ((idx6sh->Type)?idx6sh->Length:2));
+        break;
+      }
+      offset += 4 + ((idx6sh->Type)?((idx6sh->Length+3)&(~3)):0);
+      
+    }
+
+  }
+}
+
+
 
 int date_time=250;
 
@@ -1519,7 +1889,14 @@ handleButtons_top:
         GetFile(true);
       }
       else if(spcFile.size() >= 66048)
+      {
+        ReadSPCFromSD();
         LoadAndPlaySPC();
+        auto_play = IsButtonPressed(RIGHT);
+        play_time = tags.intro_len;
+        play_time += tags.fade_len;
+        play_time /= 64;
+      }
     }
     while(IsButtonPressed(RIGHT));
   }
@@ -1537,6 +1914,8 @@ handleButtons_top:
         if((buttons[UP] || buttons[DOWN] || buttons[LEFT] || buttons[RIGHT]))
           break;
       }
+      if(buttons[RIGHT] && buttons[SELECT])
+        LoadAndPlaySPC();
     } while(buttons[SELECT]);
     refreshLCD();
     if(!buttons[SELECT])
@@ -1553,6 +1932,27 @@ void loop() //The main loop.  Define various subroutines, and call them here. :)
   ProcessCommandFromSerial();
   handleButtons();
   handleLCD();
+
+  if(auto_play)
+  {
+    if(play_time > 40)
+      play_time -= 40;
+    else
+    {
+      GetNextFile(true);
+      if((files[filedepth].isDirectory())||(files[filedepth].size() < 66048))
+      {
+        auto_play = false;
+        return;
+      }
+        
+      ReadSPCFromSD();
+      LoadAndPlaySPC();
+      play_time = tags.intro_len;
+      play_time += tags.fade_len;
+      play_time /= 64;
+    }
+  }
 }
 
 
