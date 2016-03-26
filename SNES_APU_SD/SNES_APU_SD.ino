@@ -43,6 +43,7 @@ bool debug_print=false;
 spc_idx6_table tags  __attribute__ ((section (".noinit")));
 bool auto_play;
 u32 play_time;
+int auto_play_start;
 
 static unsigned char boot_code[] =
 {
@@ -232,7 +233,7 @@ void refreshLCD(bool update_lcd=true)
     }
     else
     {
-      if(files[filedepth].size() >= 66048)
+      if(IsSPC())
       {
         spcFile = files[filedepth];
         readSPCRegion((unsigned char*)lcd_buffer[1], 0x2EL, 0x20);
@@ -303,7 +304,7 @@ void GetFile(bool print_info, bool rewind_dir, bool update_lcd)
     Serial.print(file_index);
     Serial.print(F("] "));
     Serial.print(lcd_buffer[0]);
-    if((!files[filedepth].isDirectory())&&(files[filedepth].size() >= 66048))
+    if(IsSPC())
     {
       Serial.print(F(" - Track Name: ")); Serial.print(lcd_buffer[1]);
     }
@@ -637,6 +638,23 @@ void ReadSPC2FromSD(unsigned short song)
   
 }
 
+bool IsSPC()
+{
+  IsSPC(files[filedepth]);
+}
+
+bool IsSPC(File file)
+{
+  if(file.isDirectory()) return false;
+  if(file.size() < 66048) return false;
+  if(file.size() > 131592L) return false;
+  u8 buf[0x1E];
+  file.seek(0);
+  file.read(buf,0x1D);
+  buf[0x1D] = 0;
+  return !strncmp((char*)&buf[0],"SNES-SPC700 Sound File Data v",0x1D);
+}
+
 
 void spc_push(unsigned char *sp, unsigned char data, const __FlashStringHelper *ifsh)
 {
@@ -646,6 +664,13 @@ void spc_push(unsigned char *sp, unsigned char data, const __FlashStringHelper *
 }
 
 void LoadAndPlaySPC()
+{
+  ReadSPCFromSD();
+  PlaySPC();
+}
+
+
+void PlaySPC()
 {
   lcd.clear();
   lcd.setCursor(0,0);
@@ -1022,8 +1047,9 @@ void LoadAndPlaySPC()
   Serial.print(F("Play Time: ")); Serial.println(tags.intro_len / 64000);
   Serial.print(F("Fadeout Time: ")); Serial.println(tags.fade_len / 64000);
   Serial.println();
-  
-  
+  play_time = tags.intro_len;
+  play_time += tags.fade_len;
+  play_time /= 64;
 }
 #endif
 
@@ -1277,7 +1303,7 @@ void ProcessCommandFromSerial()
     UploadSPCFromPC();
     break;
   case 'P':
-    LoadAndPlaySPC();
+    PlaySPC();
     break;
     
 
@@ -1317,9 +1343,8 @@ void ProcessCommandFromSerial()
       spcFile = SD.open(filename);
       if(spcFile)
       {
-        if(spcFile.size() >= 66048)
+        if(IsSPC(spcFile))
         {
-          ReadSPCFromSD();
           LoadAndPlaySPC();
         }
         spcFile.close();
@@ -1446,14 +1471,11 @@ void ProcessCommandFromSerial()
           GetFile(true,!filecurrent[filedepth],false);
         GetFile();
       }
-      else if(spcFile.size() >= 66048)
+      else if(IsSPC())
       {
-        ReadSPCFromSD();
         LoadAndPlaySPC();
-        play_time = tags.intro_len;
-        play_time += tags.fade_len;
-        play_time /= 64;
         auto_play = (command == 'E');
+        auto_play_start = filecurrent[filedepth];
       }
     }
     break;
@@ -1859,23 +1881,57 @@ bool IsButtonReleased(int button)
 
 void handleButtons()
 {
+  int count=0;
   readButtons();
 
 handleButtons_top:
   if(buttons[UP])
   {
     GetPrevFile(true);
+    while(buttons[UP] && (count<15))
+    {
+      count++;
+      readButtons();
+    }
+    if(count==15)
+    {
+      if(IsSPC())
+        LoadAndPlaySPC();
+    }
     while(IsButtonPressed(UP));
   }
   if(buttons[DOWN])
   {
     GetNextFile(true);
+    while(buttons[DOWN] && (count<15))
+    {
+      count++;
+      readButtons();
+    }
+    if(count==15)
+    {
+      if(IsSPC())
+        LoadAndPlaySPC();
+    }
     while(IsButtonPressed(DOWN));
   }
   if(buttons[LEFT])
   {
-    if(filedepth>0)
-      LeaveDirectory();
+    while(buttons[LEFT] && (count<15))
+    {
+      count++;
+      readButtons();
+    } 
+    if(count < 15)
+    {
+      if(filedepth>0)
+        LeaveDirectory();
+    }
+    else
+    {
+      auto_play = false;
+      apu.reset();
+    }
     while(IsButtonPressed(LEFT));
   }
   if(buttons[RIGHT])
@@ -1888,14 +1944,11 @@ handleButtons_top:
         EnterDirectory();
         GetFile(true);
       }
-      else if(spcFile.size() >= 66048)
+      else if(IsSPC())
       {
-        ReadSPCFromSD();
         LoadAndPlaySPC();
         auto_play = IsButtonPressed(RIGHT);
-        play_time = tags.intro_len;
-        play_time += tags.fade_len;
-        play_time /= 64;
+        auto_play_start = filecurrent[filedepth];
       }
     }
     while(IsButtonPressed(RIGHT));
@@ -1915,7 +1968,7 @@ handleButtons_top:
           break;
       }
       if(buttons[RIGHT] && buttons[SELECT])
-        LoadAndPlaySPC();
+        PlaySPC();
     } while(buttons[SELECT]);
     refreshLCD();
     if(!buttons[SELECT])
@@ -1939,8 +1992,11 @@ void loop() //The main loop.  Define various subroutines, and call them here. :)
       play_time -= 40;
     else
     {
-      GetNextFile(true);
-      if((files[filedepth].isDirectory())||(files[filedepth].size() < 66048))
+      do
+      {
+        GetNextFile(true);
+      } while (!IsSPC() && (auto_play_start < filecurrent[filedepth]));
+      if(auto_play_start >= filecurrent[filedepth])
       {
         auto_play = false;
         apu.reset();
@@ -1948,7 +2004,6 @@ void loop() //The main loop.  Define various subroutines, and call them here. :)
         return;
       }
         
-      ReadSPCFromSD();
       LoadAndPlaySPC();
       play_time = tags.intro_len;
       play_time += tags.fade_len;
