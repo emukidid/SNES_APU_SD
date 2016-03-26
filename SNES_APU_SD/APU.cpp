@@ -36,8 +36,9 @@ void APU::init_mega()
   DDRH = 0x03;  //Digital pins 8-9. (A0,A1)
   PORTB = 0x30;
   DDRB |= 0x30;  //Digital pins 10-11 (/RD,/WR)
-  PORTF = 0xFF;
-  DDRF = 0xFF; //Analog Pin 0 (/RESET)
+  DDRF = 0x00; 
+  PORTF = 0x00; //Analog Pin 0 (/RESET)
+  
 }
 
 int APU::init_mega_xmem()
@@ -70,8 +71,11 @@ int APU::init_mega_xmem()
   // 1    1    1    - 30-37, PC0-PC7
 
   
-  PORTL |= 0xC0; //Reset line, additional address lines
-  DDRL |= 0xC0;
+  PORTL |= 0x80; //additional address lines
+  DDRL |= 0x80;
+  DDRL &= 0xBF; //Reset Line
+  PORTL &= 0xBF;
+  
   DDRD |= 0x80; //Additional address lines
 }
 
@@ -207,9 +211,8 @@ void APU::write_arduino_mega(uint8_t address, uint8_t data)
 
 void APU::reset_arduino_mega()
 {
-  digitalWrite(RESET_PIN_0,LOW);
-  //delay(1);
-  digitalWrite(RESET_PIN_0,HIGH);
+  pinMode(RESET_PIN_0,OUTPUT);
+  pinMode(RESET_PIN_0,INPUT);
 }
 
 uint8_t APU::read_arduino_mega_xmem(uint8_t address)
@@ -224,12 +227,8 @@ void APU::write_arduino_mega_xmem(uint8_t address, uint8_t data)
 
 void APU::reset_arduino_mega_xmem()
 {
-  digitalWrite(RESET_PIN_1,LOW);
-  digitalWrite(RESET_PIN_1,LOW);
-  digitalWrite(RESET_PIN_1,LOW);
-  //delay(1);
-  digitalWrite(RESET_PIN_1,HIGH);
-  digitalWrite(RESET_PIN_1,HIGH);
+  pinMode(RESET_PIN_1,OUTPUT);
+  pinMode(RESET_PIN_1,INPUT);
 }
 #endif
 
