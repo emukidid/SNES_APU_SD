@@ -89,3 +89,5 @@ eagleUp
 3D
 *.scr
 PCB/apu_standalone/untitled.pro
+PCB/apu_mega_shield_integrated/backups/apu_mega_shield_integradted.brd
+PCB/apu_mega_shield_integrated/backups/apu_mega_shield_integradted.sch

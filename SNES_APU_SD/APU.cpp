@@ -18,8 +18,9 @@ void APU::init(uint8_t type)
 #if not (defined(__AVR_ATmega2560__) || defined(__AVR_ATmega1280__))
   PORTB = 0x0F;
   DDRB = 0x0F;
-  PORTC |= 0x3F;
-  DDRC |= 0x3F;
+  DDRC &= 0xC0;
+  PORTC &= 0xC0;
+   
 #else
   mega_type = type;
   if (mega_type)
@@ -159,9 +160,8 @@ void APU::write_arduino(uint8_t address, uint8_t data)
 
 void APU::reset_arduino()
 {
-  digitalWrite(RESET_PIN,LOW);
-  delay(1);
-  digitalWrite(RESET_PIN,HIGH);
+  pinMode(RESET_PIN,OUTPUT);
+  pinMode(RESET_PIN,INPUT);
 }
 #else
 uint8_t APU::read_arduino_mega(uint8_t address)

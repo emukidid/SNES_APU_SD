@@ -138,14 +138,13 @@ void setup()
   Serial.begin(250000);
   SetupPrescaler(PRESCALER);
 
-  lcd.begin(16,2);
-
    // Set up stdout
   fdev_setup_stream(&serial_stdout, serial_putchar, NULL, _FDEV_SETUP_WRITE);
   stdout = &serial_stdout;
   
   Serial.println(F("SHVC-SOUND Arduino Player v0.1"));
 #ifdef ARDUINO_MEGA
+  lcd.begin(16,2);
 
   Serial.print(F("Initializing RTC... "));
   if (! rtc.begin()) {
@@ -1118,6 +1117,7 @@ unsigned char ReadHexFromSerial()
   return data;
 }
 
+#ifdef ARDUINO_MEGA
 void UploadSPCFromPC()
 {
   lcd.clear();
@@ -1163,6 +1163,7 @@ void UploadSPCFromPC()
   lcd.setCursor(6,0);
   lcd.print(F("Done"));
 }
+#endif
 
 bool AbortOnDataModeText(unsigned char command)
 {
@@ -1195,7 +1196,9 @@ void ProcessCommandFromSerial()
   unsigned char address, data;
   unsigned char command = ReadByteFromSerial(true);
   unsigned short dir_num;
+#ifdef ARDUINO_MEGA
   File upload;
+#endif
   if(AbortOnDataModeText(command)) return;
   switch(command)
   {
@@ -1300,14 +1303,21 @@ void ProcessCommandFromSerial()
     break;
 
   case 'U': //Upload the spc to ram.
+#ifdef ARDUINO_MEGA
     UploadSPCFromPC();
+#else
+    Serial.write('U');
+#endif
     break;
   case 'P':
+#ifdef ARDUINO_MEGA
     PlaySPC();
+#endif
     break;
     
 
   case 'u': //Upload the spc as a temp file, and play that one.
+#ifdef ARDUINO_MEGA
     for(i=0,j=0;i<4;i++)
     {
       j<<=8;
@@ -1355,7 +1365,9 @@ void ProcessCommandFromSerial()
     {
       Serial.write('F');
     }
-    
+#else
+    Serial.write('U');
+#endif
     
     break;
     
@@ -1450,6 +1462,7 @@ void ProcessCommandFromSerial()
     }
     apu.write(address,data);
     break;
+#ifdef ARDUINO_MEGA
   case 'E':
   case 'e':
     Serial.println(F("Input a directory number:"));
@@ -1494,6 +1507,14 @@ void ProcessCommandFromSerial()
   case 'T':
     ProcessSPCTags();
     break;
+#else
+  case 'T':
+  case 'l':
+  case 'e':
+  case 'E':
+    Serial.write('U');
+    break;
+#endif
   default:
     if(dataModeText)
     {
@@ -1510,6 +1531,7 @@ void ProcessCommandFromSerial()
   }
 }
 
+#ifdef ARDUINO_MEGA
 int IsNumeric(char *str, u32 length)
 {
   u32 c = 0;
@@ -1796,9 +1818,7 @@ void ProcessSPCTags()
 
   }
 }
-
-
-
+ 
 int date_time=250;
 
 bool refreshRTC(bool force_refresh=false)
@@ -1980,9 +2000,12 @@ handleButtons_top:
   }
 }
 
+#endif
+
 void loop() //The main loop.  Define various subroutines, and call them here. :)
 {
   ProcessCommandFromSerial();
+#ifdef ARDUINO_MEGA
   handleButtons();
   handleLCD();
 
@@ -2010,7 +2033,7 @@ void loop() //The main loop.  Define various subroutines, and call them here. :)
       play_time /= 64;
     }
   }
+#endif
 }
-
 
 
