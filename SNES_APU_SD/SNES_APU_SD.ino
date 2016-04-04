@@ -45,6 +45,10 @@ bool auto_play;
 u32 play_time;
 int auto_play_start;
 
+int song_current=-1;
+bool file_changed=false;
+bool just_uploaded=false;
+
 static unsigned char boot_code[] =
 {
     0x8F, 0x00, 0x00, //      Mov [0], #byte_0
@@ -213,7 +217,7 @@ int len(char *string, int maxlen)
 
 int lcd_delay=125;
 int lcd_pos=0;
-char lcd_buffer[2][64];
+char lcd_buffer[2][256];
 char file_index[5];
 void refreshLCD(bool update_lcd=true)
 {
@@ -223,8 +227,8 @@ void refreshLCD(bool update_lcd=true)
 
   if(files[filedepth])
   {
-    files[filedepth].getName(lcd_buffer[0],64);
-    rowlen[0] = len(lcd_buffer[0],64);
+    files[filedepth].getName(lcd_buffer[0],256);
+    rowlen[0] = len(lcd_buffer[0],256);
     if(files[filedepth].isDirectory())
     {
       lcd_buffer[0][rowlen[0]++] = '/';
@@ -539,6 +543,7 @@ void ReadSPCFromSD()
   readSPCRegion((unsigned char*)&_SFR_MEM8(0x8000),0x000,0x100);
   readSPCRegion((unsigned char*)&_SFR_MEM8(0x8100),0x10100,0x7F00);
   ProcessSPCTags();
+  spcFile.getName(tags.spc_filename,256);
 }
 
 void ReadSPC2FromSD(unsigned short song)
@@ -1049,6 +1054,9 @@ void PlaySPC()
   play_time = tags.intro_len;
   play_time += tags.fade_len;
   play_time /= 64;
+  song_current = filecurrent[filedepth];
+  file_changed = true;
+  just_uploaded = true;
 }
 #endif
 
@@ -1840,11 +1848,58 @@ bool refreshRTC(bool force_refresh=false)
 }
 
 
+u32 total_seconds;
+u32 prev_play_time;
+bool songUpdateLCD()
+{
+  if(song_current == filecurrent[filedepth])
+  {
+    bool time_changed = ((play_time / 1000) != prev_play_time);
+    prev_play_time = play_time / 1000;
+
+    if(file_changed)
+    {
+      sprintf(&lcd_buffer[0][0],"(%s) %s - %s - %s",tags.spc_filename,tags.game_title,tags.song_title,tags.song_artist);
+      rowlen[0] = len(lcd_buffer[0],256);
+      lcd_delay = 10;
+      time_changed = true;
+      file_changed = false;
+    }
+    if (!time_changed) return false;
+    
+    u32 play_seconds = play_time / 1000;
+    u32 total_seconds = tags.intro_len;
+    total_seconds += tags.fade_len;
+    total_seconds /= 64000;
+    u32 seconds_played = auto_play ? total_seconds - play_seconds : play_seconds;
+    int minutes_p = seconds_played / 60;
+    seconds_played %= 60;
+
+    sprintf(&lcd_buffer[1][0],"%.2d:%.2d\0",minutes_p,seconds_played);
+    rowlen[1] = len(lcd_buffer[1],256);
+    sprintf(&lcd_buffer[1][rowlen[1]]," - %.2d\0",total_seconds / 60);
+    rowlen[1] = len(lcd_buffer[1],256);
+    sprintf(&lcd_buffer[1][rowlen[1]],":%.2d\0",total_seconds % 60);
+    rowlen[1] = 16;
+    return true;   
+  }
+  else
+  {
+    if(file_changed)
+    {
+      file_changed = false;
+      refreshLCD();
+      return true;
+    }
+  }
+  return false;
+}
+
 void handleLCD(bool force_refresh)
 {
   int lcd_pos_max = (rowlen[0]>rowlen[1]?rowlen[0]:rowlen[1])+4;
   lcd_delay--;
-
+  force_refresh |= songUpdateLCD();
   force_refresh |= refreshRTC(force_refresh);
   if(lcd_delay<=0)
   {
@@ -1854,6 +1909,8 @@ void handleLCD(bool force_refresh)
     if(lcd_pos==lcd_pos_max)
       lcd_pos=-16;
     lcd_delay=(lcd_pos==0?125:10);
+    if(song_current == filecurrent[filedepth])
+      lcd_delay=10;
   }
   if(force_refresh)
   {
@@ -1918,6 +1975,10 @@ handleButtons_top:
       if(IsSPC())
         LoadAndPlaySPC();
     }
+    else
+    {
+      file_changed = true;
+    }
     while(IsButtonPressed(UP));
   }
   if(buttons[DOWN])
@@ -1933,6 +1994,10 @@ handleButtons_top:
       if(IsSPC())
         LoadAndPlaySPC();
     }
+    else
+    {
+      file_changed = true;
+    }
     while(IsButtonPressed(DOWN));
   }
   if(buttons[LEFT])
@@ -1945,10 +2010,14 @@ handleButtons_top:
     if(count < 15)
     {
       if(filedepth>0)
+      {
         LeaveDirectory();
+        file_changed = true;
+      }
     }
     else
     {
+      song_current = -1;
       auto_play = false;
       apu.reset();
     }
@@ -1963,6 +2032,7 @@ handleButtons_top:
       {
         EnterDirectory();
         GetFile(true);
+        file_changed = true;
       }
       else if(IsSPC())
       {
@@ -2004,15 +2074,28 @@ handleButtons_top:
 
 void loop() //The main loop.  Define various subroutines, and call them here. :)
 {
+  unsigned long loop_start, loop_end;
+  loop_start = millis();
   ProcessCommandFromSerial();
 #ifdef ARDUINO_MEGA
   handleButtons();
   handleLCD();
+  loop_end = millis();
+  loop_end -= loop_start;
+
+  if(just_uploaded)
+  {
+    just_uploaded = false;
+    if(!auto_play)
+      play_time = 0;
+    return;
+  }
 
   if(auto_play)
   {
-    if(play_time > 40)
-      play_time -= 40;
+    
+    if(play_time > loop_end)
+      play_time -= loop_end;
     else
     {
       do
@@ -2032,6 +2115,10 @@ void loop() //The main loop.  Define various subroutines, and call them here. :)
       play_time += tags.fade_len;
       play_time /= 64;
     }
+  }
+  else
+  {
+    play_time += loop_end;
   }
 #endif
 }
