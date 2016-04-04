@@ -2105,6 +2105,7 @@ void loop() //The main loop.  Define various subroutines, and call them here. :)
       if(auto_play_start >= filecurrent[filedepth])
       {
         auto_play = false;
+        song_current = -1;
         apu.reset();
         Serial.print(F("Last SPC file in current directory finished playing"));
         return;
