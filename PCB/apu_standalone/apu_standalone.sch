@@ -15831,6 +15831,7 @@ SMD chip inductor</description>
 <part name="GND4" library="supply1" deviceset="GND" device=""/>
 <part name="GND14" library="supply1" deviceset="GND" device=""/>
 <part name="+3V1" library="supply1" deviceset="+3V3" device=""/>
+<part name="R14" library="adafruit" deviceset="R-US_" device="R0805" value="470"/>
 </parts>
 <sheets>
 <sheet>
@@ -15879,6 +15880,7 @@ SMD chip inductor</description>
 <instance part="R11" gate="G$1" x="68.58" y="48.26" rot="R270"/>
 <instance part="R12" gate="G$1" x="63.5" y="43.18" rot="R270"/>
 <instance part="R13" gate="G$1" x="58.42" y="48.26" rot="R270"/>
+<instance part="R14" gate="G$1" x="10.16" y="20.32" rot="R270"/>
 </instances>
 <busses>
 <bus name="D[0..7],A[0..1],WR,RD,RST,ALEFT,ARIGHT,GND">
@@ -15922,14 +15924,6 @@ SMD chip inductor</description>
 <wire x1="182.88" y1="22.86" x2="175.26" y2="22.86" width="0.1524" layer="91"/>
 <wire x1="175.26" y1="22.86" x2="165.1" y2="22.86" width="0.1524" layer="91"/>
 <label x="167.64" y="22.86" size="1.778" layer="95"/>
-</segment>
-<segment>
-<pinref part="APU" gate="1" pin="S"/>
-<wire x1="10.16" y1="15.24" x2="10.16" y2="30.48" width="0.1524" layer="91"/>
-<pinref part="APU" gate="1" pin="S1"/>
-<wire x1="10.16" y1="15.24" x2="10.16" y2="12.7" width="0.1524" layer="91"/>
-<junction x="10.16" y="15.24"/>
-<label x="10.16" y="22.86" size="1.778" layer="95" rot="R90"/>
 </segment>
 <segment>
 <pinref part="LEFT" gate="1" pin="S"/>
@@ -15978,6 +15972,10 @@ SMD chip inductor</description>
 <pinref part="U$5" gate="G$1" pin="P$4"/>
 <wire x1="124.46" y1="50.8" x2="99.06" y2="50.8" width="0.1524" layer="91"/>
 <label x="101.6" y="50.8" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="R14" gate="G$1" pin="1"/>
+<wire x1="10.16" y1="25.4" x2="10.16" y2="30.48" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="RST" class="0">
@@ -16298,6 +16296,15 @@ SMD chip inductor</description>
 <pinref part="JP1" gate="A" pin="15"/>
 <wire x1="182.88" y1="25.4" x2="165.1" y2="25.4" width="0.1524" layer="91"/>
 <label x="167.64" y="25.4" size="1.778" layer="95"/>
+</segment>
+</net>
+<net name="N$5" class="0">
+<segment>
+<pinref part="APU" gate="1" pin="S"/>
+<pinref part="R14" gate="G$1" pin="2"/>
+<pinref part="APU" gate="1" pin="S1"/>
+<wire x1="10.16" y1="15.24" x2="10.16" y2="12.7" width="0.1524" layer="91"/>
+<junction x="10.16" y="15.24"/>
 </segment>
 </net>
 </nets>
