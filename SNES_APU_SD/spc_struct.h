@@ -55,15 +55,32 @@ typedef struct {
 	u8	extra_ram[64];
 } spc_ram_store;
 
+#define   MAX_SONG_TITLE 192
+#define   MAX_GAME_TITLE 128
+#define  MAX_SONG_ARTIST 192
+#define  MAX_DUMPER_NAME 64
+#define     MAX_COMMENTS 256
+#define    MAX_OST_TITLE 128
+#define     MAX_PUB_NAME 128
+#define MAX_SPC_FILENAME 64
+
 typedef struct {
-	s8	song_title[256];
-	s8	game_title[256];
-	s8	song_artist[256];
-	s8	dumper_name[256];
-  s8  comments[256];
-  s8  ost_title[256];
-  s8  pub_name[256];
-  s8  spc_filename[256];
+	s8	song_title[MAX_SONG_TITLE];
+  u8 null_1;
+	s8	game_title[MAX_GAME_TITLE];
+  u8 null_2;
+	s8	song_artist[MAX_SONG_ARTIST];
+  u8 null_3;
+	s8	dumper_name[MAX_DUMPER_NAME];
+  u8 null_4;
+  s8  comments[MAX_COMMENTS];
+  u8 null_5;
+  s8  ost_title[MAX_OST_TITLE];
+  u8 null_6;
+  s8  pub_name[MAX_PUB_NAME];
+  u8 null_7;
+  s8  spc_filename[MAX_SPC_FILENAME];
+  u8 null_8;
   
 	u32 date;
 	u8	emulator;
