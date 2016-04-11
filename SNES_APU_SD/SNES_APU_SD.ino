@@ -24,6 +24,7 @@ void handleLCD(bool force_refresh = false);
 void GetFile(bool print_info = false, bool rewind_dir = true, bool update_lcd = true);
 void GetNextFile(bool print_info = false);
 void GetPrevFile(bool print_info = false);
+void PlaySPC(int SD_mode = 1);
 
 LiquidCrystal lcd;
 RTC_DS1307 rtc;
@@ -250,10 +251,10 @@ void refreshLCD(bool update_lcd = true)
     {
       if (IsSPC())
       {
+        switch_lcd_display_mode(LCD_DISPLAY_MODE_NORMAL);
         spcFile = files[filedepth];
         readSPCRegion((unsigned char*)lcd_buffer[1], 0x2EL, 0x20);
         rowlen[1] = len(lcd_buffer[1], line_len_max[1]);
-        switch_lcd_display_mode(LCD_DISPLAY_MODE_NORMAL);
       }
       else
         switch_lcd_display_mode(LCD_DISPLAY_MODE_DATETIME);
@@ -320,7 +321,7 @@ void GetFile(bool print_info, bool rewind_dir, bool update_lcd)
     Serial.print('[');
     sprintf(file_index, (filecounts[filedepth] > 256 ? "%04X" : "%02X"), filecurrent[filedepth]);
     Serial.print(file_index);
-    Serial.print(F("] "));
+    Serial.print(F("]|"));
     Serial.print(lcd_buffer[0]);
     if (IsSPC())
     {
@@ -355,7 +356,7 @@ void EnterDirectory()
 void LeaveDirectory()
 {
   filedepth--;
-  GetFile(true);
+  GetFile(dataModeText);
 }
 
 #endif
@@ -556,7 +557,9 @@ void ReadSPCFromSD()
   digitalWrite(SRAM_PIN_1, HIGH);
   digitalWrite(SRAM_PIN_0, LOW);
   readSPCRegion((unsigned char*)&_SFR_MEM8(0x8000), 0x000, 0x100);
-  readSPCRegion((unsigned char*)&_SFR_MEM8(0x8100), 0x10100, 0x7F00);
+  readSPCRegion((unsigned char*)&_SFR_MEM8(0x8100), 0x10100, 0x100);
+  _SFR_MEM8(0x8200) = 0;  //Fixes a bug caused by loading a no extended tag spc, after loading an spc with extended tags.
+  readSPCRegion((unsigned char*)&_SFR_MEM8(0x8200), 0x10200, 0x7E00);
   ProcessSPCTags();
   spcFile.getName(tags.spc_filename, MAX_SPC_FILENAME);
 }
@@ -695,7 +698,7 @@ void LoadAndPlaySPC()
 }
 
 
-void PlaySPC()
+void PlaySPC(int SD_mode)
 {
   lcd.clear();
   lcd.setCursor(0, 0);
@@ -975,20 +978,38 @@ void PlaySPC()
     delay(50);
     if (resetAttempts > 20)
     {
-      Serial.print(F("Expected AABB0000, Got "));
-      printf("%.2X%.2X%.2X%.2X", apu.read(0), apu.read(1), apu.read(2), apu.read(3));
-      Serial.print(F(" :( - Failed to reset the APU\n"));
-      while (1);
+      if(SD_mode)
+      {
+        Serial.print(F("Expected AABB0000, Got "));
+        printf("%.2X%.2X%.2X%.2X", apu.read(0), apu.read(1), apu.read(2), apu.read(3));
+        Serial.print(F(" :( - Failed to reset the APU\n"));
+      }
+      else
+      {
+        Serial.write('0');
+        for(i=0;i<4;i++)
+          Serial.write(apu.read(i));
+      }
+      SetupPrescaler(0);
+      return;
     }
     resetAttempts++;
   }
-  Serial.print(F("APU Reset Complete\n"));
+  if(SD_mode) Serial.println(F("APU Reset Complete"));
 
   // Initialise it with the DSP data and SPC data for this track
-  i = APU_StartSPC700(dspdata, spcdata);
+  i = APU_StartSPC700(dspdata, spcdata, SD_mode);
   if (i > 0)
   {
-    Serial.print(F("Upload failed in APU_StartSCP700: Result ")); printf("%d\n", i);
+    if(SD_mode)
+    {
+      Serial.print(F("Upload failed in APU_StartSCP700: Result ")); printf("%d\n", i);
+    }
+    else
+    {
+      Serial.write('1'); Serial.write(i&0xFF);
+    }
+    SetupPrescaler(0);
     return;
   }
 
@@ -1004,7 +1025,17 @@ void PlaySPC()
   while ((apu.read(0) != rb) && (j < 500))
     j++;
   if (j == 500) {
-    Serial.print(F("Upload failed ad address 0x0100"));
+    if(SD_mode)
+    {
+      Serial.print(F("Upload failed ad address 0x0100"));
+    }
+    else
+    {
+      Serial.write('2');
+      Serial.write(0x01);
+      Serial.write(0x00);
+    }
+    SetupPrescaler(0);
     return;
   }
 
@@ -1017,7 +1048,7 @@ void PlaySPC()
 
     if ((i % 0x400) == 0)
     {
-      Serial.print('.');
+      if(SD_mode) Serial.print('.');
       lcd.setCursor(7, 1);
       if ((i >> 8) < 16) lcd.print('0');
       lcd.print(i >> 8, HEX);
@@ -1026,11 +1057,21 @@ void PlaySPC()
     // Normal data write
     if (!WriteByteToAPUAndWaitForState(_SFR_MEM8(0x8000 + (i & 0x7FFF)), port0state))
     {
-      Serial.print(F("Upload failed at address 0x")); printf("%.4X\n", i);
+      if(SD_mode)
+      {
+        Serial.print(F("Upload failed at address 0x")); printf("%.4X\n", i);
+      }
+      else
+      {
+        Serial.write('2');
+        Serial.write(i>>8);
+        Serial.write(i&0xFF);
+      }
+      SetupPrescaler(0);
       return;
     }
   }
-  Serial.println(F("Done!"));
+  if (SD_mode) Serial.println(F("Done!"));
 
   apu.write(3, (unsigned char)(boot_code_dest >> 8));
   apu.write(2, boot_code_dest & 0xFF);
@@ -1042,7 +1083,7 @@ void PlaySPC()
   i = 0;
   if (bootcode_offset != 2)
   {
-    Serial.print(F("Wait for Play...."));
+    if (SD_mode) Serial.print(F("Wait for Play...."));
     if (spcinportiszero) {
       apu.write(3, 1);
       apu.write(0, 1);
@@ -1050,8 +1091,20 @@ void PlaySPC()
     while (apu.read(0) != 0x53) {
       i++;
       if (i > 512) {
-        Serial.println(F("Error loading SPC"));
-        break;
+        if(SD_mode)
+        {
+          Serial.println(F("Error loading SPC"));
+        }
+        else
+        {
+          Serial.write('3');
+        }
+        apu.write(0, spcdata[0xF4]);
+        apu.write(1, spcdata[0xF5]);
+        apu.write(2, spcdata[0xF6]);
+        apu.write(3, spcdata[0xF7]);
+        SetupPrescaler(0);
+        return;
       }
     }
     apu.write(0, spcdata[0xF4]);
@@ -1059,38 +1112,48 @@ void PlaySPC()
     apu.write(2, spcdata[0xF6]);
     apu.write(3, spcdata[0xF7]);
   }
-  Serial.println(F("Playing!"));
+  if(SD_mode)
+  {
+    Serial.println(F("Playing!"));
+  }
+  else
+  {
+    Serial.write('S');
+  }
   SetupPrescaler(0);
   handleLCD(true);
-  Serial.println();
-  if(tags.spc_filename[0]){Serial.print(F("SPC File name: ")); Serial.println(tags.spc_filename);}
-  if(tags.song_title[0]){Serial.print(F("Song Name: ")); Serial.println(tags.song_title);}
-  if(tags.game_title[0]){Serial.print(F("Game: ")); Serial.println(tags.game_title);}
-  if(tags.song_artist[0]){Serial.print(F("Artists: ")); Serial.println(tags.song_artist);}
-  if(tags.dumper_name[0]){Serial.print(F("Dumper: ")); Serial.println(tags.dumper_name);}
-  if(tags.comments[0]){Serial.print(F("Comments: ")); Serial.println(tags.comments);}
-  if(tags.ost_title[0]){Serial.print(F("Original Soundtrack Title: ")); Serial.println(tags.ost_title);}
-  if(tags.pub_name[0]){Serial.print(F("Publisher name: ")); Serial.println(tags.pub_name);}
-  if(tags.copyright){Serial.print(F("Copyright Year: ")); Serial.println(tags.copyright);}
-  if(tags.intro_len)
+  if (SD_mode)
   {
-    Serial.print(F("Play Time: "));
-    int tlen = tags.intro_len / 64000;
-    Serial.print(tlen / 60);
-    Serial.print(':');
-    if((tlen % 60) < 10) Serial.print('0');
-    Serial.println(tlen % 60);
+    Serial.println();
+    if(tags.spc_filename[0]){Serial.print(F("SPC File name: ")); Serial.println(tags.spc_filename);}
+    if(tags.song_title[0]){Serial.print(F("Song Name: ")); Serial.println(tags.song_title);}
+    if(tags.game_title[0]){Serial.print(F("Game: ")); Serial.println(tags.game_title);}
+    if(tags.song_artist[0]){Serial.print(F("Artists: ")); Serial.println(tags.song_artist);}
+    if(tags.dumper_name[0]){Serial.print(F("Dumper: ")); Serial.println(tags.dumper_name);}
+    if(tags.comments[0]){Serial.print(F("Comments: ")); Serial.println(tags.comments);}
+    if(tags.ost_title[0]){Serial.print(F("Original Soundtrack Title: ")); Serial.println(tags.ost_title);}
+    if(tags.pub_name[0]){Serial.print(F("Publisher name: ")); Serial.println(tags.pub_name);}
+    if(tags.copyright){Serial.print(F("Copyright Year: ")); Serial.println(tags.copyright);}
+    if(tags.intro_len)
+    {
+      Serial.print(F("Play Time: "));
+      int tlen = tags.intro_len / 64000;
+      Serial.print(tlen / 60);
+      Serial.print(':');
+      if((tlen % 60) < 10) Serial.print('0');
+      Serial.println(tlen % 60);
+    }
+    if(tags.fade_len)
+    {
+      Serial.print(F("Fadeout Time: "));
+      int tlen = tags.fade_len / 64000;
+      Serial.print(tlen / 60);
+      Serial.print(':');
+      if((tlen % 60) < 10) Serial.print('0');
+      Serial.println(tlen % 60);
+    }
+    Serial.println();
   }
-  if(tags.fade_len)
-  {
-    Serial.print(F("Fadeout Time: "));
-    int tlen = tags.fade_len / 64000;
-    Serial.print(tlen / 60);
-    Serial.print(':');
-    if((tlen % 60) < 10) Serial.print('0');
-    Serial.println(tlen % 60);
-  }
-  Serial.println();
   play_time = 0;
   total_time = tags.intro_len;
   total_time += tags.fade_len;
@@ -1193,14 +1256,15 @@ unsigned char ReadHexFromSerial()
 }
 
 #ifdef ARDUINO_MEGA
+bool newSPCinRAM=false;
 void UploadSPCFromPC()
 {
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print(F("Loading SRAM"));
+  lcd.print(F("  Loading SRAM  "));
   lcd.setCursor(0, 1);
   lcd.print(F("Page 0x00"));
-  unsigned short i;
+  unsigned short i,j;
   digitalWrite(SRAM_PIN_1, LOW);
   digitalWrite(SRAM_PIN_0, LOW);
 
@@ -1232,11 +1296,36 @@ void UploadSPCFromPC()
   digitalWrite(SRAM_PIN_1, HIGH);
   digitalWrite(SRAM_PIN_0, LOW);
 
+  lcd.setCursor(0, 0);
+  lcd.print(F("Loading Register"));
+  
   for (i = 0; i < 0x200; i++)
     _SFR_MEM8(0x8000 + (i & 0x7FFF)) = ReadByteFromSerial(true);
+  
+  Serial.write('.');
+
+  lcd.setCursor(0, 0);
+  lcd.print(F("  Loading Tags  "));
+  j=ReadByteFromSerial(true);
+  j<<=8;
+  j|=ReadByteFromSerial(true);
+  
+  if(j)
+  {
+    
+    for(i = 0; i < j; i++)
+    {
+      _SFR_MEM8(0x8200 + (i & 0x7FFF)) = ReadByteFromSerial(true);
+    }
+    ProcessSPCTags();
+  }
+  Serial.write('.');
+  
+  
   lcd.clear();
   lcd.setCursor(6, 0);
   lcd.print(F("Done"));
+  newSPCinRAM = true;
 }
 #endif
 
@@ -1386,7 +1475,7 @@ void ProcessCommandFromSerial()
       break;
     case 'P':
 #ifdef ARDUINO_MEGA
-      PlaySPC();
+      PlaySPC(dataModeText);
 #endif
       break;
 
@@ -1538,6 +1627,16 @@ void ProcessCommandFromSerial()
       apu.write(address, data);
       break;
 #ifdef ARDUINO_MEGA
+    case 'A':
+      auto_play = ReadByteFromSerial(true) == '1';
+      if(dataModeText)
+      {
+        if(auto_play)
+          Serial.println(F("Auto Play turned on"));
+        else
+          Serial.println(F("Auto Play turned off"));
+      }
+      break;
     case 'E':
     case 'e':
       Serial.println(F("Input a directory number:"));
@@ -1558,6 +1657,7 @@ void ProcessCommandFromSerial()
           for (filecurrent[filedepth] = 0; filecurrent[filedepth] < filecounts[filedepth]; filecurrent[filedepth]++)
             GetFile(true, !filecurrent[filedepth], false);
           GetFile();
+          
         }
         else if (IsSPC())
         {
@@ -1568,10 +1668,9 @@ void ProcessCommandFromSerial()
       }
       break;
     case 'l':
-      auto_play = false;
-      if (filedepth > 0)
+      LeaveDirectory();
+      if(dataModeText)
       {
-        LeaveDirectory();
         i = filecurrent[filedepth];
         for (filecurrent[filedepth] = 0; filecurrent[filedepth] < filecounts[filedepth]; filecurrent[filedepth]++)
           GetFile(true, !filecurrent[filedepth], false);
@@ -1583,6 +1682,7 @@ void ProcessCommandFromSerial()
       ProcessSPCTags();
       break;
 #else
+    case 'A':
     case 'T':
     case 'l':
     case 'e':
@@ -1956,7 +2056,14 @@ bool songUpdateLCD()
 
     if (file_changed)
     {
-      sprintf(&lcd_buffer[0][0], "(%s) %s - %s - %s", tags.spc_filename, tags.game_title, tags.song_title, tags.song_artist);
+      if(tags.spc_filename[0])
+      {
+        sprintf(&lcd_buffer[0][0], "(%s) %s - %s - %s", tags.spc_filename, tags.game_title, tags.song_title, tags.song_artist);
+      }
+      else
+      {
+        sprintf(&lcd_buffer[0][0], "%s - %s - %s", tags.game_title, tags.song_title, tags.song_artist);
+      }
       rowlen[0] = len(lcd_buffer[0], line_len_max[0]);
       lcd_delay[0] = LCD_SCROLL_DELAY_SHORT;
       time_changed = true;
@@ -2045,6 +2152,12 @@ void handleLCD(bool force_refresh)
 
 bool buttons[5];
 
+void clearButtons()
+{
+  for(int i = 0; i < 5; i++)
+    buttons[i] = false;
+}
+
 void readButtons()
 {
   for (int i = 0; i < 5; i++)
@@ -2064,10 +2177,11 @@ bool IsButtonReleased(int button)
   return !IsButtonPressed(button);
 }
 
-void handleButtons()
+void handleButtons(bool skipRead = false)
 {
   int count = 0;
-  readButtons();
+  if(!skipRead)
+    readButtons();
 
 handleButtons_top:
   if (buttons[UP])
@@ -2082,6 +2196,8 @@ handleButtons_top:
     {
       if (IsSPC())
         LoadAndPlaySPC();
+      else
+        file_changed = true;
     }
     else
     {
@@ -2101,6 +2217,8 @@ handleButtons_top:
     {
       if (IsSPC())
         LoadAndPlaySPC();
+      else
+        file_changed = true;
     }
     else
     {
@@ -2205,19 +2323,35 @@ void loop() //The main loop.  Define various subroutines, and call them here. :)
   {
     if(play_time >= total_time)
     {
-      do
+      if(tags.spc_filename[0])
       {
-        GetNextFile(true);
-      } while (!IsSPC() && (auto_play_start < filecurrent[filedepth]));
-      if (auto_play_start >= filecurrent[filedepth])
+        do
+        {
+          GetNextFile(true);
+        } while (!IsSPC() && (auto_play_start < filecurrent[filedepth]));
+        if (auto_play_start >= filecurrent[filedepth])
+        {
+          auto_play = false;
+          clear_current_song();
+          apu.reset();
+          Serial.println(F("Last SPC file in current directory finished playing"));
+          return;
+        }
+        LoadAndPlaySPC();
+      }
+      else if (newSPCinRAM)
+      {
+        PlaySPC();
+        newSPCinRAM = false;
+        Serial.println(F("Ready for next SPC"));
+      }
+      else
       {
         auto_play = false;
         clear_current_song();
         apu.reset();
-        Serial.print(F("Last SPC file in current directory finished playing"));
-        return;
+        Serial.println(F("SPC in ram is done playing."));
       }
-      LoadAndPlaySPC();
     }
   }
 #endif
