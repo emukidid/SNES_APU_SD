@@ -32,7 +32,7 @@ RTC_DS1307 rtc;
 File spcFile;
 File root;
 
-#define MAX_FILE_DEPTH 10
+#define MAX_FILE_DEPTH 20
 int filedepth = 0;
 File files[MAX_FILE_DEPTH];
 int filecounts[MAX_FILE_DEPTH];
@@ -234,7 +234,7 @@ char lcd_line_0[LINE_0_LEN];
 char lcd_line_1[LINE_1_LEN];
 char* lcd_buffer[] = {lcd_line_0, lcd_line_1};
 char file_index[5];
-void refreshLCD(bool update_lcd = true)
+void refreshLCD()
 {
   rowlen[0] = lcd_buffer[0][0] = rowlen[1] = lcd_buffer[1][0] = 0;
   lcd_pos[0] = lcd_pos[1] = 0;
@@ -263,8 +263,6 @@ void refreshLCD(bool update_lcd = true)
         switch_lcd_display_mode(LCD_DISPLAY_MODE_DATETIME);
     }
   }
-  if (update_lcd)
-    handleLCD(true);
 }
 
 void CountFiles()
@@ -318,7 +316,7 @@ void GetFile(bool print_info, bool rewind_dir, bool update_lcd)
   else
     files[filedepth - 1] = dir;
 
-  refreshLCD(update_lcd);
+  refreshLCD();
   if (print_info)
   {
     Serial.print('[');
@@ -332,6 +330,8 @@ void GetFile(bool print_info, bool rewind_dir, bool update_lcd)
     }
     Serial.println();
   }
+  if (update_lcd)
+    handleLCD(true);
 }
 
 void GetNextFile(bool print_info)
@@ -351,8 +351,16 @@ void EnterDirectory()
   if (files[filedepth].isDirectory())
   {
     filedepth++;
-    CountFiles();
-    GetNextFile();
+    if(filedepth <= MAX_FILE_DEPTH)
+    {
+      CountFiles();
+      GetNextFile();
+    }
+    else
+    {
+      filedepth--;
+      Serial.println("Error: Max Directory depth reached.");
+    }
   }
 }
 
