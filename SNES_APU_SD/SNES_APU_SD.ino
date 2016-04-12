@@ -31,10 +31,12 @@ RTC_DS1307 rtc;
 
 File spcFile;
 File root;
+
+#define MAX_FILE_DEPTH 10
 int filedepth = 0;
-File files[10];
-int filecounts[10];
-int filecurrent[10];
+File files[MAX_FILE_DEPTH];
+int filecounts[MAX_FILE_DEPTH];
+int filecurrent[MAX_FILE_DEPTH];
 int rowlen[2];
 unsigned char rtc_found = 1;
 unsigned char is_spc2;
@@ -47,7 +49,7 @@ u32 play_time, total_time;
 int auto_play_start;
 
 int song_depth=-1;
-int song_current[10] = {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
+int song_current[MAX_FILE_DEPTH];
 bool file_changed = false;
 bool just_uploaded = false;
 
@@ -150,6 +152,7 @@ void setup()
 
   Serial.println(F("SHVC-SOUND Arduino Player v0.1"));
 #ifdef ARDUINO_MEGA
+  clear_current_song();
   lcd.begin(16, 2);
 
   Serial.print(F("Initializing RTC... "));
@@ -1166,21 +1169,21 @@ void PlaySPC(int SD_mode)
 void set_current_song()
 {
   song_depth = filedepth;
-  for(int i=0;i<10;i++)
+  for(int i=0;i<MAX_FILE_DEPTH;i++)
     song_current[i] = filecurrent[i];
 }
 
 void clear_current_song()
 {
   song_depth = -1;
-  for(int i=0;i<10;i++)
+  for(int i=0;i<MAX_FILE_DEPTH;i++)
     song_current[i] = -1;
 }
 
 bool is_current_song_selected()
 {
   if(song_depth != filedepth) return false;
-  for (int i=0;i<10;i++)
+  for (int i=0;i<MAX_FILE_DEPTH;i++)
   {
     if(song_current[i] != filecurrent[i])
       return false;
