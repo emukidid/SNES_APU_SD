@@ -1135,14 +1135,39 @@ void PlaySPC(int SD_mode)
   handleLCD(true);
   if (SD_mode)
   {
-    Serial.println();
+    Serial.println(F("----START OF SPC TAGS----"));
     if(tags.spc_filename[0]){Serial.print(F("SPC File name: ")); Serial.println(tags.spc_filename);}
     if(tags.song_title[0]){Serial.print(F("Song Name: ")); Serial.println(tags.song_title);}
     if(tags.game_title[0]){Serial.print(F("Game: ")); Serial.println(tags.game_title);}
     if(tags.song_artist[0]){Serial.print(F("Artists: ")); Serial.println(tags.song_artist);}
     if(tags.dumper_name[0]){Serial.print(F("Dumper: ")); Serial.println(tags.dumper_name);}
-    if(tags.comments[0]){Serial.print(F("Comments: ")); Serial.println(tags.comments);}
+    if(tags.comments[0])
+    {
+      Serial.print(F("Comments: ")); 
+      Serial.println(tags.comments);
+      Serial.println(F("----End of Comments----"));
+    }
     if(tags.ost_title[0]){Serial.print(F("Original Soundtrack Title: ")); Serial.println(tags.ost_title);}
+    if(tags.ost_disc || tags.ost_track)
+    {
+      Serial.print(F("OST Disc/Track #: "));
+      if(tags.ost_disc)
+      {
+        Serial.print(F("Disc: "));
+        Serial.print(tags.ost_disc,DEC);
+      }
+      if(tags.ost_disc && tags.ost_track)
+        Serial.print(F(" - "));
+      if(tags.ost_track)
+      {
+        int track = tags.ost_track & 0xFF;
+        track <<= 8;
+        track |= (tags.ost_track >> 8);
+        Serial.print(F("Track: "));
+        Serial.print(track,DEC);
+      }
+      Serial.println();
+    }
     if(tags.pub_name[0]){Serial.print(F("Publisher name: ")); Serial.println(tags.pub_name);}
     if(tags.copyright){Serial.print(F("Copyright Year: ")); Serial.println(tags.copyright);}
     if(tags.intro_len)
@@ -1163,7 +1188,7 @@ void PlaySPC(int SD_mode)
       if((tlen % 60) < 10) Serial.print('0');
       Serial.println(tlen % 60);
     }
-    Serial.println();
+    Serial.println(F("----END OF SPC TAGS----"));
   }
   play_time = 0;
   total_time = tags.intro_len;
