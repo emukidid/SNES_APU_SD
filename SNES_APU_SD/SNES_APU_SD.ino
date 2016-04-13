@@ -204,8 +204,10 @@ void setup()
   }
   filedepth = 0;
   CountFiles();
+  Serial.println(F("----START OF DIRECTORY LISTING----"));
   for (filecurrent[filedepth] = 0; filecurrent[filedepth] < filecounts[filedepth]; filecurrent[filedepth]++)
     GetFile(true, !filecurrent[filedepth], false);
+  Serial.println(F("----END OF DIRECTORY LISTING----"));
   GetFile();
 #endif
 }
@@ -1690,13 +1692,16 @@ void ProcessCommandFromSerial()
         if (spcFile.isDirectory())
         {
           EnterDirectory();
+          Serial.println(F("----START OF DIRECTORY LISTING----"));
           for (filecurrent[filedepth] = 0; filecurrent[filedepth] < filecounts[filedepth]; filecurrent[filedepth]++)
             GetFile(true, !filecurrent[filedepth], false);
+          Serial.println(F("----END OF DIRECTORY LISTING----"));
           GetFile();
           
         }
         else if (IsSPC())
         {
+          Serial.println(F("----LOAD AND PLAY SPC----"));
           LoadAndPlaySPC();
           auto_play = (command == 'E');
           auto_play_start = filecurrent[filedepth];

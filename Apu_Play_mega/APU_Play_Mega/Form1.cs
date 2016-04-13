@@ -30,21 +30,26 @@ namespace APU_Play_Mega
             
         }
 
-        private string IntToHex(int val,bool bytelen)
+        
+
+        private static string IntToHex(int val,bool bytelen)
         {
             return val.ToString(bytelen ? "X2" : "X4");
         }
 
         private int _filetreedepth;
-        private readonly Dictionary<int, string>[] _direntries = new Dictionary<int, string>[20];
+        private const int MaxDepth = 20;
+        private readonly Dictionary<int, string>[] _direntries = new Dictionary<int, string>[MaxDepth];
         private bool _autoPlaySet;
 
         private void MakeDirectoryListing(string entry)
         {
+            if (!entry.StartsWith("----START OF DIRECTORY LISTING----")) return;
+            
             _direntries[_filetreedepth].Clear();
-            var direntry = entry;
+            var direntry = ReadLine();
             var dircount = 0;
-            while (direntry != string.Empty)
+            while (!direntry.StartsWith("----END OF DIRECTORY LISTING----"))
             {
                 _direntries[_filetreedepth].Add(dircount++, direntry.Split('|')[1]);
                 direntry = ReadLine();
@@ -285,7 +290,6 @@ namespace APU_Play_Mega
                 Application.DoEvents();
                 ReadLine();
                 ReadLine();
-                ReadLine();
                 HideProgressBar();
             }
             else
@@ -296,58 +300,86 @@ namespace APU_Play_Mega
                 {
                     var line = ReadLine();
 
-                    if (line.StartsWith("----END OF SPC TAGS----"))
-                        continue;
-
-                    if (line.Contains(':'))
+                    if (line.StartsWith("----START OF SPC TAGS----"))
                     {
-                        switch (line.Split(':')[0])
+                        while (!line.StartsWith("----END OF SPC TAGS----")  && (line != string.Empty))
                         {
-                            case "OST Disc/Track #":
-                                OSTDiscTrackLabel.Text = line.Split(new[] { "OST Disc/Track #: " }, StringSplitOptions.None)[1];
+                            var prevLine = line;
+                            line = ReadLine();
+                            if (line.StartsWith("----END OF SPC TAGS----") || (line == string.Empty)) break;
+                            if (!line.Contains(':'))
+                            {
+                                textOutput.AppendText(prevLine + Environment.NewLine);
+                                textOutput.AppendText(line + Environment.NewLine);
+                                line = string.Empty;
                                 continue;
-                            case "SPC File name":
-                                textOutput.AppendText("File " +
-                                                      line.Split(new[] { "SPC File name: " }, StringSplitOptions.None)[1] +
-                                                      " Now playing from SD" + Environment.NewLine);
-                                continue;
-                            case "Song Name":
-                                GameTitleLabel.Text = line.Split(new[] {"Song Name: "}, StringSplitOptions.None)[1];
-                                continue;
-                            case "Game":
-                                SongTitleLabel.Text = line.Split(new[] { "Game: " }, StringSplitOptions.None)[1];
-                                continue;
-                            case "Artists":
-                                SongArtistLabel.Text = line.Split(new[] { "Artists: " }, StringSplitOptions.None)[1];
-                                continue;
-                            case "Dumper":
-                                DumperLabel.Text = line.Split(new[] { "Dumper: " }, StringSplitOptions.None)[1];
-                                continue;
-                            case "Comments":
-                                CommentsLabel.Text = line.Split(new[] { "Comments: " }, StringSplitOptions.None)[1];
-                                line = ReadLine();
-                                while (!line.StartsWith("----End of Comments----"))
-                                {
-                                    CommentsLabel.Text += Environment.NewLine + line;
+                            }
+                            switch (line.Split(':')[0])
+                            {
+                                case "OST Disc/Track #":
+                                    OSTDiscTrackLabel.Text =
+                                        line.Split(new[] {"OST Disc/Track #: "}, StringSplitOptions.None)[1];
+                                    continue;
+                                case "SPC File name":
+                                    textOutput.AppendText("File " +
+                                                          line.Split(new[] {"SPC File name: "},
+                                                              StringSplitOptions.None)
+                                                              [1] +
+                                                          " Now playing from SD" + Environment.NewLine);
+                                    continue;
+                                case "Song Name":
+                                    GameTitleLabel.Text =
+                                        line.Split(new[] {"Song Name: "}, StringSplitOptions.None)[1];
+                                    continue;
+                                case "Game":
+                                    SongTitleLabel.Text = line.Split(new[] {"Game: "}, StringSplitOptions.None)[1];
+                                    continue;
+                                case "Artists":
+                                    SongArtistLabel.Text =
+                                        line.Split(new[] {"Artists: "}, StringSplitOptions.None)[1];
+                                    continue;
+                                case "Dumper":
+                                    DumperLabel.Text = line.Split(new[] {"Dumper: "}, StringSplitOptions.None)[1];
+                                    continue;
+                                case "Comments":
+                                    CommentsLabel.Text =
+                                        line.Split(new[] {"Comments: "}, StringSplitOptions.None)[1];
                                     line = ReadLine();
-                                }
-                                continue;
-                            case "Original Soundtrack Title":
-                                OSTTitleLabel.Text = line.Split(new[] { "Original Soundtrack Title: " }, StringSplitOptions.None)[1];
-                                continue;
-                            case "Publisher name":
-                                PublisherLabel.Text = line.Split(new[] { "Publisher name: " }, StringSplitOptions.None)[1];
-                                continue;
-                            case "Copyright Year":
-                                CopyrightYearLabel.Text = line.Split(new[] { "Copyright Year: " }, StringSplitOptions.None)[1];
-                                continue;
-                            case "Play Time":
-                                PlayTimeLabel.Text = line.Split(new[] { "Play Time: " }, StringSplitOptions.None)[1];
-                                continue;
-                            case "Fadeout Time":
-                                FadeoutTimeLabel.Text = line.Split(new[] { "Fadeout Time: " }, StringSplitOptions.None)[1];
-                                continue;
+                                    while (!line.StartsWith("----End of Comments----"))
+                                    {
+                                        CommentsLabel.Text += Environment.NewLine + line;
+                                        line = ReadLine();
+                                    }
+                                    continue;
+                                case "Original Soundtrack Title":
+                                    OSTTitleLabel.Text =
+                                        line.Split(new[] {"Original Soundtrack Title: "}, StringSplitOptions.None)[1
+                                            ];
+                                    continue;
+                                case "Publisher name":
+                                    PublisherLabel.Text =
+                                        line.Split(new[] {"Publisher name: "}, StringSplitOptions.None)[1];
+                                    continue;
+                                case "Copyright Year":
+                                    CopyrightYearLabel.Text =
+                                        line.Split(new[] {"Copyright Year: "}, StringSplitOptions.None)[1];
+                                    continue;
+                                case "Play Time":
+                                    PlayTimeLabel.Text =
+                                        line.Split(new[] {"Play Time: "}, StringSplitOptions.None)[1];
+                                    continue;
+                                case "Fadeout Time":
+                                    FadeoutTimeLabel.Text =
+                                        line.Split(new[] {"Fadeout Time: "}, StringSplitOptions.None)[1];
+                                    continue;
+                                default:
+                                    textOutput.AppendText(prevLine + Environment.NewLine);
+                                    textOutput.AppendText(line + Environment.NewLine);
+                                    line = string.Empty;
+                                    break;
+                            }
                         }
+                        continue;
                     }
 
 
@@ -402,16 +434,16 @@ namespace APU_Play_Mega
             else
             {
                 ReadLine();
-                var direntry = ReadLine();
-                if (direntry.Contains("APU Reset Complete"))
+                var command = ReadLine();
+                if (command.StartsWith("----LOAD AND PLAY SPC----"))
                 {
-                    InitProgressBar(63,2,17);
-                    ClearTags();
                     timer1.Enabled = true;
-                    return;
                 }
-                _filetreedepth++;
-                MakeDirectoryListing(direntry);
+                else if (command.StartsWith("----START OF DIRECTORY LISTING----"))
+                {
+                    _filetreedepth++;
+                    MakeDirectoryListing(command);
+                }
             }
 
             timer1.Enabled = true;
@@ -428,7 +460,7 @@ namespace APU_Play_Mega
         private void Form1_Load(object sender, EventArgs e)
         {
             HideProgressBar();
-            for (var i = 0; i < 20; i++)
+            for (var i = 0; i < MaxDepth; i++)
                 _direntries[i] = new Dictionary<int, string>();
             RefreshPorts_Click(sender, e);
             DirectoryView.Nodes.Clear();
