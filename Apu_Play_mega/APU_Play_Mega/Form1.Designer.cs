@@ -111,11 +111,11 @@
             // textOutput
             // 
             this.textOutput.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.textOutput.Location = new System.Drawing.Point(3, 350);
+            this.textOutput.Location = new System.Drawing.Point(3, 344);
             this.textOutput.Multiline = true;
             this.textOutput.Name = "textOutput";
             this.textOutput.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textOutput.Size = new System.Drawing.Size(672, 124);
+            this.textOutput.Size = new System.Drawing.Size(672, 130);
             this.textOutput.TabIndex = 3;
             // 
             // LoadSPC
@@ -157,10 +157,10 @@
             // DirectoryView
             // 
             this.DirectoryView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.DirectoryView.Location = new System.Drawing.Point(681, 70);
+            this.DirectoryView.Location = new System.Drawing.Point(681, 73);
             this.DirectoryView.Name = "DirectoryView";
             this.tableLayoutPanel2.SetRowSpan(this.DirectoryView, 2);
-            this.DirectoryView.Size = new System.Drawing.Size(333, 404);
+            this.DirectoryView.Size = new System.Drawing.Size(333, 401);
             this.DirectoryView.TabIndex = 7;
             this.DirectoryView.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.DirectoryView_NodeMouseDoubleClick);
             // 
@@ -186,7 +186,7 @@
             this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.flowLayoutPanel1.Location = new System.Drawing.Point(3, 3);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(1011, 28);
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(1011, 29);
             this.flowLayoutPanel1.TabIndex = 9;
             // 
             // comPortSelector
@@ -239,10 +239,10 @@
             this.tableLayoutPanel2.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
             this.tableLayoutPanel2.RowCount = 4;
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 34F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 33F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 280F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 66.67F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33F));
             this.tableLayoutPanel2.Size = new System.Drawing.Size(1017, 477);
             this.tableLayoutPanel2.TabIndex = 10;
             this.tableLayoutPanel2.Paint += new System.Windows.Forms.PaintEventHandler(this.tableLayoutPanel2_Paint);
@@ -255,19 +255,19 @@
             this.flowLayoutPanel2.Controls.Add(this.PlayLoadedSPC);
             this.flowLayoutPanel2.Controls.Add(this.ResetAPU);
             this.flowLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.flowLayoutPanel2.Location = new System.Drawing.Point(3, 37);
+            this.flowLayoutPanel2.Location = new System.Drawing.Point(3, 38);
             this.flowLayoutPanel2.Name = "flowLayoutPanel2";
-            this.flowLayoutPanel2.Size = new System.Drawing.Size(1011, 27);
+            this.flowLayoutPanel2.Size = new System.Drawing.Size(1011, 29);
             this.flowLayoutPanel2.TabIndex = 11;
             // 
             // tableLayoutPanel1
             // 
             this.tableLayoutPanel1.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
             this.tableLayoutPanel1.ColumnCount = 4;
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10.13405F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 39.86967F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 12.81659F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 37.1797F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 75F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 65F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanel1.Controls.Add(this.label11, 0, 5);
             this.tableLayoutPanel1.Controls.Add(this.CommentsLabel, 1, 5);
             this.tableLayoutPanel1.Controls.Add(this.label5, 2, 0);
@@ -291,7 +291,7 @@
             this.tableLayoutPanel1.Controls.Add(this.label10, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.OSTDiscTrackLabel, 1, 0);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(3, 70);
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(3, 73);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 6;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
@@ -300,7 +300,7 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(672, 274);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(672, 265);
             this.tableLayoutPanel1.TabIndex = 12;
             // 
             // label1
@@ -308,7 +308,7 @@
             this.label1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.label1.Location = new System.Drawing.Point(4, 32);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(61, 30);
+            this.label1.Size = new System.Drawing.Size(69, 30);
             this.label1.TabIndex = 0;
             this.label1.Text = "Game Title:";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -318,7 +318,7 @@
             this.label2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.label2.Location = new System.Drawing.Point(4, 63);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(61, 30);
+            this.label2.Size = new System.Drawing.Size(69, 30);
             this.label2.TabIndex = 1;
             this.label2.Text = "Song Title:";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -328,7 +328,7 @@
             this.label3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.label3.Location = new System.Drawing.Point(4, 94);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(61, 30);
+            this.label3.Size = new System.Drawing.Size(69, 30);
             this.label3.TabIndex = 2;
             this.label3.Text = "Song Artist:";
             this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -336,9 +336,9 @@
             // label4
             // 
             this.label4.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label4.Location = new System.Drawing.Point(338, 94);
+            this.label4.Location = new System.Drawing.Point(344, 94);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(79, 30);
+            this.label4.Size = new System.Drawing.Size(59, 30);
             this.label4.TabIndex = 3;
             this.label4.Text = "Dumper:";
             this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -346,9 +346,9 @@
             // label5
             // 
             this.label5.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label5.Location = new System.Drawing.Point(338, 1);
+            this.label5.Location = new System.Drawing.Point(344, 1);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(79, 30);
+            this.label5.Size = new System.Drawing.Size(59, 30);
             this.label5.TabIndex = 4;
             this.label5.Text = "OST Title:";
             this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -358,7 +358,7 @@
             this.label11.Dock = System.Windows.Forms.DockStyle.Fill;
             this.label11.Location = new System.Drawing.Point(4, 156);
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(61, 117);
+            this.label11.Size = new System.Drawing.Size(69, 108);
             this.label11.TabIndex = 10;
             this.label11.Text = "Comments:";
             this.label11.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -366,9 +366,9 @@
             // label6
             // 
             this.label6.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label6.Location = new System.Drawing.Point(338, 32);
+            this.label6.Location = new System.Drawing.Point(344, 32);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(79, 30);
+            this.label6.Size = new System.Drawing.Size(59, 30);
             this.label6.TabIndex = 12;
             this.label6.Text = "Publisher:";
             this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -376,9 +376,9 @@
             // label7
             // 
             this.label7.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label7.Location = new System.Drawing.Point(338, 63);
+            this.label7.Location = new System.Drawing.Point(344, 63);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(79, 30);
+            this.label7.Size = new System.Drawing.Size(59, 30);
             this.label7.TabIndex = 13;
             this.label7.Text = "Copyright Year:";
             this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -388,7 +388,7 @@
             this.label8.Dock = System.Windows.Forms.DockStyle.Fill;
             this.label8.Location = new System.Drawing.Point(4, 125);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(61, 30);
+            this.label8.Size = new System.Drawing.Size(69, 30);
             this.label8.TabIndex = 14;
             this.label8.Text = "Play Time:";
             this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -396,9 +396,9 @@
             // label9
             // 
             this.label9.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label9.Location = new System.Drawing.Point(338, 125);
+            this.label9.Location = new System.Drawing.Point(344, 125);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(79, 30);
+            this.label9.Size = new System.Drawing.Size(59, 30);
             this.label9.TabIndex = 15;
             this.label9.Text = "Fadeout Time:";
             this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -408,111 +408,111 @@
             this.CommentsLabel.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.tableLayoutPanel1.SetColumnSpan(this.CommentsLabel, 3);
             this.CommentsLabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.CommentsLabel.Location = new System.Drawing.Point(72, 159);
+            this.CommentsLabel.Location = new System.Drawing.Point(80, 159);
             this.CommentsLabel.Multiline = true;
             this.CommentsLabel.Name = "CommentsLabel";
             this.CommentsLabel.ReadOnly = true;
             this.CommentsLabel.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.CommentsLabel.Size = new System.Drawing.Size(596, 111);
+            this.CommentsLabel.Size = new System.Drawing.Size(588, 102);
             this.CommentsLabel.TabIndex = 20;
             // 
             // GameTitleLabel
             // 
             this.GameTitleLabel.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.GameTitleLabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.GameTitleLabel.Location = new System.Drawing.Point(72, 35);
+            this.GameTitleLabel.Location = new System.Drawing.Point(80, 35);
             this.GameTitleLabel.Multiline = true;
             this.GameTitleLabel.Name = "GameTitleLabel";
             this.GameTitleLabel.ReadOnly = true;
-            this.GameTitleLabel.Size = new System.Drawing.Size(259, 24);
+            this.GameTitleLabel.Size = new System.Drawing.Size(257, 24);
             this.GameTitleLabel.TabIndex = 21;
             // 
             // SongTitleLabel
             // 
             this.SongTitleLabel.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.SongTitleLabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.SongTitleLabel.Location = new System.Drawing.Point(72, 66);
+            this.SongTitleLabel.Location = new System.Drawing.Point(80, 66);
             this.SongTitleLabel.Multiline = true;
             this.SongTitleLabel.Name = "SongTitleLabel";
             this.SongTitleLabel.ReadOnly = true;
-            this.SongTitleLabel.Size = new System.Drawing.Size(259, 24);
+            this.SongTitleLabel.Size = new System.Drawing.Size(257, 24);
             this.SongTitleLabel.TabIndex = 22;
             // 
             // SongArtistLabel
             // 
             this.SongArtistLabel.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.SongArtistLabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.SongArtistLabel.Location = new System.Drawing.Point(72, 97);
+            this.SongArtistLabel.Location = new System.Drawing.Point(80, 97);
             this.SongArtistLabel.Multiline = true;
             this.SongArtistLabel.Name = "SongArtistLabel";
             this.SongArtistLabel.ReadOnly = true;
-            this.SongArtistLabel.Size = new System.Drawing.Size(259, 24);
+            this.SongArtistLabel.Size = new System.Drawing.Size(257, 24);
             this.SongArtistLabel.TabIndex = 23;
             // 
             // DumperLabel
             // 
             this.DumperLabel.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.DumperLabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.DumperLabel.Location = new System.Drawing.Point(424, 97);
+            this.DumperLabel.Location = new System.Drawing.Point(410, 97);
             this.DumperLabel.Multiline = true;
             this.DumperLabel.Name = "DumperLabel";
             this.DumperLabel.ReadOnly = true;
-            this.DumperLabel.Size = new System.Drawing.Size(244, 24);
+            this.DumperLabel.Size = new System.Drawing.Size(258, 24);
             this.DumperLabel.TabIndex = 24;
             // 
             // OSTTitleLabel
             // 
             this.OSTTitleLabel.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.OSTTitleLabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.OSTTitleLabel.Location = new System.Drawing.Point(424, 4);
+            this.OSTTitleLabel.Location = new System.Drawing.Point(410, 4);
             this.OSTTitleLabel.Multiline = true;
             this.OSTTitleLabel.Name = "OSTTitleLabel";
             this.OSTTitleLabel.ReadOnly = true;
-            this.OSTTitleLabel.Size = new System.Drawing.Size(244, 24);
+            this.OSTTitleLabel.Size = new System.Drawing.Size(258, 24);
             this.OSTTitleLabel.TabIndex = 25;
             // 
             // PublisherLabel
             // 
             this.PublisherLabel.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.PublisherLabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.PublisherLabel.Location = new System.Drawing.Point(424, 35);
+            this.PublisherLabel.Location = new System.Drawing.Point(410, 35);
             this.PublisherLabel.Multiline = true;
             this.PublisherLabel.Name = "PublisherLabel";
             this.PublisherLabel.ReadOnly = true;
-            this.PublisherLabel.Size = new System.Drawing.Size(244, 24);
+            this.PublisherLabel.Size = new System.Drawing.Size(258, 24);
             this.PublisherLabel.TabIndex = 26;
             // 
             // CopyrightYearLabel
             // 
             this.CopyrightYearLabel.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.CopyrightYearLabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.CopyrightYearLabel.Location = new System.Drawing.Point(424, 66);
+            this.CopyrightYearLabel.Location = new System.Drawing.Point(410, 66);
             this.CopyrightYearLabel.Multiline = true;
             this.CopyrightYearLabel.Name = "CopyrightYearLabel";
             this.CopyrightYearLabel.ReadOnly = true;
-            this.CopyrightYearLabel.Size = new System.Drawing.Size(244, 24);
+            this.CopyrightYearLabel.Size = new System.Drawing.Size(258, 24);
             this.CopyrightYearLabel.TabIndex = 27;
             // 
             // PlayTimeLabel
             // 
             this.PlayTimeLabel.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.PlayTimeLabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.PlayTimeLabel.Location = new System.Drawing.Point(72, 128);
+            this.PlayTimeLabel.Location = new System.Drawing.Point(80, 128);
             this.PlayTimeLabel.Multiline = true;
             this.PlayTimeLabel.Name = "PlayTimeLabel";
             this.PlayTimeLabel.ReadOnly = true;
-            this.PlayTimeLabel.Size = new System.Drawing.Size(259, 24);
+            this.PlayTimeLabel.Size = new System.Drawing.Size(257, 24);
             this.PlayTimeLabel.TabIndex = 28;
             // 
             // FadeoutTimeLabel
             // 
             this.FadeoutTimeLabel.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.FadeoutTimeLabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.FadeoutTimeLabel.Location = new System.Drawing.Point(424, 128);
+            this.FadeoutTimeLabel.Location = new System.Drawing.Point(410, 128);
             this.FadeoutTimeLabel.Multiline = true;
             this.FadeoutTimeLabel.Name = "FadeoutTimeLabel";
             this.FadeoutTimeLabel.ReadOnly = true;
-            this.FadeoutTimeLabel.Size = new System.Drawing.Size(244, 24);
+            this.FadeoutTimeLabel.Size = new System.Drawing.Size(258, 24);
             this.FadeoutTimeLabel.TabIndex = 29;
             // 
             // label10
@@ -520,7 +520,7 @@
             this.label10.Dock = System.Windows.Forms.DockStyle.Fill;
             this.label10.Location = new System.Drawing.Point(4, 1);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(61, 30);
+            this.label10.Size = new System.Drawing.Size(69, 30);
             this.label10.TabIndex = 30;
             this.label10.Text = "OST Disc / Track #:";
             this.label10.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -529,11 +529,11 @@
             // 
             this.OSTDiscTrackLabel.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.OSTDiscTrackLabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.OSTDiscTrackLabel.Location = new System.Drawing.Point(72, 4);
+            this.OSTDiscTrackLabel.Location = new System.Drawing.Point(80, 4);
             this.OSTDiscTrackLabel.Multiline = true;
             this.OSTDiscTrackLabel.Name = "OSTDiscTrackLabel";
             this.OSTDiscTrackLabel.ReadOnly = true;
-            this.OSTDiscTrackLabel.Size = new System.Drawing.Size(259, 24);
+            this.OSTDiscTrackLabel.Size = new System.Drawing.Size(257, 24);
             this.OSTDiscTrackLabel.TabIndex = 31;
             // 
             // Form1
