@@ -221,7 +221,7 @@
             this.uploadprogress.Location = new System.Drawing.Point(524, 3);
             this.uploadprogress.Maximum = 80;
             this.uploadprogress.Name = "uploadprogress";
-            this.uploadprogress.Size = new System.Drawing.Size(223, 23);
+            this.uploadprogress.Size = new System.Drawing.Size(227, 23);
             this.uploadprogress.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
             this.uploadprogress.TabIndex = 11;
             // 

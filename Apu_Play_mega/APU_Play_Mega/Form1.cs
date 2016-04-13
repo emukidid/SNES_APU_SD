@@ -110,7 +110,7 @@ namespace APU_Play_Mega
                 //5 seconds for uploading spcs, and waiting for a response, and during initial serial port open
                 //  as it takes 2 seconds for the arduino bootloader to jump into the sketch code.
 
-                textOutput.Text = "";
+                textOutput.Text = @"Serial Port " + comPortSelector.SelectedItem + @" Opened Successfully" + Environment.NewLine;
                 OpenSerialPort.Text = @"Close Serial Port";
                 comPortSelector.Enabled = false;
                 RefreshSerialPorts.Enabled = false;
@@ -200,6 +200,7 @@ namespace APU_Play_Mega
             if (openFileDialog.ShowDialog() != DialogResult.OK) return;
             UploadSPCRam(new BinaryReader(openFileDialog.OpenFile()));
             PlaySPC();
+            textOutput.AppendText("File " + openFileDialog.FileName + " is now playing" + Environment.NewLine);
         }
 
         private void LoadSPC_Click(object sender, EventArgs e)
@@ -210,6 +211,7 @@ namespace APU_Play_Mega
             serialPort.Write(autoPlay.Checked ? "A1" : "A0");
             if (autoPlay.Checked == _autoPlaySet) ReadLine();
             _autoPlaySet = autoPlay.Checked;
+            textOutput.AppendText("File " + openFileDialog.FileName + " loaded into SRAM" + Environment.NewLine);
         }
 
         private void PlayLoadedSPC_Click(object sender, EventArgs e)
@@ -305,6 +307,9 @@ namespace APU_Play_Mega
                                 OSTDiscTrackLabel.Text = line.Split(new[] { "OST Disc/Track #: " }, StringSplitOptions.None)[1];
                                 continue;
                             case "SPC File name":
+                                textOutput.AppendText("File " +
+                                                      line.Split(new[] { "SPC File name: " }, StringSplitOptions.None)[1] +
+                                                      " Now playing from SD" + Environment.NewLine);
                                 continue;
                             case "Song Name":
                                 GameTitleLabel.Text = line.Split(new[] {"Song Name: "}, StringSplitOptions.None)[1];
