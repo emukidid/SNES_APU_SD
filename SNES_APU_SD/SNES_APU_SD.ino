@@ -2138,7 +2138,6 @@ bool songUpdateLCD()
   return false;
 }
 
-
 void handleLCD(bool force_refresh)
 {
   force_refresh |= songUpdateLCD();
@@ -2161,6 +2160,7 @@ void handleLCD(bool force_refresh)
         lcd_delay[i] = LCD_SCROLL_DELAY_SHORT;
     }
   }
+  
   if (force_refresh)
   {
     lcd.clear();

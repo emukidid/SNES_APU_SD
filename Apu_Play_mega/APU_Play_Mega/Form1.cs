@@ -30,6 +30,33 @@ namespace APU_Play_Mega
             
         }
 
+        private int BytesToRead()
+        {
+            try
+            {
+                return serialPort.BytesToRead;
+            }
+            catch
+            {
+                _filetreedepth = 0;
+                DirectoryView.Nodes.Clear();
+                _direntries[0].Clear();
+                try
+                {
+                    serialPort.Close();
+                }
+                    // ReSharper disable once EmptyGeneralCatchClause
+                catch
+                {
+                }
+                OpenSerialPort.Text = @"Open Serial Port";
+                comPortSelector.Enabled = true;
+                RefreshSerialPorts.Enabled = true;
+                RefreshPorts_Click(null, null);
+                return 0;
+            }
+        }
+
         
 
         private static string IntToHex(int val,bool bytelen)
@@ -79,7 +106,13 @@ namespace APU_Play_Mega
             if (IsSerialPortClosed())
             {
                 timer1.Enabled = false;
-                serialPort.PortName = comPortSelector.SelectedItem.ToString();
+                var port = comPortSelector.SelectedItem?.ToString();
+                if (port == null)
+                {
+                    textOutput.Text = @"Please select a port to open";
+                    return;
+                }
+                serialPort.PortName = port;
                 try
                 {
                     serialPort.Open();
@@ -108,7 +141,6 @@ namespace APU_Play_Mega
                     return;
                 }
                 MakeDirectoryListing(ReadLine());
-                
                 
 
                 //50 milliseconds for reading a bunch of lines for the directory entries.
@@ -281,7 +313,7 @@ namespace APU_Play_Mega
             if (uploadlabel.Visible)
             {
                 
-                while ((serialPort.BytesToRead > 0) && (uploadprogress.Value < uploadprogress.Maximum))
+                while ((BytesToRead() > 0) && (uploadprogress.Value < uploadprogress.Maximum))
                 {
                     UpdateProgressBar();
                 }
@@ -296,7 +328,7 @@ namespace APU_Play_Mega
             {
                 var str = string.Empty;
 
-                while (serialPort.BytesToRead > 0)
+                while (BytesToRead() > 0)
                 {
                     var line = ReadLine();
 
