@@ -4,14 +4,14 @@ Drives a SNES APU from early Super Nintendo/Super Famicom consoles with an ardui
 Based on code written by [CaitSith2]
 
 ### Current Features
-- Loads a .spc file (hardcoded filename) from SD card and plays it on the SNES APU
+- Loads a .spc file from SD card and plays it on the SNES APU
 - Loads a .spc file through the PC interface.
-
-### Planned Features
 - 16x2 LCD for track display and menu
 - Menu with file selection
 - SRAM to cache tracks (CaitSith2)
 - Interface APU as direct memory (CaitSith2)
+
+### Planned Features
 - RTC for nice things
 
 ### Hardware required
