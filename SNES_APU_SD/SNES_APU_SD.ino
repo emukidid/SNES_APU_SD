@@ -1,10 +1,14 @@
+#include <MinimumSerial.h>
+#include <SdFat.h>
+#include <SdFatConfig.h>
+#include <SdFatUtil.h>
+
 /****
    SHVC-SOUND Arduino Player by emu_kidid in 2015
    based on code by CaitSith2
 
    Loads SPC tracks from SD to the SHVC-SOUND (aka SNES APU)
 */
-
 
 #include <Firmata.h>
 #include <EEPROM.h>
@@ -122,7 +126,8 @@ int serial_putchar(char c, FILE* f) {
    PRESCALER of 5 = 500Khz Clock //Baud rate 115200 no longer possible.
 */
 
-#define PRESCALER 0
+#define APU_PRESCALER 2 /* Used when interfacing with the APU */
+#define OTHER_PRESCALER 0 /* Used for everything else */
 void SetupPrescaler(int prescaler)
 {
   Serial.flush(); //Any and all serial output currently in the buffer will be garbage, from
@@ -144,7 +149,7 @@ void SetupPrescaler(int prescaler)
 void setup()
 {
   Serial.begin(250000);
-  SetupPrescaler(PRESCALER);
+  SetupPrescaler(OTHER_PRESCALER);
 
   // Set up stdout
   fdev_setup_stream(&serial_stdout, serial_putchar, NULL, _FDEV_SETUP_WRITE);
@@ -254,7 +259,7 @@ void refreshLCD()
     }
     else
     {
-      if (IsSPC())
+      if (IsCurSPC())
       {
         switch_lcd_display_mode(LCD_DISPLAY_MODE_NORMAL);
         spcFile = files[filedepth];
@@ -326,7 +331,7 @@ void GetFile(bool print_info, bool rewind_dir, bool update_lcd)
     Serial.print(file_index);
     Serial.print(F("]|"));
     Serial.print(lcd_buffer[0]);
-    if (IsSPC())
+    if (IsCurSPC())
     {
       Serial.print(F(" - Track Name: ")); Serial.print(lcd_buffer[1]);
     }
@@ -676,11 +681,6 @@ void ReadSPC2FromSD(unsigned short song)
 
 }
 
-bool IsSPC()
-{
-  IsSPC(files[filedepth]);
-}
-
 bool IsSPC(File file)
 {
   if (file.isDirectory()) return false;
@@ -691,6 +691,11 @@ bool IsSPC(File file)
   file.read(buf, 0x1D);
   buf[0x1D] = 0;
   return !strncmp((char*)&buf[0], "SNES-SPC700 Sound File Data v", 0x1D);
+}
+
+bool IsCurSPC()
+{
+  IsSPC(files[filedepth]);
 }
 
 
@@ -975,11 +980,10 @@ void PlaySPC(int SD_mode)
   lcd.setCursor(0, 0);
   lcd.print(F("Uploading SPC   "));
   lcd.setCursor(0, 1);
-  lcd.print(F("Page 0x00"));
 
   //Prescaler of 0 seems to work reliably for everthing except SPC loading.
   //SPC loading has been found to work most reliably with a prescaler of 1 or slower.
-  SetupPrescaler(1);
+  SetupPrescaler(APU_PRESCALER);
   // Reset the APU
   int resetAttempts = 0;
   apu.reset();
@@ -1003,7 +1007,7 @@ void PlaySPC(int SD_mode)
         for(i=0;i<4;i++)
           Serial.write(apu.read(i));
       }
-      SetupPrescaler(0);
+      SetupPrescaler(OTHER_PRESCALER);
       return;
     }
     resetAttempts++;
@@ -1022,7 +1026,7 @@ void PlaySPC(int SD_mode)
     {
       Serial.write('1'); Serial.write(i&0xFF);
     }
-    SetupPrescaler(0);
+    SetupPrescaler(OTHER_PRESCALER);
     return;
   }
 
@@ -1048,23 +1052,24 @@ void PlaySPC(int SD_mode)
       Serial.write(0x01);
       Serial.write(0x00);
     }
-    SetupPrescaler(0);
+    SetupPrescaler(OTHER_PRESCALER);
     return;
   }
 
   // Write out the SPC Data
+  int cursorPos = 0;
   digitalWrite(SRAM_PIN_0, LOW);
   for (i = 0x100; i != 0; i++) // Thank you, overflow :)
   {
     unsigned char port0state = i & 0xFF;
     if (i == 0x8000) digitalWrite(SRAM_PIN_0, HIGH);
 
-    if ((i % 0x400) == 0)
+    if ((i % 0x1000) == 0)
     {
       if(SD_mode) Serial.print('.');
-      lcd.setCursor(7, 1);
-      if ((i >> 8) < 16) lcd.print('0');
-      lcd.print(i >> 8, HEX);
+      lcd.setCursor(cursorPos, 1);
+      lcd.print('.');
+      cursorPos++;
     }
 
     // Normal data write
@@ -1080,7 +1085,7 @@ void PlaySPC(int SD_mode)
         Serial.write(i>>8);
         Serial.write(i&0xFF);
       }
-      SetupPrescaler(0);
+      SetupPrescaler(OTHER_PRESCALER);
       return;
     }
   }
@@ -1116,7 +1121,7 @@ void PlaySPC(int SD_mode)
         apu.write(1, spcdata[0xF5]);
         apu.write(2, spcdata[0xF6]);
         apu.write(3, spcdata[0xF7]);
-        SetupPrescaler(0);
+        SetupPrescaler(OTHER_PRESCALER);
         return;
       }
     }
@@ -1133,7 +1138,7 @@ void PlaySPC(int SD_mode)
   {
     Serial.write('S');
   }
-  SetupPrescaler(0);
+  SetupPrescaler(OTHER_PRESCALER);
   handleLCD(true);
   if (SD_mode)
   {
@@ -1194,7 +1199,7 @@ void PlaySPC(int SD_mode)
   }
   play_time = 0;
   total_time = tags.intro_len;
-  total_time += tags.fade_len;
+  //total_time += tags.fade_len;
   total_time /= 64;
   set_current_song();
   file_changed = true;
@@ -1699,7 +1704,7 @@ void ProcessCommandFromSerial()
           GetFile();
           
         }
-        else if (IsSPC())
+        else if (IsCurSPC())
         {
           Serial.println(F("----LOAD AND PLAY SPC----"));
           LoadAndPlaySPC();
@@ -2123,6 +2128,8 @@ bool songUpdateLCD()
     sprintf(&lcd_buffer[1][rowlen[1]], " - %.2d\0", total_seconds / 60);
     rowlen[1] = len(lcd_buffer[1], line_len_max[1]);
     sprintf(&lcd_buffer[1][rowlen[1]], ":%.2d\0", total_seconds % 60);
+    rowlen[1] = len(lcd_buffer[1], line_len_max[1]);
+    sprintf(&lcd_buffer[1][rowlen[1]], " %c\0", auto_play ? ' ' : 'R');
     rowlen[1] = 16;
     return true;
   }
@@ -2235,7 +2242,7 @@ handleButtons_top:
     }
     if (count == 15)
     {
-      if (IsSPC())
+      if (IsCurSPC())
         LoadAndPlaySPC();
       else
         file_changed = true;
@@ -2256,7 +2263,7 @@ handleButtons_top:
     }
     if (count == 15)
     {
-      if (IsSPC())
+      if (IsCurSPC())
         LoadAndPlaySPC();
       else
         file_changed = true;
@@ -2301,10 +2308,10 @@ handleButtons_top:
         GetFile(true);
         file_changed = true;
       }
-      else if (IsSPC())
+      else if (IsCurSPC())
       {
         LoadAndPlaySPC();
-        auto_play = IsButtonPressed(RIGHT);
+        auto_play = !IsButtonPressed(RIGHT);
         auto_play_start = filecurrent[filedepth];
       }
     }
@@ -2369,7 +2376,7 @@ void loop() //The main loop.  Define various subroutines, and call them here. :)
         do
         {
           GetNextFile(true);
-        } while (!IsSPC() && (auto_play_start < filecurrent[filedepth]));
+        } while (!IsCurSPC() && (auto_play_start < filecurrent[filedepth]));
         if (auto_play_start >= filecurrent[filedepth])
         {
           auto_play = false;
