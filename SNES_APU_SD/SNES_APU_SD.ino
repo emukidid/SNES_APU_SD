@@ -195,11 +195,11 @@ void setup()
   }
   Serial.print(F("initialization done.\n"));
 
-  root = SD.open("dir/");
+  root = SD.open("spc/");
   if (!root)
   {
     Serial.print(F("Could not open root directory.\n"));
-    Serial.print(F("Put all spc files/folders in directory named \"dir\""));
+    Serial.print(F("Put all spc files/folders in directory named \"spc\""));
     return;
   }
   filedepth = 0;
